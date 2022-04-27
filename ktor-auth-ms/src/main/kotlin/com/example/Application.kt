@@ -1,9 +1,6 @@
 package com.example
 
 
-import com.auth0.jwt.JWT
-import com.auth0.jwt.JWTVerifier
-import com.auth0.jwt.algorithms.Algorithm
 import com.example.routing.routeAuth
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
@@ -13,7 +10,6 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import java.util.*
 
 /*
 TODO

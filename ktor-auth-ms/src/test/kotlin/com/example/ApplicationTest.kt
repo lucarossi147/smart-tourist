@@ -1,5 +1,6 @@
 package com.example
 
+import com.example.model.User
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -99,5 +100,13 @@ class ApplicationTest {
         assertEquals(HttpStatusCode.OK, responseToAuth.status)
         assert(responseToAuth.bodyAsText().startsWith("Hello, jetbrains!"))
 
+
+        //Token is not valid or has expired
+        val responseToBadAuth = client.get("/hello"){
+            bearerAuth("")
+        }
+
+        assertEquals(HttpStatusCode.Unauthorized, responseToBadAuth.status)
+        assertEquals(responseToBadAuth.bodyAsText(),"Token is not valid or has expired")
     }
 }

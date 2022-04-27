@@ -16,7 +16,7 @@ class JWTConfig(
             .withAudience(audience)
             .withIssuer(issuer)
             .withClaim("username", username)
-            .withExpiresAt(Date(System.currentTimeMillis() + 60000 * 60 * 24))
+            .withExpiresAt(Date(System.currentTimeMillis() + 60000 * 60 * 24)) //A day
             .sign(Algorithm.HMAC256(secret))
     }
 

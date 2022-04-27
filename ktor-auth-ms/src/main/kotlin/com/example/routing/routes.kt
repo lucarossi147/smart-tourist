@@ -16,8 +16,8 @@ import org.litote.kmongo.getCollection
 
 
 fun Route.routeAuth(config: JWTConfig){
-
-    val client = KMongo.createClient("mongodb://mongodb:27017") //get com.mongodb.MongoClient new instance
+    //val client = KMongo.createClient()
+    val client = KMongo.createClient("mongodb://mongodb:27017") //TODO cosi è sempre sul db di docker
     val database = client.getDatabase("test") //normal java driver usage
     val col = database.getCollection<User>() //KMongo extension method
 
