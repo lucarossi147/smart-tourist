@@ -57,4 +57,15 @@ jobs:
         asset_path: SmartTourist/app/build/outputs/apk/debug/app-debug.apk
         asset_name: SmartTouristDebug.apk
         asset_content_type: application/zip
-         
+     
+  pull-request:
+    name: Pull request
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: pull-request
+      uses: repo-sync/pull-request@v2
+      with:
+        destination_branch: "main"
+        github_token: ${{ secrets.GITHUB_TOKEN }}
