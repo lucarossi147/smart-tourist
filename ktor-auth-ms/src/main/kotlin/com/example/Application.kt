@@ -1,6 +1,6 @@
 package com.example
 
-import com.example.routing.routeAuth
+import com.example.plugins.configureRouting
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -12,6 +12,8 @@ import io.ktor.server.routing.*
 
 /* TODO
 Cifrare password quando vengono salvate
+salvare la password di mongodb in modo più sicuro
+Metti route nel percorso corretto
  */
 
 /**
@@ -54,8 +56,6 @@ fun Application.module() {
         }
     }
 
-    routing {
-        routeAuth(config)
-    }
+    configureRouting(config)
 
 }
