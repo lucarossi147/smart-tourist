@@ -17,13 +17,12 @@ import org.litote.kmongo.getCollection
 
 
 fun Route.routeAuth(config: JWTConfig){
+    val password = environment!!.config.property("ktor.deployment.mongodbpassword").getString() != "false"
+    val client = KMongo.createClient("mongodb+srv://smart-tourism:y3Cgz210tOOaQQ3O@" +
+            "cluster0.2cwaw.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
     val database: MongoDatabase = if(environment!!.config.property("ktor.deployment.test").getString() != "false"){
-        val client = KMongo.createClient("mongodb://mongodb:27017")
-        //val client = KMongo.createClient()
-        client.getDatabase("test") //normal java driver usage
+        client.getDatabase("production") //normal java driver usage
     } else {
-        val client = KMongo.createClient()
-        //val client = KMongo.createClient()
         client.getDatabase("test") //normal java driver usage
     }
 
