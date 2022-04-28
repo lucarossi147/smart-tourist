@@ -17,11 +17,12 @@
         tools:context=".MapsFragment" />
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/scan"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Button"
+        android:text="@string/scan_qr"
         android:elevation="5dp"
+        app:cornerRadius="28dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"

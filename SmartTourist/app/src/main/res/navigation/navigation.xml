@@ -18,5 +18,26 @@
         android:id="@+id/mapsFragment"
         android:name="io.github.lucarossi147.smarttourist.MapsFragment"
         android:label="fragment_maps"
-        tools:layout="@layout/fragment_maps" />
+        tools:layout="@layout/fragment_maps" >
+        <action
+            android:id="@+id/action_mapsFragment_to_scanFragment"
+            app:destination="@id/scanFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/poiFragment"
+        android:name="io.github.lucarossi147.smarttourist.PoiFragment"
+        android:label="fragment_poi"
+        tools:layout="@layout/fragment_poi" />
+    <fragment
+        android:id="@+id/scanFragment"
+        android:name="io.github.lucarossi147.smarttourist.ScanFragment"
+        android:label="fragment_scan"
+        tools:layout="@layout/fragment_scan" >
+        <action
+            android:id="@+id/action_scanFragment_to_poiFragment"
+            app:destination="@id/poiFragment" />
+        <action
+            android:id="@+id/action_scanFragment_to_mapsFragment"
+            app:destination="@id/mapsFragment" />
+    </fragment>
 </navigation>
