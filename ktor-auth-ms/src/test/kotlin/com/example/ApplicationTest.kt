@@ -1,6 +1,7 @@
 package com.example
 
 import com.example.model.User
+import io.ktor.client.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -9,37 +10,47 @@ import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.testing.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
-import kotlin.test.*
-
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ApplicationTest {
 
     private val rand = (0..1000).random().toString()
-    var user = createRandomUser()
 
-    private fun createRandomUser(): () -> User = {
-        val username = "user$rand"
-        val password = "password$rand"
-        print(User(username, password))
-        User(username, password)
-    }
+    private fun createRandomUser(): User =  User("user$rand", "password$rand")
 
-    @Test
-    fun testSignup() = testApplication {
-        val client = createClient {
-            this.install(ContentNegotiation) {
-                json()
-            }
-        }
-        val response = client.post("/signup") {
+    private suspend fun signup(user: User, client: HttpClient) : HttpResponse{
+        return client.post("/signup") {
             contentType(ContentType.Application.Json)
             setBody(user)
         }
+    }
+
+    /**
+     * Create a random user, and made a signup request
+     * It should succeds cause no user with this username exist
+     */
+    @Test
+    fun testSignup() = testApplication {
+        val client = createClient {
+            createTestEnvironment {
+
+            }
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+
+        val response = signup(createRandomUser(), client)
 
         assertEquals(HttpStatusCode.OK, response.status)
         assertEquals("User correctly inserted", response.bodyAsText())
     }
 
+    /**
+     * Create a random user, and made two signup request with the same username
+     * It should NOT succeds cause a user with this username exist
+     */
     @Test
     fun testExistingUserSignup() = testApplication {
         val client = createClient {
@@ -47,40 +58,29 @@ class ApplicationTest {
                 json()
             }
         }
-        val response = client.post("/signup") {
-            contentType(ContentType.Application.Json)
-            setBody(user)
-        }
+        val user = createRandomUser()
+        signup(user, client) //Create first another user
+        val badResponse = signup(user, client) //Try to create the same user
 
-        assertEquals(HttpStatusCode.BadRequest, response.status)
-        assertEquals("User with this username already exist", response.bodyAsText())
+        assertEquals(HttpStatusCode.BadRequest, badResponse.status)
+        assertEquals("User with this username already exist", badResponse.bodyAsText())
     }
 
-    @Test
-    fun testFailingLogin() = testApplication {
-        val client = createClient {
-            this.install(ContentNegotiation) {
-                json()
-            }
-        }
-
-        val responseToLogin = client.post("/login") {
-            contentType(ContentType.Application.Json)
-            setBody(User("bad username", "bad password"))
-        }
-
-        assertEquals(HttpStatusCode.BadRequest, responseToLogin.status)
-        assertEquals("User with this username doesn't exist", responseToLogin.bodyAsText())
-
-    }
-
+    /**
+     * Create a random user, signup them into the application,
+     * try to login and try to make an authenticated request using jwt
+     */
     @Test
     fun testLogin() = testApplication {
+
         val client = createClient {
             this.install(ContentNegotiation) {
                 json()
             }
         }
+
+        val user = createRandomUser()
+        signup(user, client)
 
         val responseToLogin = client.post("/login") {
             contentType(ContentType.Application.Json)
@@ -88,20 +88,18 @@ class ApplicationTest {
         }
 
         assertEquals(HttpStatusCode.OK, responseToLogin.status)
-        val token = Json.parseToJsonElement(responseToLogin.bodyAsText())
-        val jwt = token.jsonObject["token"]
-        print(jwt)
+
+        val jwt = Json.parseToJsonElement(responseToLogin.bodyAsText()).jsonObject["token"].toString().drop(1).dropLast(1)
 
         //Authorization: Bearer {{auth_token}}
         val responseToAuth = client.get("/hello"){
-            bearerAuth(jwt.toString())
+            header("Authorization", "Bearer $jwt")
+            //bearerAuth(jwt.toString())
         }
 
         assertEquals(HttpStatusCode.OK, responseToAuth.status)
-        assert(responseToAuth.bodyAsText().startsWith("Hello, jetbrains!"))
+        assert(responseToAuth.bodyAsText().startsWith("Hello, ${user.username}!"))
 
-
-        //Token is not valid or has expired
         val responseToBadAuth = client.get("/hello"){
             bearerAuth("")
         }

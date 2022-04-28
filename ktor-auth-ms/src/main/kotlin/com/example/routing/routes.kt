@@ -2,6 +2,7 @@ package com.example.routing
 
 import com.example.JWTConfig
 import com.example.model.User
+import com.mongodb.client.MongoDatabase
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -16,9 +17,16 @@ import org.litote.kmongo.getCollection
 
 
 fun Route.routeAuth(config: JWTConfig){
-    //val client = KMongo.createClient()
-    val client = KMongo.createClient("mongodb://mongodb:27017") //TODO cosi è sempre sul db di docker
-    val database = client.getDatabase("test") //normal java driver usage
+    val database: MongoDatabase = if(environment!!.config.property("ktor.deployment.test").getString() != "false"){
+        val client = KMongo.createClient("mongodb://mongodb:27017")
+        //val client = KMongo.createClient()
+        client.getDatabase("test") //normal java driver usage
+    } else {
+        val client = KMongo.createClient()
+        //val client = KMongo.createClient()
+        client.getDatabase("test") //normal java driver usage
+    }
+
     val col = database.getCollection<User>() //KMongo extension method
 
     post("/login") {

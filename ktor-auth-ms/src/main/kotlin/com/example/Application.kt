@@ -1,6 +1,5 @@
 package com.example
 
-
 import com.example.routing.routeAuth
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
@@ -11,16 +10,15 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-/*
-TODO
+/* TODO
 Cifrare password quando vengono salvate
-Creare un docker compose con questa app e mongodb
  */
 
-
-
+/**
+ * For connecting to local db, use -test=true
+ * for connecting to docker mongodb use -test=false
+ */
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
-
 
 fun Application.module() {
 
