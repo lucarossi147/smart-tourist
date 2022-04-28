@@ -15,10 +15,9 @@ import org.litote.kmongo.eq
 import org.litote.kmongo.findOne
 import org.litote.kmongo.getCollection
 
-
 fun Route.routeAuth(config: JWTConfig){
-    val password = environment!!.config.property("ktor.deployment.mongodbpassword").getString() != "false"
-    val client = KMongo.createClient("mongodb+srv://smart-tourism:y3Cgz210tOOaQQ3O@" +
+    val password = environment!!.config.property("ktor.deployment.mongodbpassword").getString()
+    val client = KMongo.createClient("mongodb+srv://smart-tourism:$password@" +
             "cluster0.2cwaw.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
     val database: MongoDatabase = if(environment!!.config.property("ktor.deployment.test").getString() != "false"){
         client.getDatabase("production") //normal java driver usage
