@@ -3,6 +3,7 @@
     package="io.github.lucarossi147.smarttourist">
 
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
