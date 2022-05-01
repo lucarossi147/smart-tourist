@@ -27,7 +27,11 @@
         android:id="@+id/poiFragment"
         android:name="io.github.lucarossi147.smarttourist.PoiFragment"
         android:label="fragment_poi"
-        tools:layout="@layout/fragment_poi" />
+        tools:layout="@layout/fragment_poi" >
+        <action
+            android:id="@+id/action_poiFragment_to_mapsFragment"
+            app:destination="@id/mapsFragment" />
+    </fragment>
     <fragment
         android:id="@+id/scanFragment"
         android:name="io.github.lucarossi147.smarttourist.ScanFragment"

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SmartTourist</string>
+    <string name="app_name">Smart Tourist</string>
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
@@ -24,4 +24,5 @@ Mauris blandit mollis metus, et fringilla eros iaculis vel. Nam in lorem a justo
 
 Ut blandit malesuada tellus, auctor fringilla arcu consectetur ut. Sed vel laoreet neque, vel viverra sem. Praesent a libero lobortis, mollis quam vitae, eleifend nunc. Nullam scelerisque erat eget nunc accumsan, eu vestibulum quam bibendum. Integer fermentum tincidunt ipsum, nec rutrum magna blandit et. Quisque diam nibh, mollis sit amet tristique sed, mattis quis nisi. Vestibulum hendrerit scelerisque sem vel ultrices. Mauris ligula dolor, pellentesque ut arcu vel, euismod luctus ligula. Ut porta, velit sed porttitor sagittis, velit mi convallis orci, sed facilisis turpis magna vel dolor. Nulla a ultricies neque. </string>
     <string name="leave_a_message_for_other_people">Leave a message for other people!</string>
+    <string name="sign">Sign!</string>
 </resources>
