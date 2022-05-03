@@ -7,6 +7,10 @@ plugins {
 android {
     compileSdk 32
 
+    lintOptions {
+        abortOnError false
+    }
+
     defaultConfig {
         applicationId "io.github.lucarossi147.smarttourist"
         minSdk 21
