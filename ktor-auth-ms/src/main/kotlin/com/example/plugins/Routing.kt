@@ -16,21 +16,15 @@ import org.litote.kmongo.findOne
 import org.litote.kmongo.getCollection
 
 fun Application.configureRouting(config: JWTConfig) {
+
+    val configuration: String = environment.config.property("ktor.deployment.test").getString()
+    val password = environment.config.property("ktor.deployment.mongodbpassword").getString()
+    val dbName = if (configuration == "false") "test" else "production"
+    val client = KMongo.createClient("mongodb+srv://smart-tourism:$password@cluster0.2cwaw.mongodb.net")
+
+    val col = client.getDatabase(dbName).getCollection<User>()
+
     routing {
-        val password = environment!!.config.property("ktor.deployment.mongodbpassword").getString()
-        val client = KMongo.createClient(
-            "mongodb+srv://smart-tourism:$password@" +
-                    "cluster0.2cwaw.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
-        )
-        val database: MongoDatabase =
-            if (environment!!.config.property("ktor.deployment.test").getString() != "false") {
-                client.getDatabase("production") //normal java driver usage
-            } else {
-                client.getDatabase("test") //normal java driver usage
-            }
-
-        val col = database.getCollection<User>() //KMongo extension method
-
         post("/login") {
             val user = call.receive<User>()
             val userInDb = col.findOne(User::username eq user.username)

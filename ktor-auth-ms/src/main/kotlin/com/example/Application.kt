@@ -8,19 +8,16 @@ import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.response.*
-import io.ktor.server.routing.*
 
 /* TODO
 Cifrare password quando vengono salvate
 salvare la password di mongodb in modo più sicuro
-Metti route nel percorso corretto
  */
 
-/**
- * For connecting to local db, use -test=true
- * for connecting to docker mongodb use -test=false
- */
+
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
+
+@Suppress("unused") // application.conf references the main function. This annotation prevents the IDE from marking it as unused.
 
 fun Application.module() {
 

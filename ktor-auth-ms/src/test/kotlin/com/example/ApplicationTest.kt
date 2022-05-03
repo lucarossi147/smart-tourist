@@ -33,14 +33,10 @@ class ApplicationTest {
     @Test
     fun testSignup() = testApplication {
         val client = createClient {
-            createTestEnvironment {
-
-            }
             install(ContentNegotiation) {
                 json()
             }
         }
-
         val response = signup(createRandomUser(), client)
 
         assertEquals(HttpStatusCode.OK, response.status)
@@ -54,7 +50,7 @@ class ApplicationTest {
     @Test
     fun testExistingUserSignup() = testApplication {
         val client = createClient {
-            this.install(ContentNegotiation) {
+            install(ContentNegotiation) {
                 json()
             }
         }
@@ -74,7 +70,7 @@ class ApplicationTest {
     fun testLogin() = testApplication {
 
         val client = createClient {
-            this.install(ContentNegotiation) {
+            install(ContentNegotiation) {
                 json()
             }
         }
