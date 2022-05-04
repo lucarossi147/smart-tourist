@@ -24,6 +24,9 @@ repositories {
 }
 
 dependencies {
+    //Cors
+    implementation("io.ktor:ktor-server-cors:$ktor_version")
+
     // For kotling mongo impl
     implementation("org.litote.kmongo:kmongo:4.5.1")
 
