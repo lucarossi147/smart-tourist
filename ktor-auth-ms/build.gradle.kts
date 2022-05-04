@@ -23,6 +23,8 @@ repositories {
     maven { url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap") }
 }
 
+tasks.register("stage")
+
 dependencies {
     //Cors
     implementation("io.ktor:ktor-server-cors:$ktor_version")
