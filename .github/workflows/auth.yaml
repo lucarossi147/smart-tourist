@@ -8,7 +8,6 @@ jobs:
       
   test:
     name: Run tests
-    needs: build
     runs-on: ubuntu-latest
     env:
       working-directory: ./ktor-auth-ms
@@ -28,10 +27,15 @@ jobs:
   deploy:
     name: Deploy to Heroku
     needs: test
-    - uses: actions/checkout@v3
-      - uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Build, Push and Release a Docker container to Heroku.
+        uses: gonuit/heroku-docker-deploy@v1.3.3
         with:
-          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-          heroku_app_name: "smart-tourist-auth" #Must be unique in Heroku
-          heroku_email: "lucarossi147@gmail.com"
-          appdir: "ktor-auth-ms" # <- This will point to the api folder in your project
+          email: ${{ secrets.HEROKU_EMAIL }}
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
+          dockerfile_directory: ./ktor-auth-ms/
+          docker_options: "--no-cache"
