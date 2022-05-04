@@ -23,7 +23,9 @@ repositories {
     maven { url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap") }
 }
 
-tasks.register("stage")
+tasks {
+    create("stage").dependsOn("installDist")
+}
 
 dependencies {
     //Cors
