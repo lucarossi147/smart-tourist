@@ -9,6 +9,9 @@ plugins {
     id("com.github.johnrengelman.shadow") version "7.1.2"
 
 }
+tasks {
+    create("stage").dependsOn("installDist")
+}
 
 group = "com.example"
 version = "0.0.1"
