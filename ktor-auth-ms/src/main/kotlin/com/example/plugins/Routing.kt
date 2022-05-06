@@ -25,6 +25,20 @@ fun Application.configureRouting(config: JWTConfig) {
     val col = client.getDatabase(dbName).getCollection<User>()
 
     routing {
+        get("/"){
+            """
+                <html>
+                <head>
+                <title>
+                    Smart tourist App
+                </title>
+                </head>
+                <body>
+                <h4>Hii, this is Smart tourist app. Unluckily, this is accessible only from mobile. Download the app!</h4> 
+                </body>
+                </html>
+            """.trimIndent()
+        }
         post("/login") {
             val user = call.receive<User>()
             val userInDb = col.findOne(User::username eq user.username)
