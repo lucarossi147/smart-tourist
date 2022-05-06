@@ -19,7 +19,7 @@ jobs:
             project_id: ${{ secrets.GCP_PROJECT_ID }}
             service_account_email: ${{ secrets.GCP_EMAIL }}
             service_account_key: ${{ secrets.GCP_CREDENTIALS }}
-            working-directory: ./ktor-auth-ms/
+
         - name: Configure Docker
           run: gcloud auth configure-docker --quiet
 
