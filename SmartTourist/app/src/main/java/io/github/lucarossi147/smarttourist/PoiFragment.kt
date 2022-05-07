@@ -10,7 +10,10 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.navigation.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
+import io.github.lucarossi147.smarttourist.data.model.Signature
 import kotlin.random.Random
 
 // TODO: Rename parameter arguments, choose names that match
@@ -47,6 +50,7 @@ class PoiFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val tv: TextView = view.findViewById(R.id.poiInfoTextView)
+        //TODO: put in a layout editText and button and show them only if user hasn't signed himself yet
         // TODO: fetch poi info
         tv.text = resources.getString(R.string.loremIpsum)
         val button: Button = view.findViewById(R.id.signButton)
@@ -54,7 +58,7 @@ class PoiFragment : Fragment() {
             // TODO: send signature and comment to server
             view.findNavController().navigate(R.id.mapsFragment)
         }
-        for (i in 1..20){
+        repeat(20){
             val iv = ImageView(context)
             val linearLayout: LinearLayout = view.findViewById(R.id.images_linear_layout)
             linearLayout.addView(iv)
@@ -65,6 +69,16 @@ class PoiFragment : Fragment() {
                 .into(iv)
         }
 
+        val signatureRecyclerView: RecyclerView = view.findViewById(R.id.tmpSignatureRecyclerView)
+        val signatures = listOf<Signature>(
+            Signature("luca ","Hello, World!"),
+            Signature("schia ","uovo di pasqua"),
+            Signature("massi ","TI DEVI SPAVENTAREEE"),
+            Signature("leo ","*sviene*"),
+        )
+        val signatureAdapter = SignatureAdapter(signatures)
+        signatureRecyclerView.adapter = signatureAdapter
+        signatureRecyclerView.layoutManager = LinearLayoutManager(context)
     }
     companion object {
         /**

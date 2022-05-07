@@ -25,20 +25,23 @@ import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import io.github.lucarossi147.smarttourist.databinding.FragmentScanBinding
+import kotlinx.coroutines.channels.Channel
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class ScanFragment : Fragment() {
 
+    private val channel = Channel<String>()
     private lateinit var cameraExecutor: ExecutorService
     private lateinit var viewBinding: FragmentScanBinding
     private lateinit var myContext: Context
 
-    private class QrScanner(val view: View?) : ImageAnalysis.Analyzer {
+    // TODO: Consider using glider instead of picasso
+    // TODO: BUG WITH PERMISSION FIRST TIME USER USES CAMERA
+    private class QrScanner(val view: View?, val channel: Channel<String>) : ImageAnalysis.Analyzer {
         override fun analyze(imageProxy: ImageProxy) {
             @androidx.camera.core.ExperimentalGetImage
             val mediaImage = imageProxy.image
-
             if (mediaImage != null) {
                 val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
                 // Pass image to an ML Kit Vision API
@@ -63,6 +66,11 @@ class ScanFragment : Fragment() {
                                     val url = barcode.url!!.url
                                 }
                                 else -> {
+                                    val rawValue = barcode.rawValue.orEmpty()
+                                    // TODO: when value is found send to channel
+//                                    if (rawValue.isNotEmpty()){
+//                                        channel.send(rawValue)
+//                                    }
                                     view?.findNavController()?.navigate(R.id.poiFragment)
                                 }
                             }
@@ -143,7 +151,7 @@ class ScanFragment : Fragment() {
                 .setBackpressureStrategy(STRATEGY_KEEP_ONLY_LATEST)
                 .build()
                 .also {
-                    it.setAnalyzer(cameraExecutor, QrScanner(view))
+                    it.setAnalyzer(cameraExecutor, QrScanner(view, channel))
                 }
             // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
