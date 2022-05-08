@@ -114,4 +114,5 @@ Ut blandit malesuada tellus, auctor fringilla arcu consectetur ut. Sed vel laore
         "For example, position the FAB to one side of stream of a cards so the FAB won’t interfere "
         "when a user tries to pick up one of cards.\n\n"
     </string>
+    <string name="check_out_other_signatures">Check out other signatures!</string>
 </resources>
