@@ -15,12 +15,16 @@ import kotlin.test.assertEquals
 
 class ApplicationTest {
 
-    private val rand = (0..1000).random().toString()
+    private val rand = (0..10000).random().toString()
+
 
     private fun createRandomUser(): User =  User("user$rand", "password$rand")
 
     private suspend fun signup(user: User, client: HttpClient) : HttpResponse{
         return client.post("/signup") {
+            url {
+                protocol = URLProtocol.HTTPS
+            }
             contentType(ContentType.Application.Json)
             setBody(user)
         }
@@ -79,6 +83,9 @@ class ApplicationTest {
         signup(user, client)
 
         val responseToLogin = client.post("/login") {
+            url {
+                protocol = URLProtocol.HTTPS
+            }
             contentType(ContentType.Application.Json)
             setBody(user)
         }
@@ -87,10 +94,8 @@ class ApplicationTest {
 
         val jwt = Json.parseToJsonElement(responseToLogin.bodyAsText()).jsonObject["token"].toString().drop(1).dropLast(1)
 
-        //Authorization: Bearer {{auth_token}}
         val responseToAuth = client.get("/hello"){
             header("Authorization", "Bearer $jwt")
-            //bearerAuth(jwt.toString())
         }
 
         assertEquals(HttpStatusCode.OK, responseToAuth.status)
@@ -103,4 +108,5 @@ class ApplicationTest {
         assertEquals(HttpStatusCode.Unauthorized, responseToBadAuth.status)
         assertEquals(responseToBadAuth.bodyAsText(),"Token is not valid or has expired")
     }
+
 }

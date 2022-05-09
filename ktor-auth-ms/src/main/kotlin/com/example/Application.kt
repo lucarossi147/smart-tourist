@@ -2,6 +2,8 @@ package com.example
 
 import com.example.plugins.configureRouting
 import io.ktor.http.*
+import io.ktor.http.ContentDisposition.Companion.File
+import io.ktor.network.tls.certificates.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -9,6 +11,7 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.*
 import io.ktor.server.response.*
+import java.io.File
 
 /* TODO
 Cifrare password quando vengono salvate
@@ -24,13 +27,18 @@ fun Application.module() {
     install(CORS) {
         anyHost()
         allowHeaders { true }
-        allowMethod(HttpMethod.Options)
-        allowMethod(HttpMethod.Put)
-        allowMethod(HttpMethod.Patch)
-        allowMethod(HttpMethod.Delete)
-        allowMethod(HttpMethod.Get)
-        allowMethod(HttpMethod.Post)
+        HttpMethod.DefaultMethods.forEach { allowMethod(it) }
     }
+    /*
+
+    val keyStoreFile = File("build/keystore.jks")
+    val keystore = generateCertificate(
+        file = keyStoreFile,
+        keyAlias = "sampleAlias",
+        keyPassword = "foobar", //TODO
+        jksPassword = "foobar" //ToDO
+    )
+     */
 
     install(ContentNegotiation) {
         json()

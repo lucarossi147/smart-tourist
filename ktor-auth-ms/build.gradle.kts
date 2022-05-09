@@ -38,6 +38,9 @@ dependencies {
     testImplementation("io.ktor:ktor-server-test-host:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlin_version")
 
+    //SSL
+    implementation("io.ktor:ktor-network-tls-certificates:$ktor_version")
+
     //From ktor docs
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
     implementation("io.ktor:ktor-server-core:$ktor_version")
