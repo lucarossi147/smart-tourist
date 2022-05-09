@@ -2,6 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="io.github.lucarossi147.smarttourist">
 
+    <!--  Always include this permission  -->
+    <!--  Include only if your app benefits from precise location access.  -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <!--  Needed to use a foreground service (for location).  -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
 
