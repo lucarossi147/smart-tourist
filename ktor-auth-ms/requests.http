@@ -1,5 +1,5 @@
 ### Step 1. Retrieve and save a JWT token.
-POST http://localhost:8080/login
+POST https://smarttourist22-cup3lszycq-uc.a.run.app/login
 Content-Type: application/json
 
 {
@@ -15,7 +15,7 @@ Authorization: Bearer {{auth_token}}
 
 
 ### Signup of an user
-POST http://localhost:8080/signup
+POST https://172.17.0.2/signup
 Content-Type: application/json
 
 {

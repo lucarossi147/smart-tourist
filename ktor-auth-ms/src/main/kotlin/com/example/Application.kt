@@ -2,13 +2,10 @@ package com.example
 
 import com.example.plugins.configureRouting
 import io.ktor.http.*
-import io.ktor.http.ContentDisposition.Companion.File
-import io.ktor.network.tls.certificates.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
-import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.*
 import io.ktor.server.response.*

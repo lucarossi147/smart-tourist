@@ -8,5 +8,7 @@ RUN mkdir /app
 RUN mkdir /cert
 COPY --from=build /home/gradle/src/build/libs/*.jar /app/
 COPY --from=build /home/gradle/src/cert/*.jks /cert/
-RUN ls /cert
+
+EXPOSE 443
+
 ENTRYPOINT ["java","-jar","/app/ktor-auth-ms-0.0.1-all.jar"]
