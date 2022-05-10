@@ -9,7 +9,7 @@ class JWTConfig(
     private val secret: String,
     private val issuer: String,
     private val audience: String,
-    val myRealm: String
+    val realm: String
 ){
     fun generateToken(username: String): String? {
         return JWT.create()

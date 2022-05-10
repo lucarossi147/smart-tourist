@@ -8,18 +8,20 @@ import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
+import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.*
 import io.ktor.server.response.*
-import java.io.File
+import io.ktor.server.netty.EngineMain
 
 /* TODO
 Cifrare password quando vengono salvate
 salvare la password di mongodb in modo più sicuro
+Usare 201 come risposta?
  */
 
 
-fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
+fun main(args: Array<String>): Unit = EngineMain.main(args)
 
 @Suppress("unused") // application.conf references the main function. This annotation prevents the IDE from marking it as unused.
 
@@ -29,16 +31,6 @@ fun Application.module() {
         allowHeaders { true }
         HttpMethod.DefaultMethods.forEach { allowMethod(it) }
     }
-    /*
-
-    val keyStoreFile = File("build/keystore.jks")
-    val keystore = generateCertificate(
-        file = keyStoreFile,
-        keyAlias = "sampleAlias",
-        keyPassword = "foobar", //TODO
-        jksPassword = "foobar" //ToDO
-    )
-     */
 
     install(ContentNegotiation) {
         json()
@@ -53,7 +45,7 @@ fun Application.module() {
 
     install(Authentication) {
         jwt("auth-jwt") {
-            realm = config.myRealm
+            realm = config.realm
 
             verifier(
                 config.generateVerifier()

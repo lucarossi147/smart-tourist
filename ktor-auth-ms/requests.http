@@ -15,11 +15,20 @@ Authorization: Bearer {{auth_token}}
 
 
 ### Signup of an user
-POST https://localhost:8443/signup
+POST http://localhost:8080/signup
 Content-Type: application/json
 
 {
-  "username": "jetbrains",
+  "username": "jetbrains1212",
+  "password": "foobar"
+}
+
+### Signup of an user HTTPS
+POST https://172.17.0.2:8443/signup
+Content-Type: application/json
+
+{
+  "username": "jetbrains1212",
   "password": "foobar"
 }
 

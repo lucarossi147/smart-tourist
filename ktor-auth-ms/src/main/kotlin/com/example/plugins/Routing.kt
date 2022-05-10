@@ -17,8 +17,8 @@ import org.litote.kmongo.getCollection
 
 fun Application.configureRouting(config: JWTConfig) {
 
-    val configuration: String = environment.config.property("ktor.deployment.test").getString()
-    val password = environment.config.property("ktor.deployment.mongodbpassword").getString()
+    val configuration: String = "false" //environment.config.property("ktor.deployment.test").getString()
+    val password = "Nnmah8cfhYVDiuIu" //environment.config.property("ktor.deployment.mongodbpassword").getString()
     val dbName = if (configuration == "false") "test" else "production"
     val client = KMongo.createClient("mongodb+srv://smart-tourism:$password@cluster0.2cwaw.mongodb.net")
 
