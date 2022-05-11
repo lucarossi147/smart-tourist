@@ -5,10 +5,10 @@ RUN gradle shadowJar --no-daemon
 
 FROM openjdk:11
 RUN mkdir /app
-RUN mkdir /cert
+#RUN mkdir /cert
 COPY --from=build /home/gradle/src/build/libs/*.jar /app/
-COPY --from=build /home/gradle/src/cert/*.jks /cert/
+#COPY --from=build /home/gradle/src/cert/*.jks /cert/
 
-EXPOSE 443
+EXPOSE 8080
 
 ENTRYPOINT ["java","-jar","/app/ktor-auth-ms-0.0.1-all.jar"]

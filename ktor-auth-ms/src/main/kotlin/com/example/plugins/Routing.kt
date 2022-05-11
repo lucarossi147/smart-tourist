@@ -25,8 +25,9 @@ fun Application.configureRouting(config: JWTConfig) {
     val col = client.getDatabase(dbName).getCollection<User>()
 
     routing {
-        get("/"){
-            """
+        get("/") {
+            call.respondText(
+                """
                 <html>
                 <head>
                 <title>
@@ -38,6 +39,7 @@ fun Application.configureRouting(config: JWTConfig) {
                 </body>
                 </html>
             """.trimIndent()
+            )
         }
         post("/login") {
             val user = call.receive<User>()
