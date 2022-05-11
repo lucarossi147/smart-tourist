@@ -86,7 +86,7 @@ fun Application.configureRouting(config: JWTConfig) {
         }
 
         suspend fun makeRequest(): HttpResponse {
-            return cl.get("http://localhost:3000")
+            return cl.get("https://poi-service-container-cup3lszycq-uc.a.run.app")
         }
 
         get("/poi"){
