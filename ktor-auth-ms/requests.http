@@ -1,5 +1,5 @@
 ### Step 1. Retrieve and save a JWT token.
-POST https://smarttourist22-cup3lszycq-uc.a.run.app/login
+POST {{address}}/login
 Content-Type: application/json
 
 {
@@ -10,21 +10,12 @@ Content-Type: application/json
 > {% client.global.set("auth_token", response.body.token); %}
 
 ### Step 2. Use a JWT token to authorize.
-GET http://localhost:8080/hello
+GET {{address}}/hello
 Authorization: Bearer {{auth_token}}
 
 
 ### Signup of an user
-POST https://smarttourist22-cup3lszycq-uc.a.run.app/signup
-Content-Type: application/json
-
-{
-  "username": "jetbrains1212",
-  "password": "foobar"
-}
-
-### Signup of an user HTTPS
-POST https://172.17.0.2:8443/signup
+POST {{address}}/signup
 Content-Type: application/json
 
 {
@@ -33,7 +24,7 @@ Content-Type: application/json
 }
 
 ### Delete of an user
-POST http://localhost:8080/delete
+POST {{address}}/delete
 Content-Type: application/json
 
 {
