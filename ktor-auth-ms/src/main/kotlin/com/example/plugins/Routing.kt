@@ -72,7 +72,7 @@ fun Application.configureRouting(config: JWTConfig) {
                 call.respondText("User with this username already exist", status = HttpStatusCode.BadRequest)
             } else {
                 col.insertOne(user)
-                call.respondText("User correctly inserted", status = HttpStatusCode.OK)
+                call.respondText("User correctly inserted", status = HttpStatusCode.Created)
             }
         }
 

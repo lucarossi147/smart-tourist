@@ -10,13 +10,13 @@ jobs:
         name: Deploy poi service
         runs-on: ubuntu-latest
         env:
-          IMAGE_NAME: gcr.io/${{ secrets.POI_ID }}/${{ secrets.GCP_POI_NAME }}
+          IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_POI_NAME }}
         steps:
 
         - name: Login
           uses: google-github-actions/setup-gcloud@v0
           with:
-            project_id: ${{ secrets.POI_ID }}
+            project_id: ${{ secrets.GCP_PROJECT_ID }}
             service_account_email: ${{ secrets.GCP_EMAIL }}
             service_account_key: ${{ secrets.GCP_CREDENTIALS }}
 
@@ -33,4 +33,4 @@ jobs:
           run: docker push $IMAGE_NAME
 
         - name: Deploy Docker image
-          run: gcloud run deploy ${{ secrets.POI_ID }} --image $IMAGE_NAME --port=8080 --region us-central1 --platform managed
+          run: gcloud run deploy ${{ secrets.GCP_PROJECT_ID }} --image $IMAGE_NAME --port=3000 --region us-central1 --platform managed
