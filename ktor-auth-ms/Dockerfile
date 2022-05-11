@@ -5,9 +5,7 @@ RUN gradle shadowJar --no-daemon
 
 FROM openjdk:11
 RUN mkdir /app
-#RUN mkdir /cert
 COPY --from=build /home/gradle/src/build/libs/*.jar /app/
-#COPY --from=build /home/gradle/src/cert/*.jks /cert/
 
 EXPOSE 8080
 

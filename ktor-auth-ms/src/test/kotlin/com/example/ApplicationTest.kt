@@ -22,9 +22,6 @@ class ApplicationTest {
 
     private suspend fun signup(user: User, client: HttpClient) : HttpResponse{
         return client.post("/signup") {
-            url {
-                protocol = URLProtocol.HTTPS
-            }
             contentType(ContentType.Application.Json)
             setBody(user)
         }

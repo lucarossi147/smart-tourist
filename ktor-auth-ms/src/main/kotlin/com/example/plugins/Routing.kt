@@ -2,7 +2,9 @@ package com.example.plugins
 
 import com.example.JWTConfig
 import com.example.model.User
-import com.mongodb.client.MongoDatabase
+import io.ktor.client.*
+import io.ktor.client.engine.java.*
+import io.ktor.client.request.*
 import io.ktor.server.routing.*
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -14,6 +16,7 @@ import org.litote.kmongo.KMongo
 import org.litote.kmongo.eq
 import org.litote.kmongo.findOne
 import org.litote.kmongo.getCollection
+import io.ktor.client.statement.*
 
 fun Application.configureRouting(config: JWTConfig) {
 
@@ -21,7 +24,7 @@ fun Application.configureRouting(config: JWTConfig) {
     val password = "Nnmah8cfhYVDiuIu" //environment.config.property("ktor.deployment.mongodbpassword").getString()
     val dbName = if (configuration == "false") "test" else "production"
     val client = KMongo.createClient("mongodb+srv://smart-tourism:$password@cluster0.2cwaw.mongodb.net")
-
+    val cl = HttpClient(Java)
     val col = client.getDatabase(dbName).getCollection<User>()
 
     routing {
@@ -82,13 +85,25 @@ fun Application.configureRouting(config: JWTConfig) {
             }
         }
 
+        suspend fun makeRequest(): HttpResponse {
+            return cl.get("http://localhost:3000")
+        }
+
+        get("/poi"){
+            val response = makeRequest()
+            call.respond(response.bodyAsText())
+        }
+
         authenticate("auth-jwt") {
-            get("/hello") {
+            get("/api") {
                 val principal = call.principal<JWTPrincipal>()
                 val username = principal!!.payload.getClaim("username").asString()
                 val expiresAt = principal.expiresAt?.time?.minus(System.currentTimeMillis())
+
                 call.respondText("Hello, $username! Token is expired in $expiresAt ms.")
             }
         }
     }
+
+
 }
