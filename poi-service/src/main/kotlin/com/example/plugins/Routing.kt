@@ -1,12 +1,12 @@
 package com.example.plugins
 
 import com.example.model.Poi
-import com.mongodb.client.MongoCollection
 import io.ktor.server.routing.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.request.*
+import kotlinx.coroutines.delay
 import org.litote.kmongo.*
 
 fun Application.configureRouting() {
@@ -17,7 +17,7 @@ fun Application.configureRouting() {
 
     routing {
         get("/") {
-            call.respondText("Hello World!")
+            call.respondText("hi from poi")
         }
 
         post("/add") {
@@ -31,5 +31,20 @@ fun Application.configureRouting() {
                     status = HttpStatusCode.OK)
             }
         }
+
+        get("{id?}"){
+            val id = call.parameters["id"] ?: return@get call.respondText(
+                "Missing id of the Poi",
+                status = HttpStatusCode.BadRequest
+            )
+
+            val poi = col.findOne(Poi::name eq id) ?: return@get call.respondText(
+                "No poi with this $id",
+                status = HttpStatusCode.NotFound
+            )
+            call.respond(poi)
+        }
+
+
     }
 }

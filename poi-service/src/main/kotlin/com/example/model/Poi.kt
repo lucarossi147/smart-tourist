@@ -8,6 +8,7 @@ import kotlin.math.sin
 
 @Serializable
 class Poi(
+    val id: Int,
     val name: String,
     val city: String,
     val desc: String,
