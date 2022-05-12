@@ -5,6 +5,7 @@ on:
     branches: [ server ]
     paths: 
       - './poi-service/**/*.kt'
+
 jobs:
 
     deploy:
