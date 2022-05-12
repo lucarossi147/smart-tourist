@@ -15,11 +15,19 @@ import kotlin.test.assertEquals
 
 class ApplicationTest {
 
+    /**
+     * Create a pseudo-random number for the user creation
+     */
     private val rand = (0..10000).random().toString()
 
-
+    /**
+     * Create a random User with pseudo-random password and username
+     */
     private fun createRandomUser(): User =  User("user$rand", "password$rand")
 
+    /**
+     * Utility function for the signup of a user
+     */
     private suspend fun signup(user: User, client: HttpClient) : HttpResponse{
         return client.post("/signup") {
             contentType(ContentType.Application.Json)
@@ -29,7 +37,7 @@ class ApplicationTest {
 
     /**
      * Create a random user, and made a signup request
-     * It should succeds cause no user with this username exist
+     * It should succeed cause no user with this username exist
      */
     @Test
     fun testSignup() = testApplication {
@@ -46,7 +54,7 @@ class ApplicationTest {
 
     /**
      * Create a random user, and made two signup request with the same username
-     * It should NOT succeds cause a user with this username exist
+     * It should NOT succeed cause a user with this username exist
      */
     @Test
     fun testExistingUserSignup() = testApplication {
@@ -80,30 +88,40 @@ class ApplicationTest {
         signup(user, client)
 
         val responseToLogin = client.post("/login") {
-            url {
-                protocol = URLProtocol.HTTPS
-            }
             contentType(ContentType.Application.Json)
             setBody(user)
         }
 
         assertEquals(HttpStatusCode.OK, responseToLogin.status)
 
-        val jwt = Json.parseToJsonElement(responseToLogin.bodyAsText()).jsonObject["token"].toString().drop(1).dropLast(1)
+        val jwt = Json.parseToJsonElement(responseToLogin.bodyAsText())
+            .jsonObject["token"]
+            .toString()
+            .drop(1)
+            .dropLast(1)
 
-        val responseToAuth = client.get("/hello"){
+        val responseToAuth = client.get("/test-auth"){
             header("Authorization", "Bearer $jwt")
         }
 
         assertEquals(HttpStatusCode.OK, responseToAuth.status)
         assert(responseToAuth.bodyAsText().startsWith("Hello, ${user.username}!"))
+    }
 
-        val responseToBadAuth = client.get("/hello"){
+
+    @Test
+    fun testBadAuthRequest() = testApplication {
+        val client = createClient {
+            install(ContentNegotiation){
+                json()
+            }
+        }
+
+        val responseToBadAuth = client.get("/test-auth"){
             bearerAuth("")
         }
 
         assertEquals(HttpStatusCode.Unauthorized, responseToBadAuth.status)
         assertEquals(responseToBadAuth.bodyAsText(),"Token is not valid or has expired")
     }
-
 }

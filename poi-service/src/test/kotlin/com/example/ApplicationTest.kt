@@ -21,11 +21,13 @@ class ApplicationTest {
     val rand = (0..1000).random()
 
     private fun randomPoi() = Poi(
+        rand,
         "poiname$rand",
         "city$rand",
         "desc$rand",
-        rand.toFloat(),
-        rand.toFloat(),
+        (rand.toFloat() % 90) - 90 ,
+        (rand.toFloat() % 180) - 180,
+        emptyList()
     )
 
     private suspend fun addPoi(client: HttpClient, poi: Poi): HttpResponse {
@@ -36,7 +38,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun addPoi() = testApplication {
+    fun addPoiWithoutErrors() = testApplication {
         val client = createClient {
             install(ContentNegotiation) {
                 json()
@@ -49,6 +51,9 @@ class ApplicationTest {
         assertEquals("Poi correctly inserted", response.bodyAsText())
     }
 
+    /**
+     * Try to add Poi with the same name and id
+     */
     @Test
     fun addPoiWithError() = testApplication {
         val client = createClient {
@@ -61,13 +66,31 @@ class ApplicationTest {
         val response = addPoi(client, poi)
 
         assertEquals(HttpStatusCode.BadRequest, response.status)
-        assertEquals("Poi with this name already exist", response.bodyAsText())
+        assertEquals("Poi with this id already exist", response.bodyAsText())
     }
 
-    @Suppress
-    fun getPoi() = testApplication {
-        val response = client.get("/poi")
-        val poi = Json.decodeFromString<Poi>(response.bodyAsText())
+    @Test
+    fun getExistingPoi() = testApplication {
+        val poi = randomPoi()
+        addPoi(client, poi)
+
+        val response = client.get("/"){
+            parameter("id", "${poi.id}")
+        }
+        print(response.bodyAsText())
+        //val resultPoi = Json.decodeFromString<Poi>(response.bodyAsText())
         assertEquals(HttpStatusCode.OK, response.status)
+        //assertEquals(poi.id, resultPoi.id)
+        //assertEquals(poi.name, resultPoi.name)
+    }
+
+    @Test
+    fun getWithErrors() = testApplication {
+        val response = client.get("/"){
+            parameter("id", "12345678")
+        }
+        print(response.bodyAsText())
+        assertEquals("No poi with this id: 12345678", response.bodyAsText())
+        assertEquals(HttpStatusCode.NotFound, response.status)
     }
 }

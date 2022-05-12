@@ -3,6 +3,7 @@ package com.example.plugins
 import com.example.JWTConfig
 import com.example.model.User
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.engine.java.*
 import io.ktor.client.request.*
 import io.ktor.server.routing.*
@@ -85,17 +86,26 @@ fun Application.configureRouting(config: JWTConfig) {
             }
         }
 
-        suspend fun makeRequest(): HttpResponse {
-            return cl.get("https://poi-service-container-cup3lszycq-uc.a.run.app")
+        suspend fun makeRequest(id: String): HttpResponse {
+            return cl.get("https://poi-service-container-cup3lszycq-uc.a.run.app/?id=$id")
         }
 
-        get("/poi"){
-            val response = makeRequest()
-            call.respond(response.bodyAsText())
+        /**
+         * Client ask for specific poi, with @param id
+         * Response of the call is the specified Poi if it exist
+         */
+        get("/poi/{id?}"){
+            val id = call.parameters["id"] ?: return@get call.respondText(
+                "Missing id of the Poi",
+                status = HttpStatusCode.BadRequest
+            )
+
+            val response = makeRequest(id)
+            call.respond(response.body())
         }
 
         authenticate("auth-jwt") {
-            get("/api") {
+            get("/test-auth") {
                 val principal = call.principal<JWTPrincipal>()
                 val username = principal!!.payload.getClaim("username").asString()
                 val expiresAt = principal.expiresAt?.time?.minus(System.currentTimeMillis())

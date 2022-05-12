@@ -6,7 +6,6 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.request.*
-import kotlinx.coroutines.delay
 import org.litote.kmongo.*
 
 fun Application.configureRouting() {
@@ -16,14 +15,11 @@ fun Application.configureRouting() {
     val col = client.getDatabase("poi").getCollection<Poi>()
 
     routing {
-        get("/") {
-            call.respondText("hi from poi")
-        }
 
         post("/add") {
             val poi = call.receive<Poi>()
-            if(col.findOne(Poi::name eq poi.name) != null){
-                call.respondText("Poi with this name already exist",
+            if(col.findOne(Poi::id eq poi.id) != null){
+                call.respondText("Poi with this id already exist",
                     status = HttpStatusCode.BadRequest)
             } else {
                 col.insertOne(poi)
@@ -32,19 +28,17 @@ fun Application.configureRouting() {
             }
         }
 
-        get("{id?}"){
+        get("/{id?}"){
             val id = call.parameters["id"] ?: return@get call.respondText(
                 "Missing id of the Poi",
                 status = HttpStatusCode.BadRequest
             )
 
             val poi = col.findOne(Poi::name eq id) ?: return@get call.respondText(
-                "No poi with this $id",
+                "No poi with this id: $id",
                 status = HttpStatusCode.NotFound
             )
             call.respond(poi)
         }
-
-
     }
 }
