@@ -4,8 +4,8 @@ on:
   push:
     branches: [ server ]
     paths: 
-      - './ktor-auth-ms/*'
-      - '!./ktor-auth-ms/gradle*'
+      - './ktor-auth-ms/**'
+      - '!./ktor-auth-ms/gradle**'
 jobs:
 
     deploy:
