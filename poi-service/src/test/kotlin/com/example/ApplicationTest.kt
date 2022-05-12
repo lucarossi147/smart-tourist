@@ -10,7 +10,6 @@ import io.ktor.http.*
 import io.ktor.http.ContentType.Application.Json
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.testing.*
-import kotlinx.serialization.decodeFromString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -33,7 +32,7 @@ class ApplicationTest {
 
     private suspend fun addPoi(client: HttpClient, poi: Poi): HttpResponse {
         return client.post("/add") {
-            contentType(ContentType.Application.Json)
+            contentType(Json)
             setBody(poi)
         }
     }
