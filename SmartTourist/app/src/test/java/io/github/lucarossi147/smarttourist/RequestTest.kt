@@ -18,7 +18,7 @@ class RequestTest {
     private val gson = Gson()
 
     private fun generateRandomUsername():String {
-        val stringLength = Random.nextInt(5, 25)
+        val stringLength = Random.nextInt(6, 25)
         val charPool : List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
         return (1..stringLength)
             .map { Random.nextInt(0, charPool.size) }
@@ -41,20 +41,20 @@ class RequestTest {
         }
     }
 
-    @Test
-    fun testSignUp(){
-        val jsonObject = JSONObject()
-        jsonObject.put("username", generateRandomUsername())
-        jsonObject.put("password", "password")
-
-        runBlocking {
-            val result = client.post("https://smarttourist22-cup3lszycq-uc.a.run.app/signup"){
-                contentType(ContentType.Application.Json)
-                setBody(jsonObject.toString())
-            }
-            assert(result.status.value == 201)
-        }
-    }
+//    @Test
+//    fun testSignUp(){
+//        val jsonObject = JSONObject()
+//        jsonObject.put("username", generateRandomUsername())
+//        jsonObject.put("password", "password")
+//
+//        runBlocking {
+//            val result = client.post("https://smarttourist22-cup3lszycq-uc.a.run.app/signup"){
+//                contentType(ContentType.Application.Json)
+//                setBody(jsonObject.toString())
+//            }
+//            assert(result.status.value == 201)
+//        }
+//    }
 
     @Test
     fun testLogin(){
