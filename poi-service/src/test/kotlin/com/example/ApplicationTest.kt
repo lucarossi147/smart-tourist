@@ -2,16 +2,15 @@ package com.example
 
 import com.example.model.Poi
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.http.ContentType.Application.Json
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.testing.*
-import kotlinx.coroutines.GlobalScope.coroutineContext
 import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
-import kotlin.coroutines.coroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -20,7 +19,7 @@ TODO Fare un metodo per cancellare tutto dal db una volta finiti i test
  */
 class ApplicationTest {
 
-    val rand = (0..1000).random()
+    private val rand = (0..1000).random()
 
     private fun randomPoi() = Poi(
         rand,
@@ -54,7 +53,7 @@ class ApplicationTest {
     }
 
     /**
-     * Try to add Poi with the same name and id
+     * Try to add Poi with the same id
      */
     @Test
     fun addPoiWithError() = testApplication {
@@ -86,12 +85,11 @@ class ApplicationTest {
             parameter("id", "${poi.id}")
         }
 
+        val resultPoi : Poi = response.body()
 
-        print(response.bodyAsText())
-        //val resultPoi = Json.decodeFromString<Poi>(response.bodyAsText())
         assertEquals(HttpStatusCode.OK, response.status)
-        //assertEquals(poi.id, resultPoi.id)
-        //assertEquals(poi.name, resultPoi.name)
+        assertEquals(poi.id, resultPoi.id)
+        assertEquals(poi.name, resultPoi.name)
     }
 
     @Test

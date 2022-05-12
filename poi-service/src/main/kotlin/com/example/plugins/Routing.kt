@@ -35,15 +35,17 @@ fun Application.configureRouting() {
          * Receive an id and returns the Poi with the same id if exist, 404 otherwise
          */
         get("/{id?}"){
-            val id = call.parameters["id"] ?: return@get call.respondText(
+            val idString = call.parameters["id"] ?: return@get call.respondText(
                 "Missing id of the Poi",
                 status = HttpStatusCode.BadRequest
             )
+            val id = Integer.parseInt(idString)
 
-            val poi = col.findOne(Poi::name eq id) ?: return@get call.respondText(
+            val poi = col.findOne(Poi::id eq id) ?: return@get call.respondText(
                 "No poi with this id: $id",
                 status = HttpStatusCode.NotFound
             )
+
             call.respond(poi)
         }
     }
