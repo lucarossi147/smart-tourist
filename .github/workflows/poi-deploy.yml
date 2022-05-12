@@ -4,8 +4,9 @@ on:
   push:
     branches: [ server ]
     paths: 
-      - './poi-service/**'
-      - '!./poi-service/gradle**'
+      - '**.kt'
+      - '**.yml'
+      - '**gradle**'
 jobs:
 
     deploy:
