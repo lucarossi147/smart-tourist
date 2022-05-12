@@ -1,6 +1,5 @@
 package io.github.lucarossi147.smarttourist.ui.login
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -9,8 +8,6 @@ import io.github.lucarossi147.smarttourist.data.LoginRepository
 import io.github.lucarossi147.smarttourist.data.Result
 
 import io.github.lucarossi147.smarttourist.R
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel() {
 
@@ -22,17 +19,13 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
 
     suspend fun login(username: String, password: String) {
         // can be launched in a separate asynchronous job
-        Log.d("REQUEST", "launch runBlocking code in viewmodel")
         val result = loginRepository.login(username, password)
-
         if (result is Result.Success) {
             _loginResult.value =
                 LoginResult(success = LoggedInUserView(displayName = result.data.username))
         } else {
             _loginResult.value = LoginResult(error = R.string.login_failed)
         }
-        Log.d("REQUEST", "exited from ViewModel")
-
     }
 
     fun loginDataChanged(username: String, password: String) {
