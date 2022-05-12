@@ -3,8 +3,9 @@ name: Deploy AUTH to Cloud Run
 on:
   push:
     branches: [ server ]
-    paths: './ktor-auth-ms/*'
-    paths-ignore: './ktor-auth-ms/gradle*'
+    paths: 
+      - './ktor-auth-ms/*'
+      - '!./ktor-auth-ms/gradle*'
 jobs:
 
     deploy:

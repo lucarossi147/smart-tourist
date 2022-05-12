@@ -3,8 +3,9 @@ name: Deploy POI to Cloud Run
 on:
   push:
     branches: [ server ]
-    paths: './poi-service/*'
-    paths-ignore: './poi-service/gradle*'
+    paths: 
+      - './poi-service/*'
+      - '!./poi-service/gradle*'
 jobs:
 
     deploy:

@@ -16,6 +16,9 @@ fun Application.configureRouting() {
 
     routing {
 
+        /**
+         * Receive a Poi from POST request and add it to database if no Poi with this id exist, 400 otherwise
+         */
         post("/add") {
             val poi = call.receive<Poi>()
             if(col.findOne(Poi::id eq poi.id) != null){
@@ -28,6 +31,9 @@ fun Application.configureRouting() {
             }
         }
 
+        /**
+         * Receive an id and returns the Poi with the same id if exist, 404 otherwise
+         */
         get("/{id?}"){
             val id = call.parameters["id"] ?: return@get call.respondText(
                 "Missing id of the Poi",

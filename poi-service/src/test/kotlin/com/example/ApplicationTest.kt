@@ -8,8 +8,10 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.testing.*
+import kotlinx.coroutines.GlobalScope.coroutineContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import kotlin.coroutines.coroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -25,7 +27,7 @@ class ApplicationTest {
         "poiname$rand",
         "city$rand",
         "desc$rand",
-        (rand.toFloat() % 90) - 90 ,
+        (rand.toFloat() % 90) - 90,
         (rand.toFloat() % 180) - 180,
         emptyList()
     )
@@ -71,12 +73,20 @@ class ApplicationTest {
 
     @Test
     fun getExistingPoi() = testApplication {
+        val client = createClient {
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+
         val poi = randomPoi()
         addPoi(client, poi)
 
-        val response = client.get("/"){
+        val response = client.get("/") {
             parameter("id", "${poi.id}")
         }
+
+
         print(response.bodyAsText())
         //val resultPoi = Json.decodeFromString<Poi>(response.bodyAsText())
         assertEquals(HttpStatusCode.OK, response.status)
@@ -86,7 +96,7 @@ class ApplicationTest {
 
     @Test
     fun getWithErrors() = testApplication {
-        val response = client.get("/"){
+        val response = client.get("/") {
             parameter("id", "12345678")
         }
         print(response.bodyAsText())

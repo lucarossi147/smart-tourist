@@ -38,6 +38,9 @@ dependencies {
     //For making request
     implementation("io.ktor:ktor-client-java:$ktor_version")
 
+    //For html responses
+    implementation("io.ktor:ktor-server-html-builder:$ktor_version")
+
     //From ktor docs
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
     implementation("io.ktor:ktor-server-core:$ktor_version")

@@ -18,6 +18,11 @@ import org.litote.kmongo.eq
 import org.litote.kmongo.findOne
 import org.litote.kmongo.getCollection
 import io.ktor.client.statement.*
+import io.ktor.server.html.*
+import kotlinx.html.body
+import kotlinx.html.h1
+import kotlinx.html.head
+import kotlinx.html.title
 
 fun Application.configureRouting(config: JWTConfig) {
 
@@ -30,6 +35,17 @@ fun Application.configureRouting(config: JWTConfig) {
 
     routing {
         get("/") {
+
+            call.respondHtml(HttpStatusCode.OK){
+                head {
+                    title { +"smartTourist" }
+                }
+                body {
+                    h1 {
+                        +"Hi, this application is accessible only from Mobile, download the app!"
+                    }
+                }
+            }
             call.respondText(
                 """
                 <html>
