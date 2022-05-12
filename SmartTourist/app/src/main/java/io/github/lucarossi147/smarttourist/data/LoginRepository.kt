@@ -1,5 +1,6 @@
 package io.github.lucarossi147.smarttourist.data
 
+import android.util.Log
 import io.github.lucarossi147.smarttourist.data.model.LoggedInUser
 
 /**
@@ -27,14 +28,16 @@ class LoginRepository(val dataSource: LoginDataSource) {
         dataSource.logout()
     }
 
-    fun login(username: String, password: String): Result<LoggedInUser> {
+    suspend fun login(username: String, password: String): Result<LoggedInUser> {
         // handle login
+        Log.d("REQUEST", "login in LoginRepository")
         val result = dataSource.login(username, password)
 
         if (result is Result.Success) {
             setLoggedInUser(result.data)
         }
-
+        Log.d("REQUEST", "return from login in LoginRepository")
+        Log.d("REQUEST", result.toString())
         return result
     }
 

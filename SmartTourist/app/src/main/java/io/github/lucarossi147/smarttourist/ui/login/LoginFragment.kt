@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +20,8 @@ import androidx.navigation.findNavController
 import io.github.lucarossi147.smarttourist.databinding.FragmentLoginBinding
 
 import io.github.lucarossi147.smarttourist.R
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class LoginFragment : Fragment() {
 
@@ -96,29 +99,38 @@ class LoginFragment : Fragment() {
         passwordEditText.addTextChangedListener(afterTextChangedListener)
         passwordEditText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                loginViewModel.login(
-                    usernameEditText.text.toString(),
-                    passwordEditText.text.toString()
-                )
+                runBlocking {
+                    launch {
+                        loginViewModel.login(
+                            usernameEditText.text.toString(),
+                            passwordEditText.text.toString()
+                        )
+                    }
+                }
             }
             false
         }
 
         loginButton.setOnClickListener {
             loadingProgressBar.visibility = View.VISIBLE
-            loginViewModel.login(
-                usernameEditText.text.toString(),
-                passwordEditText.text.toString()
-            )
+            runBlocking {
+                launch {
+                    loginViewModel.login(
+                        usernameEditText.text.toString(),
+                        passwordEditText.text.toString()
+                    )
+                }
+            }
         }
     }
 
     private fun updateUiWithUser(model: LoggedInUserView) {
-        view?.findNavController()?.navigate(R.id.mapsFragment)
         val welcome = getString(R.string.welcome) + model.displayName
         // TODO : initiate successful logged in experience
         val appContext = context?.applicationContext ?: return
         Toast.makeText(appContext, welcome, Toast.LENGTH_LONG).show()
+        Log.d("REQUEST", "changing fragment")
+        view?.findNavController()?.navigate(R.id.mapsFragment)
     }
 
     private fun showLoginFailed(@StringRes errorString: Int) {
