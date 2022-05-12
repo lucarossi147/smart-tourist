@@ -46,20 +46,6 @@ fun Application.configureRouting(config: JWTConfig) {
                     }
                 }
             }
-            call.respondText(
-                """
-                <html>
-                <head>
-                <title>
-                    Smart tourist App
-                </title>
-                </head>
-                <body>
-                <h4>Hii, this is Smart tourist app. Unluckily, this is accessible only from mobile. Download the app!</h4> 
-                </body>
-                </html>
-            """.trimIndent()
-            )
         }
         post("/login") {
             val user = call.receive<User>()
