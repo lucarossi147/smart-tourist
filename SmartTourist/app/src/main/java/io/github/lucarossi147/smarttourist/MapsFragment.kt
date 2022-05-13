@@ -1,37 +1,214 @@
 package io.github.lucarossi147.smarttourist
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Context
+import android.content.IntentSender
+import android.content.pm.PackageManager
+import android.location.Location
+import android.os.Build
 import androidx.fragment.app.Fragment
 
 import android.os.Bundle
+import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
+import androidx.compose.ui.graphics.Color
+import androidx.core.content.ContextCompat
 import androidx.navigation.findNavController
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.*
+import com.google.android.gms.location.SettingsClient
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
+import com.google.android.gms.tasks.Task
+import io.github.lucarossi147.smarttourist.data.model.Category
+import io.github.lucarossi147.smarttourist.data.model.PointOfInterest
+
+private const val REQUESTING_LOCATION_UPDATES_KEY: String = "prove"
+private const val REQUEST_CHECK_SETTINGS = 0x1
+
+typealias POI = PointOfInterest
 
 class MapsFragment : Fragment() {
 
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private var mMap: GoogleMap? = null
+    private var myMarker: Marker? = null
+    private lateinit var locationPermissionRequest: ActivityResultLauncher<Array<String>>
+    private var pointOfInterests:Set<PointOfInterest> = setOf(
+        POI("Central Park", LatLng(40.771133,-73.974187), Category.NATURE, visited = true),
+        POI("Empire State Building", LatLng(40.748817,-73.985428), Category.FUN),
+        POI("Broadway", LatLng(40.790886, -73.974709), Category.CULTURE)
+    )
+    private var markers: Set<Marker?> = emptySet()
+
+    private lateinit var locationCallback: LocationCallback
+    private val locationRequest = LocationRequest.create().apply {
+        interval = 3000
+        fastestInterval = 1500
+        priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+    }
+
+    // TODO: modify this to check if the location is being tracked or not
+    private var requestingLocationUpdates = true
+    private val builder = LocationSettingsRequest.Builder()
+        .addLocationRequest(locationRequest)
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        val activity:Activity = activity?:return
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(activity)
+
+        locationPermissionRequest = registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            when {
+                permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
+                    Log.i("PERMISSION", "FINE LOCATION")
+                }
+                permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
+                    Log.i("PERMISSION", "COARSE LOCATION")
+                }
+                else -> {
+                    Log.i("PERMISSION", "NO PERMISSION GRANTED")
+                }
+            }
+        }
+        // TODO: CHECK IF GPS IS ACTIVE
+        requestPermission()
+        locationCallback = object :LocationCallback() {
+            override fun onLocationResult(p0: LocationResult) {
+                super.onLocationResult(p0)
+                for (l in p0.locations) {
+                    //update UI with location data
+                    if (myMarker == null) {
+                        myMarker = mMap?.addMarker(MarkerOptions()
+                            .position(LatLng(l.latitude,l.longitude))
+                            .title("You are here!"))
+                    } else {
+                        myMarker?.position = LatLng(l.latitude,l.longitude)
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        stopLocationUpdates()
+    }
+
+    private fun stopLocationUpdates() {
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (requestingLocationUpdates) startLocationUpdates()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY, requestingLocationUpdates)
+        super.onSaveInstanceState(outState)
+    }
+
+    private fun requestPermission() {
+        locationPermissionRequest.launch(arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION))
+    }
+
+    private fun updateValuesFromBundle( savedInstanceState: Bundle?) {
+        savedInstanceState ?: return
+
+        // Update the value of requestingLocationUpdates from the Bundle.
+        if (savedInstanceState.keySet().contains(REQUESTING_LOCATION_UPDATES_KEY)) {
+            requestingLocationUpdates = savedInstanceState.getBoolean(
+                REQUESTING_LOCATION_UPDATES_KEY)
+        }
+
+        // ...
+        // Update UI to match restored state
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun startLocationUpdates() {
+        fusedLocationClient.requestLocationUpdates(locationRequest,
+            locationCallback,
+            Looper.getMainLooper())
+    }
+
+
+    @SuppressLint("MissingPermission")
     private val callback = OnMapReadyCallback { googleMap ->
-        /**
-         * Manipulates the map once available.
-         * This callback is triggered when the map is ready to be used.
-         * This is where we can add markers or lines, add listeners or move the camera.
-         * In this case, we just add a marker near Sydney, Australia.
-         * If Google Play services is not installed on the device, the user will be prompted to
-         * install it inside the SupportMapFragment. This method will only be triggered once the
-         * user has installed Google Play services and returned to the app.
-         */
-        val sydney = LatLng(-34.0, 151.0)
-        googleMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+        mMap = googleMap
+        val activity: Activity = activity?: return@OnMapReadyCallback
+        val context: Context = context?: return@OnMapReadyCallback
+        mMap = googleMap
+        markers = pointOfInterests
+            .map {
+            mMap?.addMarker(MarkerOptions()
+                .position(it.pos)
+                .title(it.name)
+                .icon(
+                    when (it.visited) {
+                        true -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)
+                        false -> when (it.category) {
+                            Category.FUN -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN)
+                            Category.CULTURE -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)
+                            Category.NATURE -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
+                        }
+                    }))
+        }.toSet()
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            requestPermission()
+        }
+
+        fusedLocationClient.lastLocation
+            .addOnSuccessListener { location : Location? ->
+                // Got last known location. In some rare situations this can be null.
+                val myPos = LatLng(location?.latitude?:40.730610, location?.longitude?: -73.935242)
+                myMarker = mMap?.addMarker(MarkerOptions().position(myPos).title("You are here!"))
+                mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(myPos, 14.0F))
+
+                val client: SettingsClient = LocationServices.getSettingsClient(activity)
+                val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
+
+                task.addOnSuccessListener { locationSettingsResponse ->
+                    // All location settings are satisfied. The client can initialize
+                    // location requests here.
+                    // ...
+                }
+
+                task.addOnFailureListener { exception ->
+                    if (exception is ResolvableApiException){
+                        // Location settings are not satisfied, but this can be fixed
+                        // by showing the user a dialog.
+                        try {
+                            // Show the dialog by calling startResolutionForResult(),
+                            // and check the result in onActivityResult().
+                            exception.startResolutionForResult(activity,
+                                REQUEST_CHECK_SETTINGS)
+                        } catch (sendEx: IntentSender.SendIntentException) {
+                            // Ignore the error.
+                        }
+                    }
+                }
+            }
     }
 
     override fun onCreateView(
@@ -52,3 +229,4 @@ class MapsFragment : Fragment() {
         }
     }
 }
+

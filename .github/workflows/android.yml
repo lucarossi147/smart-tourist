@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - android_app
+    tags:
+      - 'v*'
 
 jobs:
   build: 

@@ -11,14 +11,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.navigation.findNavController
 import io.github.lucarossi147.smarttourist.databinding.FragmentLoginBinding
 
 import io.github.lucarossi147.smarttourist.R
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 class LoginFragment : Fragment() {
 
@@ -96,29 +97,36 @@ class LoginFragment : Fragment() {
         passwordEditText.addTextChangedListener(afterTextChangedListener)
         passwordEditText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                loginViewModel.login(
-                    usernameEditText.text.toString(),
-                    passwordEditText.text.toString()
-                )
+                runBlocking {
+                    launch {
+                        loginViewModel.login(
+                            usernameEditText.text.toString(),
+                            passwordEditText.text.toString()
+                        )
+                    }
+                }
             }
             false
         }
 
         loginButton.setOnClickListener {
             loadingProgressBar.visibility = View.VISIBLE
-            loginViewModel.login(
-                usernameEditText.text.toString(),
-                passwordEditText.text.toString()
-            )
+            runBlocking {
+                launch {
+                    loginViewModel.login(
+                        usernameEditText.text.toString(),
+                        passwordEditText.text.toString()
+                    )
+                }
+            }
         }
     }
 
     private fun updateUiWithUser(model: LoggedInUserView) {
-        view?.findNavController()?.navigate(R.id.mapsFragment)
         val welcome = getString(R.string.welcome) + model.displayName
-        // TODO : initiate successful logged in experience
         val appContext = context?.applicationContext ?: return
         Toast.makeText(appContext, welcome, Toast.LENGTH_LONG).show()
+        view?.findNavController()?.navigate(R.id.mapsFragment)
     }
 
     private fun showLoginFailed(@StringRes errorString: Int) {

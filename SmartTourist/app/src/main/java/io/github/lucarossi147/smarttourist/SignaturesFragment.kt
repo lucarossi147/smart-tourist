@@ -5,16 +5,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
-import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.squareup.picasso.Picasso
 import io.github.lucarossi147.smarttourist.data.model.Signature
-import kotlin.random.Random
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -23,10 +16,10 @@ private const val ARG_PARAM2 = "param2"
 
 /**
  * A simple [Fragment] subclass.
- * Use the [PoiFragment.newInstance] factory method to
+ * Use the [SignaturesFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class PoiFragment : Fragment() {
+class SignaturesFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
@@ -44,36 +37,21 @@ class PoiFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_poi, container, false)
+        return inflater.inflate(R.layout.fragment_signatures, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val tv: TextView = view.findViewById(R.id.poiInfoTextView)
-        //TODO: put in a layout editText and button and show them only if user hasn't signed himself yet
-        // TODO: fetch poi info
-        tv.text = resources.getString(R.string.loremIpsum)
-        val signButton: Button = view.findViewById(R.id.signButton)
-        signButton.setOnClickListener {
-            // TODO: send signature and comment to server
-            view.findNavController().navigate(R.id.mapsFragment)
-        }
-        val goToSignatureButton: Button = view.findViewById(R.id.goToSignaturesButton)
-        goToSignatureButton.setOnClickListener {
-            // TODO: maybe ask to server for signature asyncronously in the onCreate and make
-            //  fragment take a list as argument so user dosen´t have to wait
-            view.findNavController().navigate(R.id.signaturesFragment)
-        }
-        repeat(20){
-            val iv = ImageView(context)
-            val linearLayout: LinearLayout = view.findViewById(R.id.images_linear_layout)
-            linearLayout.addView(iv)
-            val r = Random.nextInt(500)
-            Picasso.get()
-                .load("https://placedog.net/$r")
-                .resize(0, 400)
-                .into(iv)
-        }
+        val signatureRecyclerView: RecyclerView = view.findViewById(R.id.signatureRecyclerView)
+        val signatures = listOf<Signature>(
+            Signature("luca ","Hello, World!"),
+            Signature("schia ","uovo di pasqua"),
+            Signature("massi ","TI DEVI SPAVENTAREEE"),
+            Signature("leo ","*sviene*"),
+            )
+        val signatureAdapter = SignatureAdapter(signatures)
+        signatureRecyclerView.adapter = signatureAdapter
+        signatureRecyclerView.layoutManager = LinearLayoutManager(context)
     }
     companion object {
         /**
@@ -82,12 +60,12 @@ class PoiFragment : Fragment() {
          *
          * @param param1 Parameter 1.
          * @param param2 Parameter 2.
-         * @return A new instance of fragment PoiFragment.
+         * @return A new instance of fragment SignaturesFragment.
          */
         // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
-            PoiFragment().apply {
+            SignaturesFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_PARAM1, param1)
                     putString(ARG_PARAM2, param2)
