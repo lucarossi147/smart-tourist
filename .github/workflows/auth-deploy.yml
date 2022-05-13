@@ -4,7 +4,7 @@ on:
   push:
     branches: [ server ]
     paths: 
-      - './ktor-auth-ms/**/*.kt'
+      - 'ktor-auth-ms/**/*.kt'
       - '**.yml'
 
 jobs:
