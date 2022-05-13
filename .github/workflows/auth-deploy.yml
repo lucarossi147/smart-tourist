@@ -5,6 +5,7 @@ on:
     branches: [ server ]
     paths: 
       - './ktor-auth-ms/**/*.kt'
+      - '**.yml'
 
 jobs:
 
