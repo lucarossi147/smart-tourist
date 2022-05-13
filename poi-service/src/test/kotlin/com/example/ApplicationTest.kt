@@ -31,10 +31,12 @@ class ApplicationTest {
     )
 
     private suspend fun addPoi(client: HttpClient, poi: Poi): HttpResponse {
-        return client.post("/add") {
+        val request = client.post("/add") {
             contentType(Json)
             setBody(poi)
         }
+
+        return request
     }
 
     @Test
@@ -48,7 +50,6 @@ class ApplicationTest {
         val response = addPoi(client, randomPoi())
 
         assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals("Poi correctly inserted", response.bodyAsText())
     }
 
     /**

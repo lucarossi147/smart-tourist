@@ -18,12 +18,23 @@ import org.litote.kmongo.eq
 import org.litote.kmongo.findOne
 import org.litote.kmongo.getCollection
 import io.ktor.client.statement.*
+import io.ktor.http.ContentType.Application.Json
 import io.ktor.server.html.*
 import kotlinx.html.body
 import kotlinx.html.h1
 import kotlinx.html.head
 import kotlinx.html.title
-
+import kotlinx.serialization.Serializable
+@Serializable
+data class Poi(
+    val id: Int,
+    val name: String,
+    val city: String,
+    val desc: String,
+    val lat: Float,
+    val long: Float,
+    val photo: List<String>
+)
 fun Application.configureRouting(config: JWTConfig) {
 
     val configuration: String = "false" //environment.config.property("ktor.deployment.test").getString()
@@ -75,7 +86,7 @@ fun Application.configureRouting(config: JWTConfig) {
                 call.respondText("User with this username already exist", status = HttpStatusCode.BadRequest)
             } else {
                 col.insertOne(user)
-                call.respondText("User correctly inserted", status = HttpStatusCode.Created)
+                call.respond(HttpStatusCode.Created,hashMapOf("token" to config.generateToken(user.username)))
             }
         }
 
@@ -88,8 +99,15 @@ fun Application.configureRouting(config: JWTConfig) {
             }
         }
 
-        suspend fun makeRequest(id: String): HttpResponse {
+        suspend fun proxyGetIdRequest(id: String): HttpResponse {
             return cl.get("https://poi-service-container-cup3lszycq-uc.a.run.app/?id=$id")
+        }
+
+        suspend fun proxyAddPoiRequest(poi: Poi): HttpResponse {
+            return cl.post("https://poi-service-container-cup3lszycq-uc.a.run.app/add"){
+                contentType(Json)
+                setBody(poi)
+            }
         }
 
         /**
@@ -102,11 +120,24 @@ fun Application.configureRouting(config: JWTConfig) {
                 status = HttpStatusCode.BadRequest
             )
 
-            val response = makeRequest(id)
+            val response = proxyGetIdRequest(id)
             call.respond(response.body())
         }
 
+        /**
+         * Request for creating a new Poi
+         */
+        post("/add"){
+            val poi = call.receive<Poi>()
+            val response = proxyAddPoiRequest(poi)
+            call.respond(response.body())
+        }
+
+        /**
+         * All the requests inside this route has to be authenticated
+         */
         authenticate("auth-jwt") {
+
             get("/test-auth") {
                 val principal = call.principal<JWTPrincipal>()
                 val username = principal!!.payload.getClaim("username").asString()

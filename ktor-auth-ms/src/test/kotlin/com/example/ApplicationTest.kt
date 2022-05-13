@@ -2,6 +2,7 @@ package com.example
 
 import com.example.model.User
 import io.ktor.client.*
+import io.ktor.client.engine.java.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -24,6 +25,8 @@ class ApplicationTest {
      * Create a random User with pseudo-random password and username
      */
     private fun createRandomUser(): User =  User("user$rand", "password$rand")
+
+    private val cl = HttpClient(Java)
 
     /**
      * Utility function for the signup of a user
@@ -48,8 +51,7 @@ class ApplicationTest {
         }
         val response = signup(createRandomUser(), client)
 
-        assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals("User correctly inserted", response.bodyAsText())
+        assertEquals(HttpStatusCode.Created, response.status)
     }
 
     /**
@@ -123,5 +125,33 @@ class ApplicationTest {
 
         assertEquals(HttpStatusCode.Unauthorized, responseToBadAuth.status)
         assertEquals(responseToBadAuth.bodyAsText(),"Token is not valid or has expired")
+    }
+
+    @Test
+    fun testPoiRequest() = testApplication {
+        val client = createClient {
+            install(ContentNegotiation){
+                json()
+            }
+        }
+
+
+        val responseToBadAuth = client.get("/test-auth"){
+            bearerAuth("")
+        }
+
+        assertEquals(HttpStatusCode.Unauthorized, responseToBadAuth.status)
+        assertEquals(responseToBadAuth.bodyAsText(),"Token is not valid or has expired")
+    }
+
+    /**
+     * TODO testare
+     */
+    suspend fun proxyRequest(parameters: HashMap<String, String>): HttpResponse {
+        var params : String = ""
+        for (p in parameters.keys){
+            params += "${p}=${parameters[p]}&"
+        }
+        return cl.get("https://poi-service-container-cup3lszycq-uc.a.run.app/?$params")
     }
 }
