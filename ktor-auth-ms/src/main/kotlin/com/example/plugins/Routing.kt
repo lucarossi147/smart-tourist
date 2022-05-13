@@ -4,7 +4,7 @@ import com.example.JWTConfig
 import com.example.model.User
 import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.engine.java.*
+import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.server.routing.*
 import io.ktor.http.*
@@ -13,18 +13,16 @@ import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
 import io.ktor.server.request.*
-import org.litote.kmongo.KMongo
-import org.litote.kmongo.eq
-import org.litote.kmongo.findOne
-import org.litote.kmongo.getCollection
+import org.litote.kmongo.*
 import io.ktor.client.statement.*
 import io.ktor.http.ContentType.Application.Json
 import io.ktor.server.html.*
-import kotlinx.html.body
-import kotlinx.html.h1
-import kotlinx.html.head
-import kotlinx.html.title
+import kotlinx.html.*
 import kotlinx.serialization.Serializable
+import io.ktor.serialization.kotlinx.json.*
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+
+
 @Serializable
 data class Poi(
     val id: Int,
@@ -41,12 +39,15 @@ fun Application.configureRouting(config: JWTConfig) {
     val password = "Nnmah8cfhYVDiuIu" //environment.config.property("ktor.deployment.mongodbpassword").getString()
     val dbName = if (configuration == "false") "test" else "production"
     val client = KMongo.createClient("mongodb+srv://smart-tourism:$password@cluster0.2cwaw.mongodb.net")
-    val cl = HttpClient(Java)
+    val cl = HttpClient(CIO){
+        install(ContentNegotiation){
+            json()
+        }
+    }
     val col = client.getDatabase(dbName).getCollection<User>()
 
     routing {
         get("/") {
-
             call.respondHtml(HttpStatusCode.OK){
                 head {
                     title { +"smartTourist" }
@@ -58,6 +59,7 @@ fun Application.configureRouting(config: JWTConfig) {
                 }
             }
         }
+
         post("/login") {
             val user = call.receive<User>()
             val userInDb = col.findOne(User::username eq user.username)
@@ -143,7 +145,7 @@ fun Application.configureRouting(config: JWTConfig) {
                 val username = principal!!.payload.getClaim("username").asString()
                 val expiresAt = principal.expiresAt?.time?.minus(System.currentTimeMillis())
 
-                call.respondText("Hello, $username! Token is expired in $expiresAt ms.")
+                call.respondText("Hello, $username! Token will expire in $expiresAt ms.")
             }
         }
     }

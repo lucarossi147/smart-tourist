@@ -35,11 +35,17 @@ dependencies {
     testImplementation("io.ktor:ktor-server-test-host:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlin_version")
 
-    //For making request
+    //For Java engine
     implementation("io.ktor:ktor-client-java:$ktor_version")
 
     //For html responses
     implementation("io.ktor:ktor-server-html-builder:$ktor_version")
+
+    //For CIO engine
+    implementation("io.ktor:ktor-client-cio:$ktor_version")
+
+    //
+    implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
 
     //From ktor docs
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
