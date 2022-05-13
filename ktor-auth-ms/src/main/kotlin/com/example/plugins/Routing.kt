@@ -132,7 +132,8 @@ fun Application.configureRouting(config: JWTConfig) {
         post("/add"){
             val poi = call.receive<Poi>()
             val response = proxyAddPoiRequest(poi)
-            call.respond(response.body())
+            print(response.bodyAsText())
+            call.respond(response.bodyAsText())
         }
 
         /**
