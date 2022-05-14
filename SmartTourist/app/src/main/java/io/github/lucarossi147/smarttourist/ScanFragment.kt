@@ -19,6 +19,7 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.navigation.findNavController
 import com.google.android.gms.maps.model.LatLng
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
@@ -55,7 +56,8 @@ class ScanFragment : Fragment() {
 
         var qr:String by Delegates.observable(""){
             _, _, newValue ->
-            view?.findNavController()?.navigate(R.id.poiFragment)
+            val bundle = bundleOf("poi" to poi)
+            view?.findNavController()?.navigate(R.id.poiFragment, bundle )
         }
     }
 
