@@ -28,7 +28,7 @@
                     android:id="@+id/images_linear_layout"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal"/>
+                    android:orientation="horizontal" />
             </HorizontalScrollView>
 
             <TextView
@@ -48,19 +48,27 @@
                 android:hint="@string/leave_a_message_for_other_people"
                 android:gravity="start|top"
                 android:inputType="textMultiLine"
-                android:padding="@dimen/text_margin" />
+                android:padding="@dimen/text_margin"
+                android:visibility="gone"/>
 
             <Button
                 android:id="@+id/signButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/sign" />
+                android:text="@string/sign"
+                android:visibility="gone" />
 
             <Button
                 android:id="@+id/goToSignaturesButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/check_out_other_signatures" />
+
+            <Button
+                android:id="@+id/backToMapButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/go_back_and_explore_more" />
 
 
         </LinearLayout>
