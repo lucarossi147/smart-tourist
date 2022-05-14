@@ -115,4 +115,5 @@ Ut blandit malesuada tellus, auctor fringilla arcu consectetur ut. Sed vel laore
         "when a user tries to pick up one of cards.\n\n"
     </string>
     <string name="check_out_other_signatures">Check out other signatures!</string>
+    <string name="go_back_and_explore_more">Go back and explore more!</string>
 </resources>

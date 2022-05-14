@@ -46,12 +46,12 @@ class ScanFragment : Fragment() {
     private class QrObservable (val view: View?,) {
         val poi = POI("1","monsampietro morico", LatLng(45.0,45.0),
             pictures = listOf(
-                "https://placedog.net/15",
-                "https://placedog.net/13",
-                "https://placedog.net/14",
-                "https://placedog.net/16",
-                "https://placedog.net/17",
-                "https://placedog.net/18",
+                "https://placedog.net/800",
+                "https://placedog.net/820",
+                "https://placedog.net/840",
+                "https://placedog.net/860",
+                "https://placedog.net/880",
+                "https://placedog.net/900",
                 ),
             category = Category.CULTURE,
             snippet = "I live here",
