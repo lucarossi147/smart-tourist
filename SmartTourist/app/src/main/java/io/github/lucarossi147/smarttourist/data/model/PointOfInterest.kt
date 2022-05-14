@@ -8,6 +8,7 @@ import kotlinx.android.parcel.Parcelize
 data class PointOfInterest(val id: String,
                            val name: String,
                            val pos:LatLng,
+                           val info: String = "",
                            val pictures: List<String> = emptyList(),
                            val category: Category = Category.CULTURE,
                            val snippet: String = "",

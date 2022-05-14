@@ -47,7 +47,6 @@ class PoiFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val tv: TextView = view.findViewById(R.id.poiInfoTextView)
         //TODO: put in a layout editText and button and show them only if user hasn't signed himself yet
-        // TODO: fetch poi info
         tv.text = resources.getString(R.string.loremIpsum)
         val signButton: Button = view.findViewById(R.id.signButton)
         signButton.setOnClickListener {

@@ -45,17 +45,21 @@ class ScanFragment : Fragment() {
 
     private class QrObservable (val view: View?,) {
         val poi = POI("1","monsampietro morico", LatLng(45.0,45.0),
-            listOf(
+            pictures = listOf(
                 "https://placedog.net/15",
                 "https://placedog.net/13",
                 "https://placedog.net/14",
                 "https://placedog.net/16",
                 "https://placedog.net/17",
                 "https://placedog.net/18",
-                ),Category.CULTURE,"I live here", true)
+                ),
+            category = Category.CULTURE,
+            snippet = "I live here",
+            visited = true)
 
         var qr:String by Delegates.observable(""){
             _, _, newValue ->
+            // TODO: deserialize poi from the response and pass it to the fragment
             val bundle = bundleOf("poi" to poi)
             view?.findNavController()?.navigate(R.id.poiFragment, bundle )
         }
