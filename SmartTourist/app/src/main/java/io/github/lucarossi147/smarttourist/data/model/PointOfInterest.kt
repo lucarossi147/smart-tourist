@@ -2,7 +2,7 @@ package io.github.lucarossi147.smarttourist.data.model
 
 import android.os.Parcelable
 import com.google.android.gms.maps.model.LatLng
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class PointOfInterest(val id: String,

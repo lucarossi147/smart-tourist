@@ -9,14 +9,17 @@ import org.junit.Test
 class SerializationTest {
 
     private val poi = POI("1","monsampietro morico", LatLng(45.0,45.0),
-        listOf(
+        pictures = listOf(
             "https://placedog.net/15",
             "https://placedog.net/13",
             "https://placedog.net/14",
             "https://placedog.net/16",
             "https://placedog.net/17",
             "https://placedog.net/18",
-        ), Category.CULTURE,"I live here", true)
+        ),
+        category = Category.CULTURE,
+        snippet = "I live here",
+        visited = true)
     private val serialized = Gson().toJson(poi)
 
     @Test
