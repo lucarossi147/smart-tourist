@@ -20,25 +20,49 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.findNavController
+import com.google.android.gms.maps.model.LatLng
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import io.github.lucarossi147.smarttourist.data.model.Category
 import io.github.lucarossi147.smarttourist.databinding.FragmentScanBinding
-import kotlinx.coroutines.channels.Channel
+import io.ktor.client.*
+import io.ktor.client.engine.android.*
+import io.ktor.client.request.*
+import io.ktor.http.*
+import kotlinx.coroutines.runBlocking
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlin.properties.Delegates
 
 class ScanFragment : Fragment() {
 
-    private val channel = Channel<String>()
     private lateinit var cameraExecutor: ExecutorService
     private lateinit var viewBinding: FragmentScanBinding
     private lateinit var myContext: Context
 
+    private class QrObservable (val view: View?,) {
+        val poi = POI("1","monsampietro morico", LatLng(45.0,45.0),
+            listOf(
+                "https://placedog.net/15",
+                "https://placedog.net/13",
+                "https://placedog.net/14",
+                "https://placedog.net/16",
+                "https://placedog.net/17",
+                "https://placedog.net/18",
+                ),Category.CULTURE,"I live here", true)
+
+        var qr:String by Delegates.observable(""){
+            _, _, newValue ->
+            view?.findNavController()?.navigate(R.id.poiFragment)
+        }
+    }
+
     // TODO: Consider using glider instead of picasso
     // TODO: BUG WITH PERMISSION FIRST TIME USER USES CAMERA
-    private class QrScanner(val view: View?, val channel: Channel<String>) : ImageAnalysis.Analyzer {
+    private class QrScanner(val qrObservable: QrObservable ) : ImageAnalysis.Analyzer {
+        val client = HttpClient(Android)
         override fun analyze(imageProxy: ImageProxy) {
             @androidx.camera.core.ExperimentalGetImage
             val mediaImage = imageProxy.image
@@ -56,22 +80,17 @@ class ScanFragment : Fragment() {
                         for (barcode in barcodes) {
                             // See API reference for complete list of supported types
                             when (barcode.valueType) {
-                                Barcode.TYPE_WIFI -> {
-                                    val ssid = barcode.wifi!!.ssid
-                                    val password = barcode.wifi!!.password
-                                    val type = barcode.wifi!!.encryptionType
-                                }
                                 Barcode.TYPE_URL -> {
-                                    val title = barcode.url!!.title
-                                    val url = barcode.url!!.url
-                                }
-                                else -> {
-                                    val rawValue = barcode.rawValue.orEmpty()
-                                    // TODO: when value is found send to channel
-//                                    if (rawValue.isNotEmpty()){
-//                                        channel.send(rawValue)
-//                                    }
-                                    view?.findNavController()?.navigate(R.id.poiFragment)
+                                    Log.d("Camera", "barcode found")
+//                                    val title = barcode.url!!.title
+                                    val url = barcode.url!!.url?:"none"
+                                    runBlocking {
+                                        Log.d("Camera", "inside runBlocking")
+                                        val res = client.get(url)
+                                        if (res.status.isSuccess()){
+                                            qrObservable.qr = url
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -110,6 +129,7 @@ class ScanFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         viewBinding = FragmentScanBinding.bind(view)
         if (allPermissionsGranted()) {
             startCamera()
@@ -122,7 +142,6 @@ class ScanFragment : Fragment() {
     }
 
     companion object {
-        private const val TAG = "CameraXApp"
         private const val REQUEST_CODE_PERMISSIONS = 10
         private val REQUIRED_PERMISSIONS =
             mutableListOf (
@@ -151,7 +170,7 @@ class ScanFragment : Fragment() {
                 .setBackpressureStrategy(STRATEGY_KEEP_ONLY_LATEST)
                 .build()
                 .also {
-                    it.setAnalyzer(cameraExecutor, QrScanner(view, channel))
+                    it.setAnalyzer(cameraExecutor, QrScanner(QrObservable(view)))
                 }
             // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
@@ -163,7 +182,7 @@ class ScanFragment : Fragment() {
                 cameraProvider.bindToLifecycle(
                     this, cameraSelector, preview, imageAnalyzer)
             } catch(exc: Exception) {
-                Log.e(TAG, "Use case binding failed", exc)
+
             }
         }, ContextCompat.getMainExecutor(myContext))
     }

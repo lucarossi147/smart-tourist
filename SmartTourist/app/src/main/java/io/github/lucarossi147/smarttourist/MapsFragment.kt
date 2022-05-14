@@ -48,9 +48,9 @@ class MapsFragment : Fragment() {
     private var myMarker: Marker? = null
     private lateinit var locationPermissionRequest: ActivityResultLauncher<Array<String>>
     private var pointOfInterests:Set<PointOfInterest> = setOf(
-        POI("Central Park", LatLng(40.771133,-73.974187), Category.NATURE, visited = true),
-        POI("Empire State Building", LatLng(40.748817,-73.985428), Category.FUN),
-        POI("Broadway", LatLng(40.790886, -73.974709), Category.CULTURE)
+        POI(id = "1", name = "Central Park", pos = LatLng(40.771133,-73.974187), category = Category.NATURE, visited = true),
+        POI(id = "3", name = "Empire State Building", pos = LatLng(40.748817,-73.985428), category =  Category.FUN),
+        POI(id = "2", name = "Broadway", pos = LatLng(40.790886, -73.974709), category = Category.CULTURE)
     )
     private var markers: Set<Marker?> = emptySet()
 
@@ -61,7 +61,6 @@ class MapsFragment : Fragment() {
         priority = LocationRequest.PRIORITY_HIGH_ACCURACY
     }
 
-    // TODO: modify this to check if the location is being tracked or not
     private var requestingLocationUpdates = true
     private val builder = LocationSettingsRequest.Builder()
         .addLocationRequest(locationRequest)
@@ -88,17 +87,18 @@ class MapsFragment : Fragment() {
                 }
             }
         }
-        // TODO: CHECK IF GPS IS ACTIVE
         requestPermission()
         locationCallback = object :LocationCallback() {
             override fun onLocationResult(p0: LocationResult) {
                 super.onLocationResult(p0)
                 for (l in p0.locations) {
+                    val pos = LatLng(l.latitude,l.longitude)
                     //update UI with location data
                     if (myMarker == null) {
                         myMarker = mMap?.addMarker(MarkerOptions()
-                            .position(LatLng(l.latitude,l.longitude))
+                            .position(pos)
                             .title("You are here!"))
+                        mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 14.0F))
                     } else {
                         myMarker?.position = LatLng(l.latitude,l.longitude)
                     }
@@ -182,7 +182,9 @@ class MapsFragment : Fragment() {
             .addOnSuccessListener { location : Location? ->
                 // Got last known location. In some rare situations this can be null.
                 val myPos = LatLng(location?.latitude?:40.730610, location?.longitude?: -73.935242)
-                myMarker = mMap?.addMarker(MarkerOptions().position(myPos).title("You are here!"))
+                if (location!= null) {
+                    myMarker = mMap?.addMarker(MarkerOptions().position(myPos).title("You are here!"))
+                }
                 mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(myPos, 14.0F))
 
                 val client: SettingsClient = LocationServices.getSettingsClient(activity)
