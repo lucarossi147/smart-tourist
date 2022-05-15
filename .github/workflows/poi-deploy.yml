@@ -4,7 +4,7 @@ on:
   push:
     branches: [ server ]
     paths: 
-      - 'poi-service/**/*.kt'
+      - 'poi-ms/**/*.kt'
       - '**.yml'
 
 jobs:
@@ -30,7 +30,7 @@ jobs:
           uses: actions/checkout@v2
 
         - name: Build Docker image
-          run: docker build ./poi-service/ -t $IMAGE_NAME
+          run: docker build ./poi-ms/ -t $IMAGE_NAME
 
         - name: Push Docker image
           run: docker push $IMAGE_NAME

@@ -1,19 +1,19 @@
-name: Deploy AUTH to Cloud Run
+name: Deploy GAME to Cloud Run
 
 on:
   push:
     branches: [ server ]
     paths: 
-      - 'auth-ms/**/*.kt'
+      - 'game-ms/**/*.kt'
       - '**.yml'
 
 jobs:
 
     deploy:
-        name: Deploy Auth service
+        name: Deploy Game service
         runs-on: ubuntu-latest
         env:
-          IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_APP_NAME }}
+          IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_GAME_NAME }}
         steps:
 
         - name: Login
@@ -30,7 +30,7 @@ jobs:
           uses: actions/checkout@v2
 
         - name: Build Docker image
-          run: docker build ./auth-ms/ -t $IMAGE_NAME
+          run: docker build ./game-ms/ -t $IMAGE_NAME
 
         - name: Push Docker image
           run: docker push $IMAGE_NAME
