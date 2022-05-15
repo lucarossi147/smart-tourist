@@ -5,7 +5,8 @@ on:
     branches: [ server ]
     paths: 
       - 'auth-ms/**/*.kt'
-      - '**.yml'
+      - 'auth-ms/build.gradle.kts'
+      - '.github/auth-deploy.yml'
 
 jobs:
 
