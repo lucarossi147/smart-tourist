@@ -6,7 +6,7 @@ on:
     paths: 
       - 'auth-ms/**/*.kt'
       - 'auth-ms/build.gradle.kts'
-      - '.github/auth-deploy.yml'
+      - '.github/workflows/auth-deploy.yml'
 
 jobs:
 
