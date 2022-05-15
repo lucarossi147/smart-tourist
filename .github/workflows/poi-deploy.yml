@@ -5,7 +5,8 @@ on:
     branches: [ server ]
     paths: 
       - 'poi-ms/**/*.kt'
-      - '**.yml'
+      - 'poi-ms/build.gradle.kts'
+      - '.github/workflows/poi-deploy.yml'
 
 jobs:
 
