@@ -48,7 +48,7 @@ class RequestTest {
 //        jsonObject.put("password", "password")
 //
 //        runBlocking {
-//            val result = client.post("https://smarttourist22-cup3lszycq-uc.a.run.app/signup"){
+//            val result = client.post(Constants.AUTH_URL+"signup"){
 //                contentType(ContentType.Application.Json)
 //                setBody(jsonObject.toString())
 //            }
@@ -63,7 +63,7 @@ class RequestTest {
         jsonObject.put("password", "password")
 
         runBlocking {
-            val result = client.post("https://smarttourist22-cup3lszycq-uc.a.run.app/login"){
+            val result = client.post(Constants.AUTH_URL+"login"){
                 contentType(ContentType.Application.Json)
                 setBody(jsonObject.toString())
             }
@@ -81,7 +81,7 @@ class RequestTest {
         jsonObject.put("password", "wrong password")
 
         runBlocking {
-            val result = client.post("https://smarttourist22-cup3lszycq-uc.a.run.app/login"){
+            val result = client.post(Constants.AUTH_URL+"login"){
                 contentType(ContentType.Application.Json)
                 setBody(jsonObject.toString())
             }

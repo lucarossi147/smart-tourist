@@ -34,6 +34,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.Task
 import io.github.lucarossi147.smarttourist.data.model.Category
+import io.github.lucarossi147.smarttourist.data.model.City
 import io.github.lucarossi147.smarttourist.data.model.PointOfInterest
 
 private const val REQUESTING_LOCATION_UPDATES_KEY: String = "prove"
@@ -47,10 +48,11 @@ class MapsFragment : Fragment() {
     private var mMap: GoogleMap? = null
     private var myMarker: Marker? = null
     private lateinit var locationPermissionRequest: ActivityResultLauncher<Array<String>>
+    private val city = City("idNewYork","New York", 40.730610, -73.935242)
     private var pointOfInterests:Set<PointOfInterest> = setOf(
-        POI(id = "1", name = "Central Park", pos = LatLng(40.771133,-73.974187), category = Category.NATURE, visited = true),
-        POI(id = "3", name = "Empire State Building", pos = LatLng(40.748817,-73.985428), category =  Category.FUN),
-        POI(id = "2", name = "Broadway", pos = LatLng(40.790886, -73.974709), category = Category.CULTURE)
+        POI(id = "1", name = "Central Park", lat = 40.771133, lng =-73.974187, city = city, category = Category.NATURE, visited = true),
+        POI(id = "3", name = "Empire State Building", lat = 40.748817, lng =-73.985428, city = city, category =  Category.FUN),
+        POI(id = "2", name = "Broadway", lat =40.790886, lng = -73.974709, city = city, category = Category.CULTURE)
     )
     private var markers: Set<Marker?> = emptySet()
 
@@ -162,7 +164,7 @@ class MapsFragment : Fragment() {
         markers = pointOfInterests
             .map {
             mMap?.addMarker(MarkerOptions()
-                .position(it.pos)
+                .position(LatLng(it.lat,it.lng))
                 .title(it.name)
                 .icon(
                     when (it.visited) {
