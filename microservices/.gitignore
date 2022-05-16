@@ -1,4 +1,6 @@
 ../.idea
+auth-ms/**.http
+auth-ms/**.json
 auth-ms/.gradle
 poi-ms/.gradle
 game-ms/.gradle
