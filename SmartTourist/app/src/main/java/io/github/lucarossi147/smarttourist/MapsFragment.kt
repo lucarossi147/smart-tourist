@@ -20,7 +20,6 @@ import android.widget.Button
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.compose.ui.graphics.Color
 import androidx.core.content.ContextCompat
 import androidx.navigation.findNavController
 import com.google.android.gms.common.api.ResolvableApiException
@@ -35,12 +34,10 @@ import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.Task
 import io.github.lucarossi147.smarttourist.data.model.Category
 import io.github.lucarossi147.smarttourist.data.model.City
-import io.github.lucarossi147.smarttourist.data.model.PointOfInterest
+import io.github.lucarossi147.smarttourist.data.model.POI
 
 private const val REQUESTING_LOCATION_UPDATES_KEY: String = "prove"
 private const val REQUEST_CHECK_SETTINGS = 0x1
-
-typealias POI = PointOfInterest
 
 class MapsFragment : Fragment() {
 
@@ -49,7 +46,7 @@ class MapsFragment : Fragment() {
     private var myMarker: Marker? = null
     private lateinit var locationPermissionRequest: ActivityResultLauncher<Array<String>>
     private val city = City("idNewYork","New York", 40.730610, -73.935242)
-    private var pointOfInterests:Set<PointOfInterest> = setOf(
+    private var POIS:Set<POI> = setOf(
         POI(id = "1", name = "Central Park", lat = 40.771133, lng =-73.974187, city = city, category = Category.NATURE, visited = true),
         POI(id = "3", name = "Empire State Building", lat = 40.748817, lng =-73.985428, city = city, category =  Category.FUN),
         POI(id = "2", name = "Broadway", lat =40.790886, lng = -73.974709, city = city, category = Category.CULTURE)
@@ -161,7 +158,7 @@ class MapsFragment : Fragment() {
         val activity: Activity = activity?: return@OnMapReadyCallback
         val context: Context = context?: return@OnMapReadyCallback
         mMap = googleMap
-        markers = pointOfInterests
+        markers = POIS
             .map {
             mMap?.addMarker(MarkerOptions()
                 .position(LatLng(it.lat,it.lng))

@@ -21,13 +21,13 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.navigation.findNavController
-import com.google.android.gms.maps.model.LatLng
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import io.github.lucarossi147.smarttourist.data.model.Category
 import io.github.lucarossi147.smarttourist.data.model.City
+import io.github.lucarossi147.smarttourist.data.model.POI
 import io.github.lucarossi147.smarttourist.databinding.FragmentScanBinding
 import io.ktor.client.*
 import io.ktor.client.engine.android.*

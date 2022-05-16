@@ -1,25 +1,18 @@
 package io.github.lucarossi147.smarttourist
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.core.view.setPadding
 import androidx.navigation.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
-import io.github.lucarossi147.smarttourist.data.model.Signature
-import io.github.lucarossi147.smarttourist.data.model.Token
+import io.github.lucarossi147.smarttourist.data.model.POI
 import io.ktor.client.*
 import io.ktor.client.engine.android.*
-import io.ktor.client.request.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import kotlin.random.Random
 
 private const val ARG_POI = "poi"
 

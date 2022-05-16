@@ -3,7 +3,7 @@ package io.github.lucarossi147.smarttourist
 import com.google.gson.Gson
 import io.github.lucarossi147.smarttourist.data.model.Category
 import io.github.lucarossi147.smarttourist.data.model.City
-import io.github.lucarossi147.smarttourist.data.model.PointOfInterest
+import io.github.lucarossi147.smarttourist.data.model.POI
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -34,7 +34,7 @@ class SerializationTest {
 
     @Test
     fun testPOIDeserialization(){
-        val deserialized:POI = Gson().fromJson(serialized, PointOfInterest::class.java)
+        val deserialized:POI = Gson().fromJson(serialized, POI::class.java)
         assertEquals(poi, deserialized)
     }
 
