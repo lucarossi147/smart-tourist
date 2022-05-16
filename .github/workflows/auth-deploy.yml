@@ -4,8 +4,8 @@ on:
   push:
     branches: [ server ]
     paths: 
-      - 'auth-ms/**/*.kt'
-      - 'auth-ms/build.gradle.kts'
+      - 'microservices/auth-ms/**/*.kt'
+      - 'microservices/auth-ms/build.gradle.kts'
       - '.github/workflows/auth-deploy.yml'
 
 jobs:
@@ -31,7 +31,7 @@ jobs:
           uses: actions/checkout@v2
 
         - name: Build Docker image
-          run: docker build ./auth-ms/ -t $IMAGE_NAME
+          run: docker build ./microservices/auth-ms/ -t $IMAGE_NAME
 
         - name: Push Docker image
           run: docker push $IMAGE_NAME
