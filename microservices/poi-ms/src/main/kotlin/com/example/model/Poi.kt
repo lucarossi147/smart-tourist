@@ -6,12 +6,14 @@ import kotlinx.serialization.Serializable
 data class Poi(
     val id: Int,
     val name: String,
-    val city: String,
-    val desc: String,
+    val city: City,
+    val info: String,
     val lat: Float,
-    val long: Float,
-    val photo: List<String>
+    val lng: Float,
+    val pictures: List<String>
 )
+
+
 
 /*
 {

@@ -1,5 +1,6 @@
 package com.example
 
+import com.example.model.City
 import com.example.model.Poi
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -21,10 +22,17 @@ class ApplicationTest {
 
     private val rand = (0..1000).random()
 
+    private fun randomeCity() = City(
+        rand,
+        "cityname$rand",
+        (rand.toFloat() % 90) - 90,
+        (rand.toFloat() % 180) - 180,
+
+    )
     private fun randomPoi() = Poi(
         rand,
         "poiname$rand",
-        "city$rand",
+        randomeCity(),
         "desc$rand",
         (rand.toFloat() % 90) - 90,
         (rand.toFloat() % 180) - 180,
