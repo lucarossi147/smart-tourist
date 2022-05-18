@@ -1,6 +1,6 @@
 package com.example.model
 
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.*
 
 @Serializable
-data class User(val username: String, val password: String)
+data class User(@Contextual val _id: String, val username: String, val password: String)

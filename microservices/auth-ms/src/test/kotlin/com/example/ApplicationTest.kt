@@ -11,6 +11,7 @@ import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.testing.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
+import org.bson.types.ObjectId
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -24,7 +25,7 @@ class ApplicationTest {
     /**
      * Create a random User with pseudo-random password and username
      */
-    private fun createRandomUser(): User =  User("user$rand", "password$rand")
+    private fun createRandomUser(): User =  User( ObjectId().toString(),"user$rand", "password$rand")
 
     private val cl = HttpClient(Java)
 
