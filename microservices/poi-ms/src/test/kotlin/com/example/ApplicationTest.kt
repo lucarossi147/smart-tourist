@@ -16,10 +16,6 @@ import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/*
-TODO Fare un metodo per cancellare tutto dal db una volta finiti i test,
- forse si può fare con delle action in modo da pulire anche gli utenti in test?
- */
 class ApplicationTest {
 
     private val rand = (0..1000).random()
@@ -39,7 +35,7 @@ class ApplicationTest {
         randomCity(),
     )
 
-    val randomPoi = randomPoi()
+    private val randomPoi = randomPoi()
 
     @Before
     fun prepareDatabaseEnvironment() = testApplication {
@@ -97,6 +93,7 @@ class ApplicationTest {
      TODO launch exception because replicated id of poi and city
      */
     @Ignore
+    @Suppress("unused")
     fun addPoiWithError() = testApplication {
         val client = createClient {
             install(ContentNegotiation) {
