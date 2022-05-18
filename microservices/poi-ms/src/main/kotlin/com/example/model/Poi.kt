@@ -1,19 +1,21 @@
 package com.example.model
 
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.*
+
 
 @Serializable
 data class Poi(
-    val id: Int,
+    @Contextual
+    val _id: String,
     val name: String,
-    val city: City,
-    val info: String,
     val lat: Float,
     val lng: Float,
-    val pictures: List<String>
+    val city: City,
+    val info: String = "",
+    val pictures: List<String> = emptyList(),
+    val category: Category = Category.CULTURE,
+    val visited: Boolean = false
 )
-
-
 
 /*
 {

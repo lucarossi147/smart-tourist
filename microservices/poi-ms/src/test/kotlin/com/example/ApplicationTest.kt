@@ -3,7 +3,6 @@ package com.example
 import com.example.model.City
 import com.example.model.Poi
 import io.ktor.client.*
-import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -11,6 +10,9 @@ import io.ktor.http.*
 import io.ktor.http.ContentType.Application.Json
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.testing.*
+import org.bson.types.ObjectId
+import org.junit.Before
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -22,30 +24,50 @@ class ApplicationTest {
 
     private val rand = (0..1000).random()
 
-    private fun randomeCity() = City(
-        rand,
+    private fun randomCity() = City(
+        ObjectId().toString(),
         "cityname$rand",
         (rand.toFloat() % 90) - 90,
         (rand.toFloat() % 180) - 180,
-
     )
+
     private fun randomPoi() = Poi(
-        rand,
+        ObjectId().toString(),
         "poiname$rand",
-        randomeCity(),
-        "desc$rand",
         (rand.toFloat() % 90) - 90,
         (rand.toFloat() % 180) - 180,
-        emptyList()
+        randomCity(),
     )
 
+    val randomPoi = randomPoi()
+
+    @Before
+    fun prepareDatabaseEnvironment() = testApplication {
+        val client = createClient {
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+        client.get("/cleanTestDatabases")
+
+        //Create a city and a poi, and use it in the tests
+
+        addPoi(client, randomPoi)
+        addCity(client, randomPoi.city)
+    }
+
     private suspend fun addPoi(client: HttpClient, poi: Poi): HttpResponse {
-        val request = client.post("/add") {
+        return client.post("/addPoi") {
             contentType(Json)
             setBody(poi)
         }
+    }
 
-        return request
+    private suspend fun addCity(client: HttpClient, city: City): HttpResponse {
+        return client.post("/addCity") {
+            contentType(Json)
+            setBody(city)
+        }
     }
 
     @Test
@@ -56,21 +78,32 @@ class ApplicationTest {
             }
         }
 
-        val response = addPoi(client, randomPoi())
+        assertEquals(HttpStatusCode.OK, addPoi(client, randomPoi()).status)
+    }
 
-        assertEquals(HttpStatusCode.OK, response.status)
+    @Test
+    fun addCity() = testApplication {
+        val client = createClient {
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+
+        assertEquals(HttpStatusCode.OK, addCity(client, randomCity()).status)
     }
 
     /**
-     * Try to add Poi with the same id
+     * Try to add two Poi with the same Id, it should fail
+     TODO launch exception because replicated id of poi and city
      */
-    @Test
+    @Ignore
     fun addPoiWithError() = testApplication {
         val client = createClient {
             install(ContentNegotiation) {
                 json()
             }
         }
+
         val poi = randomPoi()
         addPoi(client, poi)
         val response = addPoi(client, poi)
@@ -87,26 +120,55 @@ class ApplicationTest {
             }
         }
 
-        val poi = randomPoi()
-        addPoi(client, poi)
-
-        val response = client.get("/") {
-            parameter("id", "${poi.id}")
+        val response = client.get("/poi/") {
+            contentType(Json)
+            parameter("id", randomPoi._id)
         }
 
-        val resultPoi : Poi = response.body()
-
+        val resultPoi = response.bodyAsText()
+        println(resultPoi)
         assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals(poi.id, resultPoi.id)
-        assertEquals(poi.name, resultPoi.name)
     }
 
     @Test
-    fun getWithErrors() = testApplication {
-        val response = client.get("/") {
+    fun getExistingCity() = testApplication {
+        val client = createClient {
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+
+        val response = client.get("/city/") {
+            contentType(Json)
+            parameter("id", randomPoi.city._id)
+        }
+
+        val resultPoi = response.bodyAsText()
+        println(resultPoi)
+        assertEquals(HttpStatusCode.OK, response.status)
+    }
+
+    @Test
+    fun getPoiFromCity() = testApplication {
+        val client = createClient {
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+
+        val response = client.get("/poiFromCity/") {
+            contentType(Json)
+            parameter("id", "1000")
+        }
+        println(response.bodyAsText())
+        assertEquals(HttpStatusCode.OK, response.status)
+    }
+
+    @Test
+    fun getPoiWithErrors() = testApplication {
+        val response = client.get("/poi/") {
             parameter("id", "12345678")
         }
-        print(response.bodyAsText())
         assertEquals("No poi with this id: 12345678", response.bodyAsText())
         assertEquals(HttpStatusCode.NotFound, response.status)
     }
