@@ -29,6 +29,7 @@ repositories {
 
 dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
 
     // For kotling mongo impl
     implementation("org.litote.kmongo:kmongo-id:4.6.0")

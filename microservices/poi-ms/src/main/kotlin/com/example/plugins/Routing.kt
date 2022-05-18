@@ -2,12 +2,17 @@ package com.example.plugins
 
 import com.example.model.City
 import com.example.model.Poi
+import com.mongodb.client.model.Filters.gt
+import com.mongodb.client.model.Filters.lt
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.bson.conversions.Bson
 import org.litote.kmongo.*
+
+
 
 /**
  * (POI)
@@ -57,7 +62,7 @@ fun Application.configureRouting() {
                 status = HttpStatusCode.BadRequest
             )
 
-            val poi = poiCollection.findOne(Poi::_id eq idString ) ?: return@get call.respondText(
+            val poi = poiCollection.findOne(Poi::_id eq idString) ?: return@get call.respondText(
                 "No poi with this id: $idString",
                 status = HttpStatusCode.NotFound
             )
@@ -74,7 +79,7 @@ fun Application.configureRouting() {
                 status = HttpStatusCode.BadRequest
             )
 
-            val city = citiesCollection.findOne(City::_id eq idString ) ?: return@get call.respondText(
+            val city = citiesCollection.findOne(City::_id eq idString) ?: return@get call.respondText(
                 "No city with this id: $idString",
                 status = HttpStatusCode.NotFound
             )
@@ -82,10 +87,44 @@ fun Application.configureRouting() {
             call.respond(city)
         }
 
+
+        /**
+         * Receive a lat and a lng (spatial coordinates), and a radius and returns the poi inside that area
+         */
+        get("/poisInArea/") {
+            val lat = call.parameters["lat"] ?: return@get call.respondText(
+                "Missing lat of the poi",
+                status = HttpStatusCode.BadRequest
+            )
+
+            val lng = call.parameters["lng"] ?: return@get call.respondText(
+                "Missing lat of the poi",
+                status = HttpStatusCode.BadRequest
+            )
+
+            val rad = call.parameters["radius"] ?: 15
+
+
+            val radius = rad.toString().toFloat()
+            val latitude = lat.toFloat()
+            val longitude = lng.toFloat()
+
+            val filterInRange: Bson = and(
+                gt("lat", latitude - radius),
+                gt("lng", longitude - radius),
+                lt("lat", latitude + radius),
+                lt("lng", longitude + radius),
+            )
+
+            val pois = poiCollection.find(filterInRange).toList()
+
+            call.respond(pois)
+        }
+
         /**
          * Receive an id and returns the Poi inside the city with the id if exist, 404 otherwise
          */
-        get("/poiFromCity/{id?}") {
+        get("/poisFromCity/{id?}") {
             val idString = call.parameters["id"] ?: return@get call.respondText(
                 "Missing id of the City",
                 status = HttpStatusCode.BadRequest
@@ -100,10 +139,10 @@ fun Application.configureRouting() {
             call.respond(pois)
         }
 
-        get("/cleanTestDatabases"){
+        get("/cleanTestDatabases") {
             poiCollection.drop()
             citiesCollection.drop()
-            call.respond(status = HttpStatusCode.OK, "Test databases correctly accepted")
+            call.respond(status = HttpStatusCode.OK, "Test databases correctly cleared")
         }
     }
 }

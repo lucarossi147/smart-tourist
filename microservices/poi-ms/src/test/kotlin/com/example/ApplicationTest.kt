@@ -1,25 +1,29 @@
 package com.example
 
-import com.example.model.City
-import com.example.model.Poi
+import com.example.model.*
 import io.ktor.client.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.http.ContentType.Application.Json
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.testing.*
 import org.bson.types.ObjectId
 import org.junit.Before
-import kotlin.test.Ignore
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 
 class ApplicationTest {
 
+    /**
+     * Create a random number, used for the pois and cities properties
+     */
     private val rand = (0..1000).random()
 
+    /**
+     * Create a random city
+     */
     private fun randomCity() = City(
         ObjectId().toString(),
         "cityname$rand",
@@ -27,6 +31,9 @@ class ApplicationTest {
         (rand.toFloat() % 180) - 180,
     )
 
+    /**
+     * Create a random Poi, with inside a random city
+     */
     private fun randomPoi() = Poi(
         ObjectId().toString(),
         "poiname$rand",
@@ -35,8 +42,14 @@ class ApplicationTest {
         randomCity(),
     )
 
+    /**
+     * Random poi used during differents tests
+     */
     private val randomPoi = randomPoi()
 
+    /**
+     * Runs before tests, it removes all entries in the db. So the next request are made in a clean environment
+     */
     @Before
     fun prepareDatabaseEnvironment() = testApplication {
         val client = createClient {
@@ -52,22 +65,31 @@ class ApplicationTest {
         addCity(client, randomPoi.city)
     }
 
+    /**
+     * Simple request for adding a Poi in the db. An httpClient is required when we make http requests to the server
+     */
     private suspend fun addPoi(client: HttpClient, poi: Poi): HttpResponse {
         return client.post("/addPoi") {
-            contentType(Json)
+            contentType(ContentType.Application.Json)
             setBody(poi)
         }
     }
 
+    /**
+    * Simple request for adding a city in the db. An httpClient is required when we make http requests to the server
+    */
     private suspend fun addCity(client: HttpClient, city: City): HttpResponse {
         return client.post("/addCity") {
-            contentType(Json)
+            contentType(ContentType.Application.Json)
             setBody(city)
         }
     }
 
+    /**
+     * Test the adding of a poi in the db. An "OK" as response is required
+     */
     @Test
-    fun addPoi() = testApplication {
+    fun addPoiTest() = testApplication {
         val client = createClient {
             install(ContentNegotiation) {
                 json()
@@ -77,8 +99,11 @@ class ApplicationTest {
         assertEquals(HttpStatusCode.OK, addPoi(client, randomPoi()).status)
     }
 
+    /**
+     * Test the adding of a city in the db. An "OK" as response is required
+     */
     @Test
-    fun addCity() = testApplication {
+    fun addCityTest() = testApplication {
         val client = createClient {
             install(ContentNegotiation) {
                 json()
@@ -109,6 +134,9 @@ class ApplicationTest {
         assertEquals("Poi with this id already exist", response.bodyAsText())
     }
 
+    /**
+     * Test get of a poi given is id
+     */
     @Test
     fun getExistingPoi() = testApplication {
         val client = createClient {
@@ -118,13 +146,13 @@ class ApplicationTest {
         }
 
         val response = client.get("/poi/") {
-            contentType(Json)
+            contentType(ContentType.Application.Json)
             parameter("id", randomPoi._id)
         }
 
-        val resultPoi = response.bodyAsText()
-        println(resultPoi)
+        val returnedPoi = Json.decodeFromString<Poi>(response.bodyAsText())
         assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(randomPoi, returnedPoi)
     }
 
     @Test
@@ -136,25 +164,26 @@ class ApplicationTest {
         }
 
         val response = client.get("/city/") {
-            contentType(Json)
+            contentType(ContentType.Application.Json)
             parameter("id", randomPoi.city._id)
         }
 
-        val resultPoi = response.bodyAsText()
-        println(resultPoi)
+        val returnedCity = Json.decodeFromString<City>(response.bodyAsText())
         assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(randomPoi.city, returnedCity)
+
     }
 
     @Test
-    fun getPoiFromCity() = testApplication {
+    fun getPoisFromCity() = testApplication {
         val client = createClient {
             install(ContentNegotiation) {
                 json()
             }
         }
 
-        val response = client.get("/poiFromCity/") {
-            contentType(Json)
+        val response = client.get("/poisFromCity/") {
+            contentType(ContentType.Application.Json)
             parameter("id", "1000")
         }
         println(response.bodyAsText())
@@ -163,10 +192,45 @@ class ApplicationTest {
 
     @Test
     fun getPoiWithErrors() = testApplication {
+        val client = createClient {
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+
         val response = client.get("/poi/") {
             parameter("id", "12345678")
         }
         assertEquals("No poi with this id: 12345678", response.bodyAsText())
         assertEquals(HttpStatusCode.NotFound, response.status)
+    }
+
+    /**
+     * Get pois near the one given as parameter
+     * TODO testaree senza radius fornito
+     * TODO testare se non ci sono pois nella zona
+     */
+    @Test
+    fun getNearPois() = testApplication {
+        val client = createClient {
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+
+        //Add two other pois near the one created by default
+        addPoi(client, randomPoi.copy(_id = randomPoi._id+1, name= "Near1", lat = randomPoi.lat -1))
+        addPoi(client, randomPoi.copy(_id = randomPoi._id+2, name= "Near2", lng = randomPoi.lng +1))
+
+        val response = client.get("/poisInArea/") {
+            contentType(ContentType.Application.Json)
+            parameter("lat", randomPoi.lat)
+            parameter("lng", randomPoi.lng)
+            parameter("radius", 10)
+        }
+
+        val poisReturned = Json.decodeFromString<List<Poi>>(response.bodyAsText())
+
+        println(poisReturned)
     }
 }
