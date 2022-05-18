@@ -231,6 +231,7 @@ class ApplicationTest {
 
         val poisReturned = Json.decodeFromString<List<Poi>>(response.bodyAsText())
 
-        println(poisReturned)
+        assertEquals(3, poisReturned.size)
+        assertContains(poisReturned, randomPoi, "Starting poi is not present in the area")
     }
 }
