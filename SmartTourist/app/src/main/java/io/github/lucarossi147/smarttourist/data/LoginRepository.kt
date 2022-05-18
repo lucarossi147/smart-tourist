@@ -1,5 +1,8 @@
 package io.github.lucarossi147.smarttourist.data
 
+import android.app.Activity
+import android.content.Context
+import io.github.lucarossi147.smarttourist.R
 import io.github.lucarossi147.smarttourist.data.model.LoggedInUser
 
 /**
@@ -7,7 +10,7 @@ import io.github.lucarossi147.smarttourist.data.model.LoggedInUser
  * maintains an in-memory cache of login status and user credentials information.
  */
 
-class LoginRepository(val dataSource: LoginDataSource) {
+class LoginRepository(val dataSource: LoginDataSource, private val activity: Activity?) {
 
     // in-memory cache of the loggedInUser object
     var user: LoggedInUser? = null
@@ -19,7 +22,14 @@ class LoginRepository(val dataSource: LoginDataSource) {
     init {
         // If user credentials will be cached in local storage, it is recommended it be encrypted
         // @see https://developer.android.com/training/articles/keystore
-        user = null
+        val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE)
+        val username = sharedPref?.getString(activity?.getString(R.string.username), null)
+        val token = sharedPref?.getString(activity?.getString(R.string.token), null)
+        user = if (username != null && token!= null) {
+            LoggedInUser(username, token)
+        } else {
+            null
+        }
     }
 
     fun logout() {
@@ -39,6 +49,13 @@ class LoginRepository(val dataSource: LoginDataSource) {
 
     private fun setLoggedInUser(loggedInUser: LoggedInUser) {
         this.user = loggedInUser
+        val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE) ?: return
+        with (sharedPref.edit()) {
+            putString(activity.getString(R.string.username), loggedInUser.username)
+            putString(activity.getString(R.string.token), loggedInUser.token)
+//            putInt(getString(R.string.saved_high_score_key), newHighScore)
+            apply()
+        }
         // If user credentials will be cached in local storage, it is recommended it be encrypted
         // @see https://developer.android.com/training/articles/keystore
     }

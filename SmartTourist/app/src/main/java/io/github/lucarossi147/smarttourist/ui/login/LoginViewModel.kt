@@ -8,6 +8,8 @@ import io.github.lucarossi147.smarttourist.data.LoginRepository
 import io.github.lucarossi147.smarttourist.data.Result
 
 import io.github.lucarossi147.smarttourist.R
+import io.github.lucarossi147.smarttourist.data.model.LoggedInUser
+import kotlinx.coroutines.runBlocking
 
 class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel() {
 
@@ -17,15 +19,25 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
     private val _loginResult = MutableLiveData<LoginResult>()
     val loginResult: LiveData<LoginResult> = _loginResult
 
-    suspend fun login(username: String, password: String) {
-        // can be launched in a separate asynchronous job
-        val result = loginRepository.login(username, password)
-        if (result is Result.Success) {
-            _loginResult.value =
-                LoginResult(success = LoggedInUserView(displayName = result.data.username))
-        } else {
-            _loginResult.value = LoginResult(error = R.string.login_failed)
+    fun getUser():LoggedInUser? {
+        if (loginRepository.isLoggedIn) {
+            return loginRepository.user
         }
+        return null
+    }
+
+    fun login(username: String, password: String) {
+        // can be launched in a separate asynchronous job
+        runBlocking {
+            val result = loginRepository.login(username, password)
+            if (result is Result.Success) {
+                _loginResult.value =
+                    LoginResult(success = LoggedInUserView(displayName = result.data.username))
+            } else {
+                _loginResult.value = LoginResult(error = R.string.login_failed)
+            }
+        }
+
     }
 
     fun loginDataChanged(username: String, password: String) {

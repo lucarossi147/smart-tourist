@@ -18,7 +18,7 @@ import java.io.IOException
 
 class LoginDataSource {
 
-suspend fun login(username: String, password: String): Result<LoggedInUser> {//401 wrong password
+suspend fun login(username: String, password: String): Result<LoggedInUser> {
     val jsonObject = JSONObject()
     jsonObject.put("username", username)
     jsonObject.put("password", password)

@@ -12,14 +12,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
+import androidx.core.os.bundleOf
 import androidx.navigation.findNavController
 import io.github.lucarossi147.smarttourist.databinding.FragmentLoginBinding
 
 import io.github.lucarossi147.smarttourist.R
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
+import io.github.lucarossi147.smarttourist.data.model.LoggedInUser
 
 class LoginFragment : Fragment() {
 
@@ -35,15 +33,13 @@ class LoginFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         _binding = FragmentLoginBinding.inflate(inflater, container, false)
         return binding.root
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        loginViewModel = ViewModelProvider(this, LoginViewModelFactory())
+        loginViewModel = ViewModelProvider(this, LoginViewModelFactory(activity) )
             .get(LoginViewModel::class.java)
 
         val usernameEditText = binding.username
@@ -97,37 +93,50 @@ class LoginFragment : Fragment() {
         passwordEditText.addTextChangedListener(afterTextChangedListener)
         passwordEditText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                runBlocking {
-                    launch {
-                        loginViewModel.login(
-                            usernameEditText.text.toString(),
-                            passwordEditText.text.toString()
-                        )
-                    }
-                }
+                loginViewModel.login(
+                    usernameEditText.text.toString(),
+                    passwordEditText.text.toString()
+                )
             }
             false
         }
 
         loginButton.setOnClickListener {
             loadingProgressBar.visibility = View.VISIBLE
-            runBlocking {
-                launch {
-                    loginViewModel.login(
-                        usernameEditText.text.toString(),
-                        passwordEditText.text.toString()
-                    )
-                }
-            }
+            loginViewModel.login(
+                usernameEditText.text.toString(),
+                passwordEditText.text.toString()
+            )
+        }
+
+        val user = loginViewModel.getUser()
+        if (user != null) {
+            welcomeBackToast(user)
+            navigateToMapsFragment(user)
         }
     }
 
-    private fun updateUiWithUser(model: LoggedInUserView) {
+    private fun welcomeToast(model: LoggedInUserView){
         val welcome = getString(R.string.welcome) + model.displayName
         val appContext = context?.applicationContext ?: return
         Toast.makeText(appContext, welcome, Toast.LENGTH_LONG).show()
-        view?.findNavController()?.navigate(R.id.mapsFragment)
     }
+
+    private fun welcomeBackToast(user: LoggedInUser){
+        val welcome = getString(R.string.welcome_back) + user.username
+        val appContext = context?.applicationContext ?: return
+        Toast.makeText(appContext, welcome, Toast.LENGTH_LONG).show()
+    }
+    private fun updateUiWithUser(model: LoggedInUserView) {
+        welcomeToast(model)
+        navigateToMapsFragment(loginViewModel.getUser()?:return)
+    }
+
+    private fun navigateToMapsFragment(user: LoggedInUser){
+        val loggedInUser = bundleOf("user" to user)
+        view?.findNavController()?.navigate(R.id.mapsFragment, loggedInUser)
+    }
+
 
     private fun showLoginFailed(@StringRes errorString: Int) {
         val appContext = context?.applicationContext ?: return

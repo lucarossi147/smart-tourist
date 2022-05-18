@@ -51,7 +51,7 @@ class PoiFragment : Fragment() {
         }
 
         val tv: TextView = view.findViewById(R.id.poiInfoTextView)
-        tv.text = resources.getString(R.string.loremIpsum)
+        tv.text = resources.getString(R.string.large_text)
 //        tv.text = poi?.info
 
         signButton?.setOnClickListener {
