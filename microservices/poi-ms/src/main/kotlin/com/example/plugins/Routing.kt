@@ -30,6 +30,7 @@ fun Application.configureRouting() {
     val password = environment.config.property("ktor.deployment.mongodbpassword").getString()
     val client = KMongo.createClient("mongodb+srv://smart-tourism:$password@cluster0.2cwaw.mongodb.net/")
     val databaseEnvironment = environment.config.property("ktor.environment").getString()
+    
     val poiCollection = client.getDatabase(databaseEnvironment).getCollection<Poi>("poi")
     val citiesCollection = client.getDatabase(databaseEnvironment).getCollection<City>("cities")
 

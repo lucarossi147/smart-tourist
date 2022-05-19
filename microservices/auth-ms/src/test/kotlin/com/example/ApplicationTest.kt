@@ -42,6 +42,7 @@ class ApplicationTest {
      * Utility function for the signup of a user
      */
     private suspend fun signup(user: User, client: HttpClient) : HttpResponse{
+        MapApplicationConfig("ktor.environment" to "test")
         return client.post("/signup") {
             contentType(ContentType.Application.Json)
             setBody(user)
@@ -89,6 +90,7 @@ class ApplicationTest {
      */
     @Test
     fun testLogin() = testApplication {
+        MapApplicationConfig("ktor.environment" to "test")
 
         val client = createClient {
             install(ContentNegotiation) {
@@ -123,6 +125,8 @@ class ApplicationTest {
 
     @Test
     fun testBadAuthRequest() = testApplication {
+        MapApplicationConfig("ktor.environment" to "test")
+
         val client = createClient {
             install(ContentNegotiation){
                 json()
@@ -139,6 +143,8 @@ class ApplicationTest {
 
     @Test
     fun testPoiRequest() = testApplication {
+        MapApplicationConfig("ktor.environment" to "test")
+
         val client = createClient {
             install(ContentNegotiation){
                 json()

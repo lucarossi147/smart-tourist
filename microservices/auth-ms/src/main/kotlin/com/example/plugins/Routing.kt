@@ -44,7 +44,7 @@ fun Application.configureRouting(config: JWTConfig) {
         }
     }
 
-    val col = client.getDatabase(databaseEnvironment).getCollection<User>("user")
+    val col = client.getDatabase(databaseEnvironment).getCollection<User>("users")
 
     routing {
         get("/") {
