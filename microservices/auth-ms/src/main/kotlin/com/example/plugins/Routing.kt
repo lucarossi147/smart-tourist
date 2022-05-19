@@ -36,7 +36,7 @@ data class Poi(
 fun Application.configureRouting(config: JWTConfig) {
 
     val databaseEnvironment = environment.config.property("ktor.environment").getString()
-    val password = "Nnmah8cfhYVDiuIu" //environment.config.property("ktor.deployment.mongodbpassword").getString()
+    val password = environment.config.property("ktor.deployment.mongodbpassword").getString()
     val client = KMongo.createClient("mongodb+srv://smart-tourism:$password@cluster0.2cwaw.mongodb.net")
     val cl = HttpClient(CIO){
         install(ContentNegotiation){

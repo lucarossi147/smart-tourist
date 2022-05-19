@@ -15,9 +15,6 @@ import org.litote.kmongo.*
 
 /**
  * (POI)
- * Dato un poi la città
- * Dato una latitudine e longitudine e raggio i poi dentro quell'area
- *
  * (GAME)
  * I poi visitati da un utente
  * Il numero (sul totale) di poi visitati in una città da un utente
@@ -30,8 +27,8 @@ fun Application.configureRouting() {
     val password = environment.config.property("ktor.deployment.mongodbpassword").getString()
     val client = KMongo.createClient("mongodb+srv://smart-tourism:$password@cluster0.2cwaw.mongodb.net/")
     val databaseEnvironment = environment.config.property("ktor.environment").getString()
-    
-    val poiCollection = client.getDatabase(databaseEnvironment).getCollection<Poi>("poi")
+
+    val poiCollection = client.getDatabase(databaseEnvironment).getCollection<Poi>("pois")
     val citiesCollection = client.getDatabase(databaseEnvironment).getCollection<City>("cities")
 
     routing {
@@ -144,6 +141,18 @@ fun Application.configureRouting() {
             poiCollection.drop()
             citiesCollection.drop()
             call.respond(status = HttpStatusCode.OK, "Test databases correctly cleared")
+        }
+
+        get("/cityByPoi/"){
+            val idPoi = call.parameters["id"] ?: return@get call.respondText(
+                "Missing id of the Poi",
+                status = HttpStatusCode.BadRequest
+            )
+            val poi = poiCollection.findOne(Poi::_id eq idPoi) ?: return@get call.respondText(
+                "Missing poi with this Id",
+                status = HttpStatusCode.NotFound
+            )
+            call.respond(poi.city)
         }
     }
 }

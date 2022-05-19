@@ -246,4 +246,27 @@ class ApplicationTest {
         assertEquals(3, poisReturned.size)
         assertContains(poisReturned, randomPoi, "Starting poi is not present in the area")
     }
+
+    /**
+     * Get the city given the Poi
+     */
+     @Test
+     fun getCityGivenPoi() = testApplication {
+        MapApplicationConfig("ktor.environment" to "test")
+        val client = createClient {
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+
+        println("Before req")
+        val response = client.get("/cityByPoi/") {
+            contentType(ContentType.Application.Json)
+            parameter("id", randomPoi._id)
+        }
+        println(response.bodyAsText())
+        println("After req")
+        val returnedCity = Json.decodeFromString<City>(response.bodyAsText())
+        assertEquals(randomPoi.city, returnedCity)
+    }
 }
