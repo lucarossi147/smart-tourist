@@ -6,13 +6,14 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.testing.*
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import org.bson.types.ObjectId
 import org.junit.Before
 import kotlin.test.*
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
+import io.ktor.serialization.kotlinx.json.*
+import io.ktor.server.config.*
 
 class ApplicationTest {
 
@@ -52,6 +53,9 @@ class ApplicationTest {
      */
     @Before
     fun prepareDatabaseEnvironment() = testApplication {
+        environment {
+            config = MapApplicationConfig("ktor.environment" to "test")
+        }
         val client = createClient {
             install(ContentNegotiation) {
                 json()
@@ -76,8 +80,8 @@ class ApplicationTest {
     }
 
     /**
-    * Simple request for adding a city in the db. An httpClient is required when we make http requests to the server
-    */
+     * Simple request for adding a city in the db. An httpClient is required when we make http requests to the server
+     */
     private suspend fun addCity(client: HttpClient, city: City): HttpResponse {
         return client.post("/addCity") {
             contentType(ContentType.Application.Json)
@@ -115,7 +119,7 @@ class ApplicationTest {
 
     /**
      * Try to add two Poi with the same Id, it should fail
-     TODO launch exception because replicated id of poi and city
+    TODO launch exception because replicated id of poi and city
      */
     @Ignore
     @Suppress("unused")
@@ -219,8 +223,8 @@ class ApplicationTest {
         }
 
         //Add two other pois near the one created by default
-        addPoi(client, randomPoi.copy(_id = randomPoi._id+1, name= "Near1", lat = randomPoi.lat -1))
-        addPoi(client, randomPoi.copy(_id = randomPoi._id+2, name= "Near2", lng = randomPoi.lng +1))
+        addPoi(client, randomPoi.copy(_id = randomPoi._id + 1, name = "Near1", lat = randomPoi.lat - 1))
+        addPoi(client, randomPoi.copy(_id = randomPoi._id + 2, name = "Near2", lng = randomPoi.lng + 1))
 
         val response = client.get("/poisInArea/") {
             contentType(ContentType.Application.Json)

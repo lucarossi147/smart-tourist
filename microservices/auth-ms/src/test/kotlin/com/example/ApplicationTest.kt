@@ -8,10 +8,12 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
+import io.ktor.server.config.*
 import io.ktor.server.testing.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import org.bson.types.ObjectId
+import org.junit.Before
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -28,6 +30,13 @@ class ApplicationTest {
     private fun createRandomUser(): User =  User( ObjectId().toString(),"user$rand", "password$rand")
 
     private val cl = HttpClient(Java)
+
+    @Before
+    fun prepareTest() = testApplication {
+        environment {
+            config = MapApplicationConfig("ktor.environment" to "test")
+        }
+    }
 
     /**
      * Utility function for the signup of a user

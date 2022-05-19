@@ -13,10 +13,8 @@ import org.bson.conversions.Bson
 import org.litote.kmongo.*
 
 
-
 /**
  * (POI)
- * Data una città i punti di interesse
  * Dato un poi la città
  * Dato una latitudine e longitudine e raggio i poi dentro quell'area
  *
@@ -31,8 +29,10 @@ fun Application.configureRouting() {
 
     val password = environment.config.property("ktor.deployment.mongodbpassword").getString()
     val client = KMongo.createClient("mongodb+srv://smart-tourism:$password@cluster0.2cwaw.mongodb.net/")
-    val poiCollection = client.getDatabase("test").getCollection<Poi>("poi")
-    val citiesCollection = client.getDatabase("test").getCollection<City>("cities")
+    val databaseEnvironment = environment.config.property("ktor.environment").getString()
+    val poiCollection = client.getDatabase(databaseEnvironment).getCollection<Poi>("poi")
+    val citiesCollection = client.getDatabase(databaseEnvironment).getCollection<City>("cities")
+
     routing {
 
         /**
