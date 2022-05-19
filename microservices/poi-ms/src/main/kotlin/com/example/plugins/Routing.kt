@@ -24,7 +24,7 @@ import org.litote.kmongo.*
  */
 fun Application.configureRouting() {
 
-    val password = environment.config.property("ktor.deployment.mongodbpassword").getString()
+    val password = environment.config.property("ktor.deployment.DB_PWD").getString()
     val client = KMongo.createClient("mongodb+srv://smart-tourism:$password@cluster0.2cwaw.mongodb.net/")
     val databaseEnvironment = environment.config.property("ktor.environment").getString()
 
