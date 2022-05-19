@@ -1,15 +1,14 @@
 package io.github.lucarossi147.smarttourist.ui.login
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import android.util.Patterns
+import androidx.lifecycle.*
 import io.github.lucarossi147.smarttourist.data.LoginRepository
 import io.github.lucarossi147.smarttourist.data.Result
 
 import io.github.lucarossi147.smarttourist.R
 import io.github.lucarossi147.smarttourist.data.model.LoggedInUser
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel() {
 
@@ -28,16 +27,18 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
 
     fun login(username: String, password: String) {
         // can be launched in a separate asynchronous job
-        runBlocking {
-            val result = loginRepository.login(username, password)
-            if (result is Result.Success) {
-                _loginResult.value =
-                    LoginResult(success = LoggedInUserView(displayName = result.data.username))
-            } else {
-                _loginResult.value = LoginResult(error = R.string.login_failed)
+        viewModelScope.launch(Dispatchers.IO) {
+            when (val result = loginRepository.login(username, password)) {
+                is Result.Success ->
+                    viewModelScope.launch(Dispatchers.Main) {
+                        _loginResult.value = LoginResult(success = LoggedInUserView(displayName = result.data.username))
+                    }
+                else ->
+                    viewModelScope.launch(Dispatchers.Main) {
+                        _loginResult.value = LoginResult(error = R.string.login_failed)
+                    }
             }
         }
-
     }
 
     fun loginDataChanged(username: String, password: String) {

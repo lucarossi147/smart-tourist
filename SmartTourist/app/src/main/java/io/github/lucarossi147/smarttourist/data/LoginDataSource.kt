@@ -40,6 +40,7 @@ suspend fun login(username: String, password: String): Result<LoggedInUser> {
             val user = LoggedInUser(username, token.value)
             return Result.Success(user)
         }
+
         //username does not exist
         if(response.status.value == 400){
             //do signup with that username
@@ -47,20 +48,20 @@ suspend fun login(username: String, password: String): Result<LoggedInUser> {
                 contentType(ContentType.Application.Json)
                 setBody(jsonObject.toString())
             }
-            if (signupResponse.status.isSuccess()){
-                val signupBody:String = response.body()
+            return if (signupResponse.status.isSuccess()){
+                val signupBody:String = signupResponse.body()
                 val newToken:Token = gson.fromJson(signupBody, Token::class.java)
                 val newUser = LoggedInUser(username, newToken.value)
-                return Result.Success(newUser)
+                Result.Success(newUser)
+            } else {
+                Result.Error(IOException("User with this username already exist"))
             }
-            return Result.Error(IllegalAccessException("Invalid username"))
         }
-
+        //wrong password
         if (response.status.value == 401){
             return Result.Error(IllegalAccessException("Wrong password"))
         }
         return Result.Error(IOException("Error logging in"))
-
     } catch (e: Throwable) {
         return Result.Error(IOException("Error logging in", e))
     }
