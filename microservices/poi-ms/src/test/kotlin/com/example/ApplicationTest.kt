@@ -53,9 +53,7 @@ class ApplicationTest {
      */
     @Before
     fun prepareDatabaseEnvironment() = testApplication {
-        environment {
-            config = MapApplicationConfig("ktor.environment" to "test")
-        }
+        MapApplicationConfig("ktor.environment" to "test")
         val client = createClient {
             install(ContentNegotiation) {
                 json()
@@ -73,6 +71,7 @@ class ApplicationTest {
      * Simple request for adding a Poi in the db. An httpClient is required when we make http requests to the server
      */
     private suspend fun addPoi(client: HttpClient, poi: Poi): HttpResponse {
+        MapApplicationConfig("ktor.environment" to "test")
         return client.post("/addPoi") {
             contentType(ContentType.Application.Json)
             setBody(poi)
@@ -83,6 +82,7 @@ class ApplicationTest {
      * Simple request for adding a city in the db. An httpClient is required when we make http requests to the server
      */
     private suspend fun addCity(client: HttpClient, city: City): HttpResponse {
+        MapApplicationConfig("ktor.environment" to "test")
         return client.post("/addCity") {
             contentType(ContentType.Application.Json)
             setBody(city)
@@ -94,6 +94,7 @@ class ApplicationTest {
      */
     @Test
     fun addPoiTest() = testApplication {
+        MapApplicationConfig("ktor.environment" to "test")
         val client = createClient {
             install(ContentNegotiation) {
                 json()
@@ -108,6 +109,7 @@ class ApplicationTest {
      */
     @Test
     fun addCityTest() = testApplication {
+        MapApplicationConfig("ktor.environment" to "test")
         val client = createClient {
             install(ContentNegotiation) {
                 json()
@@ -124,6 +126,7 @@ class ApplicationTest {
     @Ignore
     @Suppress("unused")
     fun addPoiWithError() = testApplication {
+        MapApplicationConfig("ktor.environment" to "test")
         val client = createClient {
             install(ContentNegotiation) {
                 json()
@@ -143,6 +146,7 @@ class ApplicationTest {
      */
     @Test
     fun getExistingPoi() = testApplication {
+        MapApplicationConfig("ktor.environment" to "test")
         val client = createClient {
             install(ContentNegotiation) {
                 json()
@@ -161,6 +165,7 @@ class ApplicationTest {
 
     @Test
     fun getExistingCity() = testApplication {
+        MapApplicationConfig("ktor.environment" to "test")
         val client = createClient {
             install(ContentNegotiation) {
                 json()
@@ -180,6 +185,7 @@ class ApplicationTest {
 
     @Test
     fun getPoisFromCity() = testApplication {
+        MapApplicationConfig("ktor.environment" to "test")
         val client = createClient {
             install(ContentNegotiation) {
                 json()
@@ -196,6 +202,7 @@ class ApplicationTest {
 
     @Test
     fun getPoiWithErrors() = testApplication {
+        MapApplicationConfig("ktor.environment" to "test")
         val client = createClient {
             install(ContentNegotiation) {
                 json()
@@ -216,6 +223,7 @@ class ApplicationTest {
      */
     @Test
     fun getNearPois() = testApplication {
+        MapApplicationConfig("ktor.environment" to "test")
         val client = createClient {
             install(ContentNegotiation) {
                 json()

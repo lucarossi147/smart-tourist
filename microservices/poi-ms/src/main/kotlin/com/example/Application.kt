@@ -1,10 +1,10 @@
 package com.example
 
 import com.example.plugins.configureRouting
-import io.ktor.shared.serialization.kotlinx.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.serialization.kotlinx.json.*
 
 fun main(args: Array<String>): Unit = EngineMain.main(args)
 
