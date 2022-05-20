@@ -1,0 +1,119 @@
+<resources>
+    <string name="app_name">Smart Tourist</string>
+    <!-- Strings related to login -->
+    <string name="prompt_username">Username</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome! "</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
+    <string name="scan_qr">Scan QR!</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="loremIpsum">
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent cursus magna eget eros consectetur lacinia. In hac habitasse platea dictumst. Praesent mollis facilisis velit, sed euismod nunc hendrerit quis. Suspendisse blandit tellus ex. Ut viverra non metus a convallis. Donec sit amet pharetra massa. Sed interdum nunc eros. Aliquam lobortis ornare orci, quis ornare nulla sodales id. Aenean facilisis ex ut placerat ultrices. Nulla facilisi. Nam et nisl tellus. Cras magna magna, euismod sit amet ultrices et, fermentum in arcu. Pellentesque quis lacus tortor.
+
+Nullam tellus lectus, bibendum vel nulla eget, luctus lobortis arcu. Ut nec ante pharetra, sagittis mauris a, vulputate arcu. Nulla ornare dignissim turpis eget ultrices. Etiam pulvinar mauris nibh, sit amet pulvinar tellus feugiat sit amet. In dapibus erat eu metus malesuada, ut feugiat quam commodo. Quisque nec nisi lectus. Fusce suscipit tincidunt sapien, quis euismod lacus venenatis ac. Mauris id dui massa. Cras purus orci, consectetur vel placerat non, tincidunt nec purus. Curabitur diam enim, dignissim at neque sed, luctus finibus metus. Nullam nec egestas enim. Nunc varius, lectus vel sodales vehicula, tortor dolor maximus est, quis aliquam urna nisl at arcu. Fusce rhoncus tincidunt sollicitudin. Ut rutrum commodo enim, non pulvinar massa rutrum eget.
+
+Morbi elit lorem, volutpat lacinia nunc nec, sodales tincidunt elit. Morbi vestibulum magna eget ante placerat maximus. Aenean at vestibulum velit, quis fermentum eros. Mauris nec tellus in est scelerisque varius. Ut sed molestie tellus. Etiam nulla nibh, aliquet scelerisque blandit quis, eleifend ac dui. Phasellus aliquam ipsum sed nibh dignissim, vitae feugiat turpis placerat. Morbi elit est, elementum a cursus vel, dapibus et dui. Curabitur in urna volutpat, faucibus ligula id, maximus diam.
+
+Mauris blandit mollis metus, et fringilla eros iaculis vel. Nam in lorem a justo aliquam luctus vitae et justo. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nulla facilisi. Ut ut turpis non dui tempor lacinia a sit amet nibh. Aenean maximus laoreet ante in euismod. Ut bibendum porta elit sit amet viverra. Sed non erat imperdiet metus finibus euismod id sit amet metus. Fusce ex justo, posuere et dui vitae, fermentum gravida quam. Nullam in maximus ante, ac pharetra urna.
+
+Ut blandit malesuada tellus, auctor fringilla arcu consectetur ut. Sed vel laoreet neque, vel viverra sem. Praesent a libero lobortis, mollis quam vitae, eleifend nunc. Nullam scelerisque erat eget nunc accumsan, eu vestibulum quam bibendum. Integer fermentum tincidunt ipsum, nec rutrum magna blandit et. Quisque diam nibh, mollis sit amet tristique sed, mattis quis nisi. Vestibulum hendrerit scelerisque sem vel ultrices. Mauris ligula dolor, pellentesque ut arcu vel, euismod luctus ligula. Ut porta, velit sed porttitor sagittis, velit mi convallis orci, sed facilisis turpis magna vel dolor. Nulla a ultricies neque. </string>
+    <string name="leave_a_message_for_other_people">Leave a message for other people!</string>
+    <string name="sign">Sign!</string>
+    <string name="large_text">
+        "Material is the metaphor.\n\n"
+
+        "A material metaphor is the unifying theory of a rationalized space and a system of motion."
+        "The material is grounded in tactile reality, inspired by the study of paper and ink, yet "
+        "technologically advanced and open to imagination and magic.\n"
+        "Surfaces and edges of the material provide visual cues that are grounded in reality. The "
+        "use of familiar tactile attributes helps users quickly understand affordances. Yet the "
+        "flexibility of the material creates new affordances that supercede those in the physical "
+        "world, without breaking the rules of physics.\n"
+        "The fundamentals of light, surface, and movement are key to conveying how objects move, "
+        "interact, and exist in space and in relation to each other. Realistic lighting shows "
+        "seams, divides space, and indicates moving parts.\n\n"
+
+        "Bold, graphic, intentional.\n\n"
+
+        "The foundational elements of print based design typography, grids, space, scale, color, "
+        "and use of imagery guide visual treatments. These elements do far more than please the "
+        "eye. They create hierarchy, meaning, and focus. Deliberate color choices, edge to edge "
+        "imagery, large scale typography, and intentional white space create a bold and graphic "
+        "interface that immerse the user in the experience.\n"
+        "An emphasis on user actions makes core functionality immediately apparent and provides "
+        "waypoints for the user.\n\n"
+
+        "Motion provides meaning.\n\n"
+
+        "Motion respects and reinforces the user as the prime mover. Primary user actions are "
+        "inflection points that initiate motion, transforming the whole design.\n"
+        "All action takes place in a single environment. Objects are presented to the user without "
+        "breaking the continuity of experience even as they transform and reorganize.\n"
+        "Motion is meaningful and appropriate, serving to focus attention and maintain continuity. "
+        "Feedback is subtle yet clear. Transitions are efﬁcient yet coherent.\n\n"
+
+        "3D world.\n\n"
+
+        "The material environment is a 3D space, which means all objects have x, y, and z "
+        "dimensions. The z-axis is perpendicularly aligned to the plane of the display, with the "
+        "positive z-axis extending towards the viewer. Every sheet of material occupies a single "
+        "position along the z-axis and has a standard 1dp thickness.\n"
+        "On the web, the z-axis is used for layering and not for perspective. The 3D world is "
+        "emulated by manipulating the y-axis.\n\n"
+
+        "Light and shadow.\n\n"
+
+        "Within the material environment, virtual lights illuminate the scene. Key lights create "
+        "directional shadows, while ambient light creates soft shadows from all angles.\n"
+        "Shadows in the material environment are cast by these two light sources. In Android "
+        "development, shadows occur when light sources are blocked by sheets of material at "
+        "various positions along the z-axis. On the web, shadows are depicted by manipulating the "
+        "y-axis only. The following example shows the card with a height of 6dp.\n\n"
+
+        "Resting elevation.\n\n"
+
+        "All material objects, regardless of size, have a resting elevation, or default elevation "
+        "that does not change. If an object changes elevation, it should return to its resting "
+        "elevation as soon as possible.\n\n"
+
+        "Component elevations.\n\n"
+
+        "The resting elevation for a component type is consistent across apps (e.g., FAB elevation "
+        "does not vary from 6dp in one app to 16dp in another app).\n"
+        "Components may have different resting elevations across platforms, depending on the depth "
+        "of the environment (e.g., TV has a greater depth than mobile or desktop).\n\n"
+
+        "Responsive elevation and dynamic elevation offsets.\n\n"
+
+        "Some component types have responsive elevation, meaning they change elevation in response "
+        "to user input (e.g., normal, focused, and pressed) or system events. These elevation "
+        "changes are consistently implemented using dynamic elevation offsets.\n"
+        "Dynamic elevation offsets are the goal elevation that a component moves towards, relative "
+        "to the component’s resting state. They ensure that elevation changes are consistent "
+        "across actions and component types. For example, all components that lift on press have "
+        "the same elevation change relative to their resting elevation.\n"
+        "Once the input event is completed or cancelled, the component will return to its resting "
+        "elevation.\n\n"
+
+        "Avoiding elevation interference.\n\n"
+
+        "Components with responsive elevations may encounter other components as they move between "
+        "their resting elevations and dynamic elevation offsets. Because material cannot pass "
+        "through other material, components avoid interfering with one another any number of ways, "
+        "whether on a per component basis or using the entire app layout.\n"
+        "On a component level, components can move or be removed before they cause interference. "
+        "For example, a floating action button (FAB) can disappear or move off screen before a "
+        "user picks up a card, or it can move if a snackbar appears.\n"
+        "On the layout level, design your app layout to minimize opportunities for interference. "
+        "For example, position the FAB to one side of stream of a cards so the FAB won’t interfere "
+        "when a user tries to pick up one of cards.\n\n"
+    </string>
+    <string name="check_out_other_signatures">Check out other signatures!</string>
+    <string name="go_back_and_explore_more">Go back and explore more!</string>
+</resources>

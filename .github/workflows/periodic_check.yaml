@@ -1,0 +1,25 @@
+name: Check if build work properly every day
+on:
+  schedule:
+    - cron: "0 5 * * 1"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build Android project
+    env:
+      working-directory: ./SmartTourist
+    steps:
+    - uses: actions/checkout@v3
+    - name: set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+        cache: gradle
+    - name: Create local.properties
+      run: echo MAPS_API_KEY=${{ secrets.MAPS_API_KEY }} > local.properties
+      working-directory: ${{env.working-directory}}
+    - name: Run Gradle build
+      run: ./gradlew build
+      working-directory: ${{env.working-directory}}
