@@ -31,11 +31,19 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.Task
+import com.google.gson.Gson
 import io.github.lucarossi147.smarttourist.data.model.Category
-import io.github.lucarossi147.smarttourist.data.model.City
 import io.github.lucarossi147.smarttourist.data.model.LoggedInUser
 import io.github.lucarossi147.smarttourist.data.model.POI
-import kotlin.math.absoluteValue
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.engine.android.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 private const val REQUESTING_LOCATION_UPDATES_KEY: String = "prove"
 private const val REQUEST_CHECK_SETTINGS = 0x1
@@ -48,15 +56,49 @@ class MapsFragment : Fragment() {
     private var mMap: GoogleMap? = null
     private var myMarker: Marker? = null
     private lateinit var locationPermissionRequest: ActivityResultLauncher<Array<String>>
-    private val city = City("idNewYork","New York", 40.730610, -73.935242)
-    private var POIs:Set<POI> = setOf(
-        POI(id = "1", name = "Central Park", lat = 40.771133, lng =-73.974187, city = city, category = Category.NATURE, visited = true),
-        POI(id = "3", name = "Empire State Building", lat = 40.748817, lng =-73.985428, city = city, category =  Category.FUN),
-        POI(id = "2", name = "Broadway", lat =40.790886, lng = -73.974709, city = city, category = Category.CULTURE)
-    )
-    private var markers: Set<Marker?> = emptySet()
+    
+    private var poiMarkers: List<Marker?> = emptyList()
+    private var cityMarkers: List<Marker?> = emptyList()
 
-    private lateinit var locationCallback: LocationCallback
+    private val locationCallback = object:LocationCallback() {
+        override fun onLocationResult(p0: LocationResult) {
+            super.onLocationResult(p0)
+            for (l in p0.locations) {
+                val pos = LatLng(l.latitude,l.longitude)
+                //first appearance of user
+                if (myMarker == null) {
+                    myMarker = mMap?.addMarker(MarkerOptions()
+                        .position(pos)
+                        .title("You are here!"))
+                    //get POIs next to me
+                    mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 14.0F))
+                } else {
+                    if (cityMarkers.isEmpty()) {
+                        initPOIs(pos)
+                    }
+                    myMarker?.position = LatLng(l.latitude,l.longitude)
+                }
+            }
+        }
+    }
+
+    private fun initPOIs(pos: LatLng){
+        CoroutineScope(Dispatchers.IO).launch {
+            val res = HttpClient(Android)
+                .get("${Constants.POI_URL}poisInArea/?lat=${pos.latitude}&lng=${pos.longitude}&radius=10")
+            if (res.status.isSuccess()){
+                val pois = Gson()
+                    .fromJson(res.bodyAsText(), Array<POI>::class.java)
+                    .toList()
+                val cities = pois.map { it.city }
+
+                CoroutineScope(Dispatchers.Main).launch {
+                    drawPOIs(pois)
+                }
+            }
+        }
+    }
+
     private val locationRequest = LocationRequest.create().apply {
         interval = 3000
         fastestInterval = 1500
@@ -93,23 +135,6 @@ class MapsFragment : Fragment() {
             }
         }
         requestPermission()
-        locationCallback = object :LocationCallback() {
-            override fun onLocationResult(p0: LocationResult) {
-                super.onLocationResult(p0)
-                for (l in p0.locations) {
-                    val pos = LatLng(l.latitude,l.longitude)
-                    //update UI with location data
-                    if (myMarker == null) {
-                        myMarker = mMap?.addMarker(MarkerOptions()
-                            .position(pos)
-                            .title("You are here!"))
-                        mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 14.0F))
-                    } else {
-                        myMarker?.position = LatLng(l.latitude,l.longitude)
-                    }
-                }
-            }
-        }
     }
 
     override fun onPause() {
@@ -145,7 +170,6 @@ class MapsFragment : Fragment() {
             requestingLocationUpdates = savedInstanceState.getBoolean(
                 REQUESTING_LOCATION_UPDATES_KEY)
         }
-
         // ...
         // Update UI to match restored state
     }
@@ -164,21 +188,6 @@ class MapsFragment : Fragment() {
         val activity: Activity = activity?: return@OnMapReadyCallback
         val context: Context = context?: return@OnMapReadyCallback
         mMap = googleMap
-        markers = POIs
-            .map {
-            mMap?.addMarker(MarkerOptions()
-                .position(LatLng(it.lat,it.lng))
-                .title(it.name)
-                .icon(
-                    when (it.visited) {
-                        true -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)
-                        false -> when (it.category) {
-                            Category.FUN -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN)
-                            Category.CULTURE -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)
-                            Category.NATURE -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
-                        }
-                    }))
-        }.toSet()
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
             requestPermission()
         }
@@ -189,6 +198,7 @@ class MapsFragment : Fragment() {
                 val myPos = LatLng(location?.latitude?:40.730610, location?.longitude?: -73.935242)
                 if (location!= null) {
                     myMarker = mMap?.addMarker(MarkerOptions().position(myPos).title("You are here!"))
+                    initPOIs(myPos)
                 }
                 mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(myPos, 14.0F))
 
@@ -216,6 +226,25 @@ class MapsFragment : Fragment() {
                     }
                 }
             }
+    }
+
+
+
+
+    private fun drawPOIs(pois: List<POI>):List<Marker?>{
+         return pois.map {
+            mMap?.addMarker(MarkerOptions()
+                .position(LatLng(it.lat,it.lng))
+                .title(it.name)
+                .icon(when (it.visited) {
+                    true -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)
+                    false -> when (it.category) {
+                        Category.FUN -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN)
+                        Category.CULTURE -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)
+                        Category.NATURE -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
+                    }
+                }))
+        }
     }
 
     override fun onCreateView(
