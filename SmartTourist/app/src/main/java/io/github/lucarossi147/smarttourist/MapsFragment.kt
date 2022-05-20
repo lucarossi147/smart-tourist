@@ -35,6 +35,7 @@ import io.github.lucarossi147.smarttourist.data.model.Category
 import io.github.lucarossi147.smarttourist.data.model.City
 import io.github.lucarossi147.smarttourist.data.model.LoggedInUser
 import io.github.lucarossi147.smarttourist.data.model.POI
+import kotlin.math.absoluteValue
 
 private const val REQUESTING_LOCATION_UPDATES_KEY: String = "prove"
 private const val REQUEST_CHECK_SETTINGS = 0x1

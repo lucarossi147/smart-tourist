@@ -1,6 +1,7 @@
 package io.github.lucarossi147.smarttourist
 
 import com.google.gson.Gson
+import io.github.lucarossi147.smarttourist.data.model.POI
 import io.github.lucarossi147.smarttourist.data.model.Token
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -98,10 +99,17 @@ class RequestTest {
 //    @Test
 //    fun testGetPoi(){
 //        runBlocking {
-//            val res = client.get(Constants.POI_URL.plus("poi?id=2"))
+//            val res = HttpClient(Android)
+//                .get(Constants.POI_URL.plus("poi?id=10000"))
 //            println(res.bodyAsText())
-//            assert(res.status.isSuccess())
+//            if(res.status.isSuccess()){
+//                val deserialized = Gson().fromJson(res.bodyAsText(),POI::class.java)
+//                println(deserialized.id)
+//                try {
+//                } catch (e: Exception) {
+//                    println("garim deeznutz")
+//                }
+//            }
 //        }
-//
 //    }
 }

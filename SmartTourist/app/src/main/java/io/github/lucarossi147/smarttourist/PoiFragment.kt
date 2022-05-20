@@ -9,10 +9,6 @@ import android.widget.*
 import androidx.navigation.findNavController
 import com.squareup.picasso.Picasso
 import io.github.lucarossi147.smarttourist.data.model.POI
-import io.ktor.client.*
-import io.ktor.client.engine.android.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 
 private const val ARG_POI = "poi"
 
@@ -51,20 +47,15 @@ class PoiFragment : Fragment() {
         }
 
         val tv: TextView = view.findViewById(R.id.poiInfoTextView)
-        tv.text = resources.getString(R.string.large_text)
-//        tv.text = poi?.info
+        tv.text = poi?.info
 
         signButton?.setOnClickListener {
             //remove sign yourself from UI
+            // TODO: send signature and comment to server
+            //if result is success remove editText and make a toast
             signEditText?.visibility = View.GONE
             signButton?.visibility = View.GONE
-            // TODO: send signature and comment to server
-            runBlocking (Dispatchers.IO) {
-                val client = HttpClient(Android)
-                // TODO: Add proper string
-//                client.post("") {
-//                }
-            }
+
         }
         val goToSignatureButton: Button = view.findViewById(R.id.goToSignaturesButton)
         goToSignatureButton.setOnClickListener {
