@@ -37,4 +37,4 @@ jobs:
           run: docker push $IMAGE_NAME
 
         - name: Deploy Docker image
-          run: gcloud run deploy ${{ secrets.GCP_APP_NAME }} --image $IMAGE_NAME --set-env-vars ${{secrets.DB_PWD}} --port=8080 --region us-central1 --platform managed
+          run: gcloud run deploy ${{ secrets.GCP_APP_NAME }} --image $IMAGE_NAME --set-env-vars DB_PWD=${{secrets.DB_PWD}} --port=8080 --region us-central1 --platform managed
