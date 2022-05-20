@@ -13,7 +13,7 @@ import io.ktor.server.netty.EngineMain
 
 /* TODO
 Cifrare password quando vengono salvate
-salvare la password di mongodb in modo più sicuro
+
 Usare 201 come risposta?
  */
 

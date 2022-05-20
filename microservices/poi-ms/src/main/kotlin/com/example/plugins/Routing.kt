@@ -27,28 +27,43 @@ fun Application.configureRouting() {
     val password = environment.config.property("ktor.deployment.DB_PWD").getString()
     val client = KMongo.createClient("mongodb+srv://smart-tourism:$password@cluster0.2cwaw.mongodb.net/")
     val databaseEnvironment = environment.config.property("ktor.environment").getString()
-
     val poiCollection = client.getDatabase(databaseEnvironment).getCollection<Poi>("pois")
     val citiesCollection = client.getDatabase(databaseEnvironment).getCollection<City>("cities")
 
     routing {
 
         /**
-         * Receive a Poi from POST request and add it to database
+         * Receive a Poi from POST request and add it to database, if no Poi with this id exist
          */
         post("/addPoi") {
-            val poi = call.receive<Poi>()
-            poiCollection.insertOne(poi)
-            call.respondText("Poi correctly inserted", status = HttpStatusCode.OK)
+            val receivedPoi = call.receive<Poi>() //Receive a poi using json in POST request
+
+            //Search for a poi with the same Id of the one received
+            if (poiCollection.findOne(Poi::_id eq receivedPoi._id) != null) {
+                call.respondText(
+                    "Poi with this id already exist", status = HttpStatusCode.BadRequest
+                )
+            } else {
+                poiCollection.insertOne(receivedPoi)
+                call.respondText("Poi correctly inserted", status = HttpStatusCode.OK)
+            }
         }
 
         /**
-         * Receive a City from POST request and add it to database
+         * Receive a City from POST request and add it to database, if no City with this id exist
          */
         post("/addCity") {
-            val city = call.receive<City>()
-            citiesCollection.insertOne(city)
-            call.respondText("Poi correctly inserted", status = HttpStatusCode.OK)
+            val receivedCity = call.receive<City>()
+
+            //Search for a poi with the same Id of the one received
+            if (citiesCollection.findOne(City::_id eq receivedCity._id) != null) {
+                call.respondText(
+                    "City with this id already exist", status = HttpStatusCode.BadRequest
+                )
+            } else {
+                citiesCollection.insertOne(receivedCity)
+                call.respondText("City correctly inserted", status = HttpStatusCode.OK)
+            }
         }
 
         /**
@@ -102,7 +117,6 @@ fun Application.configureRouting() {
 
             val rad = call.parameters["radius"] ?: 15
 
-
             val radius = rad.toString().toFloat()
             val latitude = lat.toFloat()
             val longitude = lng.toFloat()
@@ -138,12 +152,12 @@ fun Application.configureRouting() {
         }
 
         get("/cleanTestDatabases") {
-            poiCollection.drop()
-            citiesCollection.drop()
+            client.getDatabase("test").getCollection<Poi>("pois").deleteMany()
+            client.getDatabase("test").getCollection<City>("cities").deleteMany()
             call.respond(status = HttpStatusCode.OK, "Test databases correctly cleared")
         }
 
-        get("/cityByPoi/"){
+        get("/cityByPoi/") {
             val idPoi = call.parameters["id"] ?: return@get call.respondText(
                 "Missing id of the Poi",
                 status = HttpStatusCode.BadRequest

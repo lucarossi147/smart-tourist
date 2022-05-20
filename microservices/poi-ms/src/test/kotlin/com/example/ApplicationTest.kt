@@ -1,29 +1,30 @@
 package com.example
 
-import com.example.model.*
+import com.example.model.City
+import com.example.model.Poi
 import io.ktor.client.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
+import io.ktor.server.config.*
 import io.ktor.server.testing.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.bson.types.ObjectId
-import org.junit.Before
-import kotlin.test.*
-import io.ktor.serialization.kotlinx.json.*
-import io.ktor.server.config.*
+import kotlin.test.Test
+import kotlin.test.assertContains
+import kotlin.test.assertEquals
 
 class ApplicationTest {
-
     /**
-     * Create a random number, used for the pois and cities properties
+     * Function for creating a random number, used for the pois and cities properties
      */
     private val rand = (0..1000).random()
 
     /**
-     * Create a random city
+     * Function for creating a random city
      */
     private fun randomCity() = City(
         ObjectId().toString(),
@@ -43,102 +44,71 @@ class ApplicationTest {
         randomCity(),
     )
 
-    /**
-     * Random poi used during differents tests
-     */
-    private val randomPoi = randomPoi()
-
-    /**
-     * Runs before tests, it removes all entries in the db. So the next request are made in a clean environment
-     */
-    @Before
-    fun prepareDatabaseEnvironment() = testApplication {
-        MapApplicationConfig("ktor.environment" to "test")
-        val client = createClient {
-            install(ContentNegotiation) {
-                json()
-            }
-        }
-        client.get("/cleanTestDatabases")
-
-        //Create a city and a poi, and use it in the tests
-
-        addPoi(client, randomPoi)
-        addCity(client, randomPoi.city)
-    }
-
-    /**
-     * Simple request for adding a Poi in the db. An httpClient is required when we make http requests to the server
-     */
-    private suspend fun addPoi(client: HttpClient, poi: Poi): HttpResponse {
-        MapApplicationConfig("ktor.environment" to "test")
+    private suspend fun addPoi(client: HttpClient, poi: Poi): HttpResponse{
         return client.post("/addPoi") {
             contentType(ContentType.Application.Json)
             setBody(poi)
         }
     }
 
-    /**
-     * Simple request for adding a city in the db. An httpClient is required when we make http requests to the server
-     */
-    private suspend fun addCity(client: HttpClient, city: City): HttpResponse {
-        MapApplicationConfig("ktor.environment" to "test")
+    private suspend fun addCity(client: HttpClient, city: City): HttpResponse{
         return client.post("/addCity") {
             contentType(ContentType.Application.Json)
             setBody(city)
         }
     }
 
-    /**
-     * Test the adding of a poi in the db. An "OK" as response is required
-     */
     @Test
-    fun addPoiTest() = testApplication {
-        MapApplicationConfig("ktor.environment" to "test")
+    fun poiAddingTest() = testApplication {
+        environment {
+            config = ApplicationConfig("application-custom.conf")
+        }
+
         val client = createClient {
             install(ContentNegotiation) {
                 json()
             }
         }
 
-        assertEquals(HttpStatusCode.OK, addPoi(client, randomPoi()).status)
-    }
-
-    /**
-     * Test the adding of a city in the db. An "OK" as response is required
-     */
-    @Test
-    fun addCityTest() = testApplication {
-        MapApplicationConfig("ktor.environment" to "test")
-        val client = createClient {
-            install(ContentNegotiation) {
-                json()
-            }
-        }
-
-        assertEquals(HttpStatusCode.OK, addCity(client, randomCity()).status)
-    }
-
-    /**
-     * Try to add two Poi with the same Id, it should fail
-    TODO launch exception because replicated id of poi and city
-     */
-    @Ignore
-    @Suppress("unused")
-    fun addPoiWithError() = testApplication {
-        MapApplicationConfig("ktor.environment" to "test")
-        val client = createClient {
-            install(ContentNegotiation) {
-                json()
-            }
-        }
-
+        //Create a random Poi and add it to the database
         val poi = randomPoi()
-        addPoi(client, poi)
         val response = addPoi(client, poi)
 
-        assertEquals(HttpStatusCode.BadRequest, response.status)
-        assertEquals("Poi with this id already exist", response.bodyAsText())
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals("Poi correctly inserted", response.bodyAsText())
+
+        //Try to add the same poi to the db
+        val badResponse = addPoi(client, poi)
+
+        assertEquals(HttpStatusCode.BadRequest, badResponse.status)
+        assertEquals("Poi with this id already exist", badResponse.bodyAsText())
+    }
+
+
+    @Test
+    fun cityAddingTest() = testApplication {
+        environment {
+            config = ApplicationConfig("application-custom.conf")
+        }
+
+        val client = createClient {
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+
+        //Create a random city and add it to the database
+        val city = randomCity()
+        val response = addCity(client, city)
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals("City correctly inserted", response.bodyAsText())
+
+        //Try to add the same city to the db
+        val badResponse =  addCity(client, city)
+
+        assertEquals(HttpStatusCode.BadRequest, badResponse.status)
+        assertEquals("City with this id already exist", badResponse.bodyAsText())
     }
 
     /**
@@ -146,63 +116,91 @@ class ApplicationTest {
      */
     @Test
     fun getExistingPoi() = testApplication {
-        MapApplicationConfig("ktor.environment" to "test")
+        environment {
+            config = ApplicationConfig("application-custom.conf")
+        }
+
         val client = createClient {
             install(ContentNegotiation) {
                 json()
             }
         }
 
+        val poi = randomPoi()
+
+        addPoi(client, poi)
+
         val response = client.get("/poi/") {
             contentType(ContentType.Application.Json)
-            parameter("id", randomPoi._id)
+            parameter("id", poi._id)
         }
 
         val returnedPoi = Json.decodeFromString<Poi>(response.bodyAsText())
         assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals(randomPoi, returnedPoi)
+        assertEquals(poi, returnedPoi)
     }
 
     @Test
     fun getExistingCity() = testApplication {
-        MapApplicationConfig("ktor.environment" to "test")
+        environment {
+            config = ApplicationConfig("application-custom.conf")
+        }
+
         val client = createClient {
             install(ContentNegotiation) {
                 json()
             }
         }
 
+        val city = randomCity()
+        addCity(client, city)
+
         val response = client.get("/city/") {
             contentType(ContentType.Application.Json)
-            parameter("id", randomPoi.city._id)
+            parameter("id", city._id)
         }
 
+        print(response.bodyAsText())
         val returnedCity = Json.decodeFromString<City>(response.bodyAsText())
         assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals(randomPoi.city, returnedCity)
-
+        assertEquals(city, returnedCity)
     }
 
     @Test
     fun getPoisFromCity() = testApplication {
-        MapApplicationConfig("ktor.environment" to "test")
+        environment {
+            config = ApplicationConfig("application-custom.conf")
+        }
+
         val client = createClient {
             install(ContentNegotiation) {
                 json()
             }
         }
 
+        val poi = randomPoi()
+        val city = poi.city
+
+        //Add the poi and the city
+        addPoi(client, poi)
+        addCity(client, city)
+
         val response = client.get("/poisFromCity/") {
             contentType(ContentType.Application.Json)
-            parameter("id", "1000")
+            parameter("id", city._id)
         }
-        println(response.bodyAsText())
+
+        val poisReturned = Json.decodeFromString<List<Poi>>(response.bodyAsText())
+        assertEquals( 1, poisReturned.size) //Added only one poi inside the city
         assertEquals(HttpStatusCode.OK, response.status)
     }
 
     @Test
     fun getPoiWithErrors() = testApplication {
-        MapApplicationConfig("ktor.environment" to "test")
+        environment {
+            config = ApplicationConfig("application-custom.conf")
+        }
+
         val client = createClient {
             install(ContentNegotiation) {
                 json()
@@ -223,28 +221,53 @@ class ApplicationTest {
      */
     @Test
     fun getNearPois() = testApplication {
-        MapApplicationConfig("ktor.environment" to "test")
+        environment {
+            config = ApplicationConfig("application-custom.conf")
+        }
+
         val client = createClient {
             install(ContentNegotiation) {
                 json()
             }
         }
 
-        //Add two other pois near the one created by default
-        addPoi(client, randomPoi.copy(_id = randomPoi._id + 1, name = "Near1", lat = randomPoi.lat - 1))
-        addPoi(client, randomPoi.copy(_id = randomPoi._id + 2, name = "Near2", lng = randomPoi.lng + 1))
+        client.get("cleanTestDatabases")
+        //Add two other pois near the one created here
+        val poi = Poi(
+            _id = "nearPoiTestId",
+            name = "near0",
+            lat = 100000F,
+            lng = 100000F,
+            randomCity()
+        )
+
+        addPoi(client, poi)
+        addPoi(client, poi.copy(_id = poi._id + 1, name = "Near1", lat = poi.lat - 1))
+        addPoi(client, poi.copy(_id = poi._id + 2, name = "Near2", lng = poi.lng + 1))
 
         val response = client.get("/poisInArea/") {
             contentType(ContentType.Application.Json)
-            parameter("lat", randomPoi.lat)
-            parameter("lng", randomPoi.lng)
+            parameter("lat", poi.lat)
+            parameter("lng", poi.lng)
             parameter("radius", 10)
         }
 
         val poisReturned = Json.decodeFromString<List<Poi>>(response.bodyAsText())
 
         assertEquals(3, poisReturned.size)
-        assertContains(poisReturned, randomPoi, "Starting poi is not present in the area")
+        assertContains(poisReturned, poi, "Starting poi is not present in the area")
+
+        //Test without radius given
+        val response2 = client.get("/poisInArea/") {
+            contentType(ContentType.Application.Json)
+            parameter("lat", poi.lat)
+            parameter("lng", poi.lng)
+        }
+
+        val poisReturned2 = Json.decodeFromString<List<Poi>>(response2.bodyAsText())
+
+        assertEquals(3, poisReturned2.size)
+        assertContains(poisReturned2, poi, "Starting poi is not present in the area")
     }
 
     /**
@@ -252,21 +275,25 @@ class ApplicationTest {
      */
      @Test
      fun getCityGivenPoi() = testApplication {
-        MapApplicationConfig("ktor.environment" to "test")
+        environment {
+            config = ApplicationConfig("application-custom.conf")
+        }
+
         val client = createClient {
             install(ContentNegotiation) {
                 json()
             }
         }
 
-        println("Before req")
+        val poi = randomPoi()
+        addPoi(client, poi)
+
         val response = client.get("/cityByPoi/") {
             contentType(ContentType.Application.Json)
-            parameter("id", randomPoi._id)
+            parameter("id", poi._id)
         }
-        println(response.bodyAsText())
-        println("After req")
+
         val returnedCity = Json.decodeFromString<City>(response.bodyAsText())
-        assertEquals(randomPoi.city, returnedCity)
+        assertEquals(poi.city, returnedCity)
     }
 }
