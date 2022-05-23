@@ -2,6 +2,7 @@ package com.example
 
 import com.example.model.City
 import com.example.model.Poi
+
 import io.ktor.client.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
@@ -218,6 +219,7 @@ class ApplicationTest {
      * Get pois near the one given as parameter
      * TODO testaree senza radius fornito
      * TODO testare se non ci sono pois nella zona
+     * TODO testare se il clean del db funzioni
      */
     @Test
     fun getNearPois() = testApplication {

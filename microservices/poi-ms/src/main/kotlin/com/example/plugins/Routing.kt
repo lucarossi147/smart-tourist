@@ -12,21 +12,12 @@ import io.ktor.server.routing.*
 import org.bson.conversions.Bson
 import org.litote.kmongo.*
 
-
-/**
- * (POI)
- * (GAME)
- * I poi visitati da un utente
- * Il numero (sul totale) di poi visitati in una città da un utente
- * Quanti poi sono stati visitati in una città
- * Quante volte è stato visitato un poi
- * Le firme dato un poi (game)
- */
 fun Application.configureRouting() {
 
     val password = environment.config.property("ktor.deployment.DB_PWD").getString()
     val client = KMongo.createClient("mongodb+srv://smart-tourism:$password@cluster0.2cwaw.mongodb.net/")
     val databaseEnvironment = environment.config.property("ktor.environment").getString()
+
     val poiCollection = client.getDatabase(databaseEnvironment).getCollection<Poi>("pois")
     val citiesCollection = client.getDatabase(databaseEnvironment).getCollection<City>("cities")
 
@@ -103,6 +94,7 @@ fun Application.configureRouting() {
 
         /**
          * Receive a lat and a lng (spatial coordinates), and a radius and returns the poi inside that area
+         * TODO cosa succede se la lista è vuota???
          */
         get("/poisInArea/") {
             val lat = call.parameters["lat"] ?: return@get call.respondText(
