@@ -12,7 +12,6 @@ import androidx.fragment.app.Fragment
 
 import android.os.Bundle
 import android.os.Looper
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,7 +19,6 @@ import android.widget.Button
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.compose.ui.graphics.Color
 import androidx.core.content.ContextCompat
 import androidx.navigation.findNavController
 import com.google.android.gms.common.api.ResolvableApiException
@@ -34,23 +32,26 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.Task
 import io.github.lucarossi147.smarttourist.data.model.Category
-import io.github.lucarossi147.smarttourist.data.model.PointOfInterest
+import io.github.lucarossi147.smarttourist.data.model.City
+import io.github.lucarossi147.smarttourist.data.model.LoggedInUser
+import io.github.lucarossi147.smarttourist.data.model.POI
 
 private const val REQUESTING_LOCATION_UPDATES_KEY: String = "prove"
 private const val REQUEST_CHECK_SETTINGS = 0x1
 
-typealias POI = PointOfInterest
-
+private const val ARG_USER = "user"
 class MapsFragment : Fragment() {
 
+    private var user: LoggedInUser? = null
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var mMap: GoogleMap? = null
     private var myMarker: Marker? = null
     private lateinit var locationPermissionRequest: ActivityResultLauncher<Array<String>>
-    private var pointOfInterests:Set<PointOfInterest> = setOf(
-        POI(id = "1", name = "Central Park", pos = LatLng(40.771133,-73.974187), category = Category.NATURE, visited = true),
-        POI(id = "3", name = "Empire State Building", pos = LatLng(40.748817,-73.985428), category =  Category.FUN),
-        POI(id = "2", name = "Broadway", pos = LatLng(40.790886, -73.974709), category = Category.CULTURE)
+    private val city = City("idNewYork","New York", 40.730610, -73.935242)
+    private var POIs:Set<POI> = setOf(
+        POI(id = "1", name = "Central Park", lat = 40.771133, lng =-73.974187, city = city, category = Category.NATURE, visited = true),
+        POI(id = "3", name = "Empire State Building", lat = 40.748817, lng =-73.985428, city = city, category =  Category.FUN),
+        POI(id = "2", name = "Broadway", lat =40.790886, lng = -73.974709, city = city, category = Category.CULTURE)
     )
     private var markers: Set<Marker?> = emptySet()
 
@@ -69,6 +70,9 @@ class MapsFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        arguments?.let {
+            user = it.getParcelable(ARG_USER)
+        }
         val activity:Activity = activity?:return
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(activity)
 
@@ -77,13 +81,13 @@ class MapsFragment : Fragment() {
         ) { permissions ->
             when {
                 permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
-                    Log.i("PERMISSION", "FINE LOCATION")
+//                    Log.i("PERMISSION", "FINE LOCATION")
                 }
                 permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
-                    Log.i("PERMISSION", "COARSE LOCATION")
+//                    Log.i("PERMISSION", "COARSE LOCATION")
                 }
                 else -> {
-                    Log.i("PERMISSION", "NO PERMISSION GRANTED")
+//                    Log.i("PERMISSION", "NO PERMISSION GRANTED")
                 }
             }
         }
@@ -159,10 +163,10 @@ class MapsFragment : Fragment() {
         val activity: Activity = activity?: return@OnMapReadyCallback
         val context: Context = context?: return@OnMapReadyCallback
         mMap = googleMap
-        markers = pointOfInterests
+        markers = POIs
             .map {
             mMap?.addMarker(MarkerOptions()
-                .position(it.pos)
+                .position(LatLng(it.lat,it.lng))
                 .title(it.name)
                 .icon(
                     when (it.visited) {

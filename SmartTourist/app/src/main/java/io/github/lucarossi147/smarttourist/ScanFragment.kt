@@ -21,12 +21,13 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.navigation.findNavController
-import com.google.android.gms.maps.model.LatLng
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import io.github.lucarossi147.smarttourist.data.model.Category
+import io.github.lucarossi147.smarttourist.data.model.City
+import io.github.lucarossi147.smarttourist.data.model.POI
 import io.github.lucarossi147.smarttourist.databinding.FragmentScanBinding
 import io.ktor.client.*
 import io.ktor.client.engine.android.*
@@ -44,7 +45,9 @@ class ScanFragment : Fragment() {
     private lateinit var myContext: Context
 
     private class QrObservable (val view: View?,) {
-        val poi = POI("1","monsampietro morico", LatLng(45.0,45.0),
+        val poi = POI("1","monsampietro morico",
+            lat = 45.0,
+            lng = 45.0,
             pictures = listOf(
                 "https://placedog.net/800",
                 "https://placedog.net/820",
@@ -54,7 +57,7 @@ class ScanFragment : Fragment() {
                 "https://placedog.net/900",
                 ),
             category = Category.CULTURE,
-            snippet = "I live here",
+            city = City("id", "Monsampietro", lat = 45.0, 45.0),
             visited = true)
 
         var qr:String by Delegates.observable(""){

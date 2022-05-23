@@ -45,7 +45,7 @@
                 android:layout_height="wrap_content"
                 android:autofillHints=""
                 android:ems="10"
-                android:hint="@string/leave_a_message_for_other_people"
+                android:hint="@string/large_text"
                 android:gravity="start|top"
                 android:inputType="textMultiLine"
                 android:padding="@dimen/text_margin"
