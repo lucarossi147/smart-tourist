@@ -89,18 +89,12 @@ fun Application.configureRouting(config: JWTConfig) {
             }
         }
 
-        /*
-        get("/game"){
-            call.respond(
-                cl.get("https://game-service-container-cup3lszycq-uc.a.run.app")
-            )
-        }*/
-
         /**
          * All the requests inside this route has to be authenticated
          */
         authenticate("auth-jwt") {
             get("/test-auth") {
+                println("HERE")
                 val principal = call.principal<JWTPrincipal>()
                 val username = principal!!.payload.getClaim("username").asString()
                 val expiresAt = principal.expiresAt?.time?.minus(System.currentTimeMillis())
@@ -113,22 +107,25 @@ fun Application.configureRouting(config: JWTConfig) {
              */
             get("/game/visitByUser") {
                 val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString()
+                println("username: $username")
                 val id = usersCollection.findOne(User::username eq username)?._id
-                call.respond(
-                    cl.get("https://game-service-container-cup3lszycq-uc.a.run.app/visitsByUser") {
-                        parameter("id", id)
-                    })
+                println("id: $id")
+                val res = cl.get("https://game-service-container-cup3lszycq-uc.a.run.app/visitsByUser") {
+                    parameter("id", id)
+                }
+
+                call.respond(res.bodyAsText())
             }
 
             /**
              * Call the game microservice for adding a visit
              */
             post("/game/addVisit") {
-                val req = cl.post("https://game-service-container-cup3lszycq-uc.a.run.app/addVisit") {
+                val res = cl.post("https://game-service-container-cup3lszycq-uc.a.run.app/addVisit") {
                     contentType(ContentType.Application.Json)
                     setBody(call.receiveText())
                 }
-                call.respond(req.bodyAsText())
+                call.respond(res.bodyAsText())
             }
 
             get("/cleanUsersDb") {

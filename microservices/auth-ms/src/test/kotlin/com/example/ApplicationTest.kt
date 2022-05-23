@@ -99,6 +99,7 @@ class ApplicationTest {
         environment {
             config = ApplicationConfig("application-custom.conf")
         }
+
         val client = createClient {
             install(ContentNegotiation) {
                 json()
