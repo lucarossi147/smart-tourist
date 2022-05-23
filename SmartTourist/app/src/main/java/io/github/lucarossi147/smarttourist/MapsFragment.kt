@@ -4,9 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
-import android.content.IntentSender
 import android.content.pm.PackageManager
-import android.location.Location
 import android.os.Build
 import androidx.fragment.app.Fragment
 
@@ -21,18 +19,16 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.navigation.findNavController
-import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
-import com.google.android.gms.location.SettingsClient
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
-import com.google.android.gms.tasks.Task
 import com.google.gson.Gson
 import io.github.lucarossi147.smarttourist.data.model.Category
+import io.github.lucarossi147.smarttourist.data.model.City
 import io.github.lucarossi147.smarttourist.data.model.LoggedInUser
 import io.github.lucarossi147.smarttourist.data.model.POI
 import io.ktor.client.*
@@ -44,56 +40,113 @@ import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.*
+import kotlin.properties.Delegates
 
 private const val REQUESTING_LOCATION_UPDATES_KEY: String = "prove"
-private const val REQUEST_CHECK_SETTINGS = 0x1
 
+private const val CESENA_LAT = 44.133331
+private const val CESENA_LNG = 12.233333
+private const val DEFAULT_ZOOM = 14.0F
 private const val ARG_USER = "user"
+
 class MapsFragment : Fragment() {
 
-    private var user: LoggedInUser? = null
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private var mMap: GoogleMap? = null
-    private var myMarker: Marker? = null
     private lateinit var locationPermissionRequest: ActivityResultLauncher<Array<String>>
-    
-    private var poiMarkers: List<Marker?> = emptyList()
-    private var cityMarkers: List<Marker?> = emptyList()
+    private lateinit var mapHandler: MapHandler
 
     private val locationCallback = object:LocationCallback() {
         override fun onLocationResult(p0: LocationResult) {
             super.onLocationResult(p0)
             for (l in p0.locations) {
-                val pos = LatLng(l.latitude,l.longitude)
-                //first appearance of user
-                if (myMarker == null) {
-                    myMarker = mMap?.addMarker(MarkerOptions()
-                        .position(pos)
-                        .title("You are here!"))
-                    //get POIs next to me
-                    mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 14.0F))
-                } else {
-                    if (cityMarkers.isEmpty()) {
-                        initPOIs(pos)
-                    }
-                    myMarker?.position = LatLng(l.latitude,l.longitude)
-                }
+                mapHandler.updateUserPosition(l.latitude, l.longitude)
             }
         }
     }
 
-    private fun initPOIs(pos: LatLng){
-        CoroutineScope(Dispatchers.IO).launch {
-            val res = HttpClient(Android)
-                .get("${Constants.POI_URL}poisInArea/?lat=${pos.latitude}&lng=${pos.longitude}&radius=10")
-            if (res.status.isSuccess()){
-                val pois = Gson()
-                    .fromJson(res.bodyAsText(), Array<POI>::class.java)
-                    .toList()
-                val cities = pois.map { it.city }
+    private class MapUI(val googleMap: GoogleMap) {
+        var userMarker: Marker? = null
+        var poiMarkers:List<Marker?> = emptyList()
+        var cityMarkers: List<Marker?> = emptyList()
 
-                CoroutineScope(Dispatchers.Main).launch {
-                    drawPOIs(pois)
+        fun drawUser(lat: Double, lng: Double) {
+            val pos = LatLng(lat, lng)
+            if (userMarker == null) {
+                userMarker = googleMap.addMarker(MarkerOptions()
+                    .position(pos)
+                    .title("You are here!"))
+                //get POIs next to me
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, DEFAULT_ZOOM))
+            } else {
+                userMarker?.position = pos
+            }
+        }
+
+        fun drawPois(pois: List<POI>){
+            poiMarkers = pois.map {
+                googleMap.addMarker(MarkerOptions()
+                    .position(LatLng(it.lat,it.lng))
+                    .title(it.name)
+                    .icon(when (it.visited) {
+                        true -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)
+                        false -> when (it.category) {
+                            Category.FUN -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN)
+                            Category.CULTURE -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)
+                            Category.NATURE -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
+                        }
+                    }))
+            }
+        }
+
+        fun drawCities(cities: List<City>){
+            cityMarkers = cities.map {
+                googleMap.addMarker(MarkerOptions()
+                    .position(LatLng(it.lat,it.lng))
+                    .title(it.name)
+                    .icon(
+                        BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA)))
+            }
+        }
+    }
+
+    private class MapHandler (googleMap: GoogleMap, user:LoggedInUser){
+        var mapUI: MapUI = MapUI(googleMap)
+        init{
+            fetchPOIs()
+        }
+
+        var user: LoggedInUser by Delegates.observable(user) {
+            _,_, updatedUser ->
+            CoroutineScope(Dispatchers.Main).launch {
+                mapUI.drawUser(updatedUser.lat, updatedUser.lng)
+                fetchPOIs(updatedUser.lat, updatedUser.lng)
+            }
+        }
+        var pois:List<POI> by Delegates.observable(emptyList()) {
+            _,_, newPois ->
+            CoroutineScope(Dispatchers.Main).launch {
+                mapUI.drawPois(newPois)
+            }
+        }
+        var cities: List<City> by Delegates.observable(emptyList()) {
+                _,_, newCities ->
+            CoroutineScope(Dispatchers.Main).launch {
+                mapUI.drawCities(newCities)
+            }
+        }
+        fun updateUserPosition(lat:Double, lng: Double) {
+            user = user.copy(lat = lat, lng = lng)
+        }
+        fun fetchPOIs(lat:Double = CESENA_LAT, lng: Double = CESENA_LNG, radius: Int = 10 ){
+            CoroutineScope(Dispatchers.IO).launch {
+                val res = HttpClient(Android)
+                    .get("${Constants.POI_URL}poisInArea/?lat=${lat}&lng=${lng}&radius=${radius}")
+                if (res.status.isSuccess()){
+                    pois = Gson()
+                        .fromJson(res.bodyAsText(), Array<POI>::class.java)
+                        .toList()
+                    cities = pois.map { it.city }
                 }
             }
         }
@@ -113,9 +166,6 @@ class MapsFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        arguments?.let {
-            user = it.getParcelable(ARG_USER)
-        }
         val activity:Activity = activity?:return
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(activity)
 
@@ -184,66 +234,13 @@ class MapsFragment : Fragment() {
 
     @SuppressLint("MissingPermission")
     private val callback = OnMapReadyCallback { googleMap ->
-        mMap = googleMap
+
+        val user: LoggedInUser = arguments?.getParcelable(ARG_USER) ?: return@OnMapReadyCallback
+        mapHandler = MapHandler(googleMap, user)
         val activity: Activity = activity?: return@OnMapReadyCallback
         val context: Context = context?: return@OnMapReadyCallback
-        mMap = googleMap
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
             requestPermission()
-        }
-
-        fusedLocationClient.lastLocation
-            .addOnSuccessListener { location : Location? ->
-                // Got last known location. In some rare situations this can be null.
-                val myPos = LatLng(location?.latitude?:40.730610, location?.longitude?: -73.935242)
-                if (location!= null) {
-                    myMarker = mMap?.addMarker(MarkerOptions().position(myPos).title("You are here!"))
-                    initPOIs(myPos)
-                }
-                mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(myPos, 14.0F))
-
-                val client: SettingsClient = LocationServices.getSettingsClient(activity)
-                val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
-
-                task.addOnSuccessListener { locationSettingsResponse ->
-                    // All location settings are satisfied. The client can initialize
-                    // location requests here.
-                    // ...
-                }
-
-                task.addOnFailureListener { exception ->
-                    if (exception is ResolvableApiException){
-                        // Location settings are not satisfied, but this can be fixed
-                        // by showing the user a dialog.
-                        try {
-                            // Show the dialog by calling startResolutionForResult(),
-                            // and check the result in onActivityResult().
-                            exception.startResolutionForResult(activity,
-                                REQUEST_CHECK_SETTINGS)
-                        } catch (sendEx: IntentSender.SendIntentException) {
-                            // Ignore the error.
-                        }
-                    }
-                }
-            }
-    }
-
-
-
-
-    private fun drawPOIs(pois: List<POI>):List<Marker?>{
-         return pois.map {
-            mMap?.addMarker(MarkerOptions()
-                .position(LatLng(it.lat,it.lng))
-                .title(it.name)
-                .icon(when (it.visited) {
-                    true -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)
-                    false -> when (it.category) {
-                        Category.FUN -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN)
-                        Category.CULTURE -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)
-                        Category.NATURE -> BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
-                    }
-                }))
         }
     }
 
