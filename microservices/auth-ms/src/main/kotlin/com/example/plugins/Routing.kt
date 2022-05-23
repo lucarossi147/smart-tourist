@@ -115,7 +115,7 @@ fun Application.configureRouting(config: JWTConfig) {
                 val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString()
                 val id = usersCollection.findOne(User::username eq username)?._id
                 call.respond(
-                    cl.get("https://game-service-container-cup3lszycq-uc.a.run.app/poisByUser") {
+                    cl.get("https://game-service-container-cup3lszycq-uc.a.run.app/visitsByUser") {
                         parameter("id", id)
                     })
             }
