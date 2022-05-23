@@ -22,8 +22,6 @@ fun Application.configureRouting() {
     val poiCollection = client.getDatabase(databaseEnvironment).getCollection<Poi>("pois")
     val citiesCollection = client.getDatabase(databaseEnvironment).getCollection<City>("cities")
 
-    //Quando ricevo un poi mi serve solo l'id, quando lo invio serve tutto (data class Poi)
-
     routing {
 
         /**
@@ -67,7 +65,6 @@ fun Application.configureRouting() {
         }
 
         /**
-         * TODO in risposta devo unire la city sostituendo l'id
          * Receive an id and returns the Poi with the same id if exist, 404 otherwise
          */
         get("/poi/{id?}") {
@@ -114,7 +111,6 @@ fun Application.configureRouting() {
 
 
         /**
-         *  TODO in risposta devo unire la city sostituendo l'id
          * Receive a lat and a lng (spatial coordinates), and a radius and returns the poi inside that area
          * TODO cosa succede se la lista è vuota???
          */
@@ -148,7 +144,6 @@ fun Application.configureRouting() {
         }
 
         /**
-         *  TODO in risposta devo unire la city sostituendo l'id
          * Receive an id and returns the Poi inside the city with the id if exist, 404 otherwise
          */
         get("/poisFromCity/{id?}") {

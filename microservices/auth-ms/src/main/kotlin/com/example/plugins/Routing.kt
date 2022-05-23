@@ -5,6 +5,7 @@ import com.example.model.User
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -17,10 +18,7 @@ import kotlinx.html.body
 import kotlinx.html.h1
 import kotlinx.html.head
 import kotlinx.html.title
-import org.litote.kmongo.KMongo
-import org.litote.kmongo.eq
-import org.litote.kmongo.findOne
-import org.litote.kmongo.getCollection
+import org.litote.kmongo.*
 
 
 fun Application.configureRouting(config: JWTConfig) {
@@ -35,7 +33,7 @@ fun Application.configureRouting(config: JWTConfig) {
 
     routing {
         get("/") {
-            call.respondHtml(HttpStatusCode.OK){
+            call.respondHtml(HttpStatusCode.OK) {
                 head {
                     title { +"smartTourist" }
                 }
@@ -78,7 +76,7 @@ fun Application.configureRouting(config: JWTConfig) {
                 call.respondText("User with this username already exist", status = HttpStatusCode.BadRequest)
             } else {
                 usersCollection.insertOne(user)
-                call.respond(HttpStatusCode.Created,hashMapOf("token" to config.generateToken(user.username)))
+                call.respond(HttpStatusCode.Created, hashMapOf("token" to config.generateToken(user.username)))
             }
         }
 
@@ -110,20 +108,30 @@ fun Application.configureRouting(config: JWTConfig) {
                 call.respondText("Hello, $username! Token will expire in $expiresAt ms.")
             }
 
-            get("/game/poisByUser"){
+            /**
+             * Call game microservice for getting the visits made by a user
+             */
+            get("/game/visitByUser") {
                 val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString()
+                val id = usersCollection.findOne(User::username eq username)?._id
                 call.respond(
-                    cl.get("https://game-service-container-cup3lszycq-uc.a.run.app/poisByUser"){
-                        parameter("id", username)
-                    }
-                )
+                    cl.get("https://game-service-container-cup3lszycq-uc.a.run.app/poisByUser") {
+                        parameter("id", id)
+                    })
             }
 
-            post("/game/addVisit"){
-                call.respondRedirect("https://game-service-container-cup3lszycq-uc.a.run.app/addVisit")
+            /**
+             * Call the game microservice for adding a visit
+             */
+            post("/game/addVisit") {
+                val req = cl.post("https://game-service-container-cup3lszycq-uc.a.run.app/addVisit") {
+                    contentType(ContentType.Application.Json)
+                    setBody(call.receiveText())
+                }
+                call.respond(req.bodyAsText())
             }
 
-            get("/cleanUsersDb"){
+            get("/cleanUsersDb") {
                 client.getDatabase("test").getCollection<User>("users").deleteMany()
             }
         }

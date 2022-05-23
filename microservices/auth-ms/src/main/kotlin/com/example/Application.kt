@@ -13,8 +13,6 @@ import io.ktor.server.netty.EngineMain
 
 /* TODO
 Cifrare password quando vengono salvate
-
-Usare 201 come risposta?
  */
 
 

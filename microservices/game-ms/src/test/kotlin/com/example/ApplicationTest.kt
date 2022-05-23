@@ -13,6 +13,7 @@ import kotlinx.serialization.json.Json
 import model.Visit
 import org.bson.types.ObjectId
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 
 class ApplicationTest {
@@ -71,7 +72,8 @@ class ApplicationTest {
         val testUser = "user0"
         val visit = randomVisit().copy(idUser = testUser)
         addVisit(client, visit)
-        val response = client.get("/poisByUser/") {
+
+        val response = client.get("/visitByUser/") {
             contentType(ContentType.Application.Json)
             parameter("id", visit.idUser)
         }
@@ -81,7 +83,38 @@ class ApplicationTest {
         assertEquals(HttpStatusCode.OK, response.status)
         assertEquals(1, returnedList.size)
         assertEquals(visit, returnedList.first())
+    }
 
+    /**
+     *
+     */
+    @Test
+    fun testGetSignaturesFromPoi() = testApplication {
+        environment {
+            config = ApplicationConfig("application-custom.conf")
+        }
 
+        val client = createClient {
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+
+        assertEquals(client.get("/cleanVisits/").status, HttpStatusCode.OK)
+
+        //Create 3 visit with the same poi id
+        val visit = randomVisit()
+        addVisit(client, visit)
+        addVisit(client, visit.copy(_id = "visit1"))
+        addVisit(client, visit.copy(_id = "visit2"))
+
+        val response = client.get("/signatures/") {
+            contentType(ContentType.Application.Json)
+            parameter("id", visit.idPoi)
+        }
+
+        val visits = Json.decodeFromString<List<String>>(response.bodyAsText())
+        assertEquals(3, visits.size)
+        //assertContains(visits, visit)
     }
 }

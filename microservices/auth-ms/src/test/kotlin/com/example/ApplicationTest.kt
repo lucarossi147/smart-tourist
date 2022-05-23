@@ -12,13 +12,17 @@ import io.ktor.server.testing.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import org.bson.types.ObjectId
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ApplicationTest {
 
-    private fun getToken(s: String){
-        val jwt = Json.parseToJsonElement(s)
+    /**
+     * Returns a jwt token given a default server response
+     */
+    private fun getToken(s: String): String {
+        return Json.parseToJsonElement(s)
             .jsonObject["token"]
             .toString()
             .drop(1)
@@ -111,7 +115,6 @@ class ApplicationTest {
 
         assertEquals(HttpStatusCode.OK, responseToLogin.status)
 
-
         val jwt = getToken(responseToLogin.bodyAsText())
 
         val responseToAuth = client.get("/test-auth"){
@@ -143,8 +146,7 @@ class ApplicationTest {
         assertEquals(responseToBadAuth.bodyAsText(),"Token is not valid or has expired")
     }
 
-    @Test
-
+    @Ignore
     fun testGetVisit() = testApplication {
         environment {
             config = ApplicationConfig("application-custom.conf")
@@ -155,6 +157,7 @@ class ApplicationTest {
                 json()
             }
         }
+
     }
 
     @Test
@@ -168,13 +171,18 @@ class ApplicationTest {
                 json()
             }
         }
-
+        //Create a random User and sign into the server
         val user = createRandomUser()
         signup(user, client)
-        val jwt = getToken(client.post("/login") {
+
+        //Login the User
+        val response = client.post("/login") {
             contentType(ContentType.Application.Json)
             setBody(user)
-        }.bodyAsText())
+        }.bodyAsText()
+
+        //Parse the token
+        val jwt = getToken(response)
 
         val postRequest = """
         {
@@ -191,7 +199,7 @@ class ApplicationTest {
             setBody(Json.parseToJsonElement(postRequest))
         }
 
-        println(res)
+        assertEquals(HttpStatusCode.OK, res.status)
     }
 
 }

@@ -9,7 +9,6 @@ import model.Visit
 import org.litote.kmongo.*
 
 /**
- * (POI)
  * (GAME)
  * Il numero (sul totale) di poi visitati in una città da un utente
  * Quanti poi sono stati visitati in una città
@@ -26,7 +25,25 @@ fun Application.configureRouting() {
     val visitCollection = client.getDatabase(databaseEnvironment).getCollection<Visit>("visits")
 
     routing {
+        /**
+         * Get list of a signature given a Poi id
+         */
+        get("/signatures/") {
+            val idPoi = call.parameters["id"] ?: return@get call.respondText(
+                "Missing id of the Poi",
+                status = HttpStatusCode.BadRequest
+            )
 
+            val visits = visitCollection.aggregate<Visit>(
+                    match(
+                        Visit::idPoi eq idPoi
+                    )
+                    //project(Visit::idPoi)
+            ).toList()
+
+            val poiList : List<String> = visits.map { it.idPoi }
+            call.respond(poiList)
+        }
         post("/addVisit") {
             val receivedVisit = call.receive<Visit>()
             if (visitCollection.findOne(Visit::_id eq receivedVisit._id) != null) {
@@ -39,7 +56,10 @@ fun Application.configureRouting() {
             }
         }
 
-        get("/poisByUser/") {
+        /**
+         * Returns the visit made
+         */
+        get("/visitByUser/") {
 
             val idUser = call.parameters["id"] ?: return@get call.respondText(
                 "Missing id of the user",
