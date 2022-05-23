@@ -2,6 +2,7 @@ package com.example.plugins
 
 import com.example.model.City
 import com.example.model.Poi
+import com.example.model.PoiWithCity
 import com.mongodb.client.model.Filters.gt
 import com.mongodb.client.model.Filters.lt
 import io.ktor.http.*
@@ -21,22 +22,30 @@ fun Application.configureRouting() {
     val poiCollection = client.getDatabase(databaseEnvironment).getCollection<Poi>("pois")
     val citiesCollection = client.getDatabase(databaseEnvironment).getCollection<City>("cities")
 
+    //Quando ricevo un poi mi serve solo l'id, quando lo invio serve tutto (data class Poi)
+
     routing {
 
         /**
          * Receive a Poi from POST request and add it to database, if no Poi with this id exist
          */
         post("/addPoi") {
-            val receivedPoi = call.receive<Poi>() //Receive a poi using json in POST request
+            val poi = call.receive<Poi>() //Receive a poi using json in POST request
 
             //Search for a poi with the same Id of the one received
-            if (poiCollection.findOne(Poi::_id eq receivedPoi._id) != null) {
+            if (poiCollection.findOne(Poi::_id eq poi._id) != null) {
                 call.respondText(
                     "Poi with this id already exist", status = HttpStatusCode.BadRequest
                 )
             } else {
-                poiCollection.insertOne(receivedPoi)
-                call.respondText("Poi correctly inserted", status = HttpStatusCode.OK)
+                //Search for a city in the cities collection
+                if (citiesCollection.findOne(City::_id eq poi.city) != null) {
+                    poiCollection.insertOne(poi)
+                    call.respondText("Poi correctly inserted", status = HttpStatusCode.OK)
+
+                } else {
+                    call.respondText("Poi has a incorrect city Id", status = HttpStatusCode.BadRequest)
+                }
             }
         }
 
@@ -46,7 +55,7 @@ fun Application.configureRouting() {
         post("/addCity") {
             val receivedCity = call.receive<City>()
 
-            //Search for a poi with the same Id of the one received
+            //Search for a city with the same Id of the one received
             if (citiesCollection.findOne(City::_id eq receivedCity._id) != null) {
                 call.respondText(
                     "City with this id already exist", status = HttpStatusCode.BadRequest
@@ -58,6 +67,7 @@ fun Application.configureRouting() {
         }
 
         /**
+         * TODO in risposta devo unire la city sostituendo l'id
          * Receive an id and returns the Poi with the same id if exist, 404 otherwise
          */
         get("/poi/{id?}") {
@@ -66,12 +76,23 @@ fun Application.configureRouting() {
                 status = HttpStatusCode.BadRequest
             )
 
-            val poi = poiCollection.findOne(Poi::_id eq idString) ?: return@get call.respondText(
-                "No poi with this id: $idString",
-                status = HttpStatusCode.NotFound
-            )
+            val pois = poiCollection.aggregate<PoiWithCity>(
+                    lookup(
+                        from =  "cities",
+                        localField = "city",
+                        foreignField = "_id",
+                        newAs =  "city"
+                    ),
+                    match(
+                        Poi::_id eq idString
+                    ),
+                    unwind("\$city")
+            ).toList()
 
-            call.respond(poi)
+            if(pois.isEmpty()){
+                call.respondText("No poi with this id: $idString", status = HttpStatusCode.NotFound)
+            }
+            call.respond(pois)
         }
 
         /**
@@ -93,6 +114,7 @@ fun Application.configureRouting() {
 
 
         /**
+         *  TODO in risposta devo unire la city sostituendo l'id
          * Receive a lat and a lng (spatial coordinates), and a radius and returns the poi inside that area
          * TODO cosa succede se la lista è vuota???
          */
@@ -126,6 +148,7 @@ fun Application.configureRouting() {
         }
 
         /**
+         *  TODO in risposta devo unire la city sostituendo l'id
          * Receive an id and returns the Poi inside the city with the id if exist, 404 otherwise
          */
         get("/poisFromCity/{id?}") {
@@ -134,10 +157,17 @@ fun Application.configureRouting() {
                 status = HttpStatusCode.BadRequest
             )
 
-            val pois = poiCollection.aggregate<Poi>(
+            val pois = poiCollection.aggregate<PoiWithCity>(
+                lookup(
+                    from =  "cities",
+                    localField = "city",
+                    foreignField = "_id",
+                    newAs =  "city"
+                ),
                 match(
                     Poi::city / City::_id eq idString
-                )
+                ),
+                unwind("\$city")
             ).toList()
 
             call.respond(pois)
@@ -158,7 +188,13 @@ fun Application.configureRouting() {
                 "Missing poi with this Id",
                 status = HttpStatusCode.NotFound
             )
-            call.respond(poi.city)
+
+            val city = citiesCollection.findOne(City::_id eq poi.city) ?: return@get call.respondText(
+                "Poi has an illegal city id",
+                status = HttpStatusCode.BadRequest
+            )
+
+            call.respond(city)
         }
     }
 }

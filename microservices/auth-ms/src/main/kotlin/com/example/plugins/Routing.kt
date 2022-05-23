@@ -2,6 +2,9 @@ package com.example.plugins
 
 import com.example.JWTConfig
 import com.example.model.User
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -23,10 +26,12 @@ import org.litote.kmongo.getCollection
 fun Application.configureRouting(config: JWTConfig) {
 
     val databaseEnvironment = environment.config.property("ktor.environment").getString()
-    val password = environment.config.property("ktor.deployment.mongodbpassword").getString()
+    val password = environment.config.property("ktor.deployment.DB_PWD").getString()
     val client = KMongo.createClient("mongodb+srv://smart-tourism:$password@cluster0.2cwaw.mongodb.net")
 
-    val col = client.getDatabase(databaseEnvironment).getCollection<User>("users")
+    val usersCollection = client.getDatabase(databaseEnvironment).getCollection<User>("users")
+
+    val cl = HttpClient(CIO)
 
     routing {
         get("/") {
@@ -44,7 +49,7 @@ fun Application.configureRouting(config: JWTConfig) {
 
         post("/login") {
             val user = call.receive<User>()
-            val userInDb = col.findOne(User::username eq user.username)
+            val userInDb = usersCollection.findOne(User::username eq user.username)
 
             if (userInDb != null) {
                 if (user.password == userInDb.password) {
@@ -68,18 +73,18 @@ fun Application.configureRouting(config: JWTConfig) {
          */
         post("/signup") {
             val user = call.receive<User>()
-            val userInDb = col.findOne(User::username eq user.username)
+            val userInDb = usersCollection.findOne(User::username eq user.username)
             if (userInDb != null) {
                 call.respondText("User with this username already exist", status = HttpStatusCode.BadRequest)
             } else {
-                col.insertOne(user)
+                usersCollection.insertOne(user)
                 call.respond(HttpStatusCode.Created,hashMapOf("token" to config.generateToken(user.username)))
             }
         }
 
         post("/delete") {
             val user = call.receive<User>()
-            if (col.findOneAndDelete(User::username eq user.username) == null) {
+            if (usersCollection.findOneAndDelete(User::username eq user.username) == null) {
                 call.respondText("User with this username doesn't exist", status = HttpStatusCode.BadRequest)
             } else {
                 call.respondText("User deleted", status = HttpStatusCode.OK)
@@ -97,13 +102,29 @@ fun Application.configureRouting(config: JWTConfig) {
          * All the requests inside this route has to be authenticated
          */
         authenticate("auth-jwt") {
-
             get("/test-auth") {
                 val principal = call.principal<JWTPrincipal>()
                 val username = principal!!.payload.getClaim("username").asString()
                 val expiresAt = principal.expiresAt?.time?.minus(System.currentTimeMillis())
 
                 call.respondText("Hello, $username! Token will expire in $expiresAt ms.")
+            }
+
+            get("/game/poisByUser"){
+                val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString()
+                call.respond(
+                    cl.get("https://game-service-container-cup3lszycq-uc.a.run.app/poisByUser"){
+                        parameter("id", username)
+                    }
+                )
+            }
+
+            post("/game/addVisit"){
+                call.respondRedirect("https://game-service-container-cup3lszycq-uc.a.run.app/addVisit")
+            }
+
+            get("/cleanUsersDb"){
+                client.getDatabase("test").getCollection<User>("users").deleteMany()
             }
         }
     }

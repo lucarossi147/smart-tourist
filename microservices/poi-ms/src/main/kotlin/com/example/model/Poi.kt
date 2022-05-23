@@ -3,20 +3,21 @@ package com.example.model
 import kotlinx.serialization.*
 
 
+
+
 @Serializable
-data class Poi(
+data class Poi (
     @Contextual
     val _id: String,
     val name: String,
     val lat: Float,
     val lng: Float,
-    val city: City,
+    val city: String,
     val info: String = "",
     val pictures: List<String> = emptyList(),
     val category: Category = Category.CULTURE,
     val visited: Boolean = false
 )
-
 /*
 {
     private fun distance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {

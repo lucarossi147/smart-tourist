@@ -12,12 +12,18 @@ import io.ktor.server.testing.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import org.bson.types.ObjectId
-import org.junit.Before
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ApplicationTest {
 
+    private fun getToken(s: String){
+        val jwt = Json.parseToJsonElement(s)
+            .jsonObject["token"]
+            .toString()
+            .drop(1)
+            .dropLast(1)
+    }
     /**
      * Create a pseudo-random number for the user creation
      */
@@ -28,18 +34,10 @@ class ApplicationTest {
      */
     private fun createRandomUser(): User =  User( ObjectId().toString(),"user$rand", "password$rand")
 
-    @Before
-    fun prepareTest() = testApplication {
-        environment {
-            config = MapApplicationConfig("ktor.environment" to "test")
-        }
-    }
-
     /**
      * Utility function for the signup of a user
      */
     private suspend fun signup(user: User, client: HttpClient) : HttpResponse{
-        MapApplicationConfig("ktor.environment" to "test")
         return client.post("/signup") {
             contentType(ContentType.Application.Json)
             setBody(user)
@@ -52,6 +50,10 @@ class ApplicationTest {
      */
     @Test
     fun testSignup() = testApplication {
+        environment {
+            config = ApplicationConfig("application-custom.conf")
+        }
+
         val client = createClient {
             install(ContentNegotiation) {
                 json()
@@ -68,6 +70,9 @@ class ApplicationTest {
      */
     @Test
     fun testExistingUserSignup() = testApplication {
+        environment {
+            config = ApplicationConfig("application-custom.conf")
+        }
         val client = createClient {
             install(ContentNegotiation) {
                 json()
@@ -87,8 +92,9 @@ class ApplicationTest {
      */
     @Test
     fun testLogin() = testApplication {
-        MapApplicationConfig("ktor.environment" to "test")
-
+        environment {
+            config = ApplicationConfig("application-custom.conf")
+        }
         val client = createClient {
             install(ContentNegotiation) {
                 json()
@@ -105,11 +111,8 @@ class ApplicationTest {
 
         assertEquals(HttpStatusCode.OK, responseToLogin.status)
 
-        val jwt = Json.parseToJsonElement(responseToLogin.bodyAsText())
-            .jsonObject["token"]
-            .toString()
-            .drop(1)
-            .dropLast(1)
+
+        val jwt = getToken(responseToLogin.bodyAsText())
 
         val responseToAuth = client.get("/test-auth"){
             header("Authorization", "Bearer $jwt")
@@ -122,7 +125,9 @@ class ApplicationTest {
 
     @Test
     fun testBadAuthRequest() = testApplication {
-        MapApplicationConfig("ktor.environment" to "test")
+        environment {
+            config = ApplicationConfig("application-custom.conf")
+        }
 
         val client = createClient {
             install(ContentNegotiation){
@@ -136,6 +141,57 @@ class ApplicationTest {
 
         assertEquals(HttpStatusCode.Unauthorized, responseToBadAuth.status)
         assertEquals(responseToBadAuth.bodyAsText(),"Token is not valid or has expired")
+    }
+
+    @Test
+
+    fun testGetVisit() = testApplication {
+        environment {
+            config = ApplicationConfig("application-custom.conf")
+        }
+
+        val client = createClient {
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+    }
+
+    @Test
+    fun testPostVisit() = testApplication {
+        environment {
+            config = ApplicationConfig("application-custom.conf")
+        }
+
+        val client = createClient {
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+
+        val user = createRandomUser()
+        signup(user, client)
+        val jwt = getToken(client.post("/login") {
+            contentType(ContentType.Application.Json)
+            setBody(user)
+        }.bodyAsText())
+
+        val postRequest = """
+        {
+            "_id": "idVisit",
+            "idUser": "user0",
+            "idPoi": "idPoi",
+            "signature": "testSignature"
+        }
+        """.trimIndent()
+
+        val res = client.post("/game/addVisit"){
+            header("Authorization", "Bearer $jwt")
+            contentType(ContentType.Application.Json)
+            setBody(Json.parseToJsonElement(postRequest))
+        }
+
+        println(res)
     }
 
 }
