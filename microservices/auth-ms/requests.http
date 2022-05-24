@@ -10,7 +10,7 @@ Content-Type: application/json
 > {% client.global.set("auth_token", response.body.token); %}
 
 ### Step 2. Use a JWT token to authorize.
-GET {{address}}/hello
+GET {{address}}/test-auth
 Authorization: Bearer {{auth_token}}
 
 
@@ -19,7 +19,7 @@ POST {{address}}/signup
 Content-Type: application/json
 
 {
-  "username": "jetbrains1212",
+  "username": "jetbrains",
   "password": "foobar"
 }
 

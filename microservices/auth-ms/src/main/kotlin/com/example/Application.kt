@@ -39,7 +39,6 @@ fun Application.module() {
 
     install(Authentication) {
         jwt("auth-jwt") {
-            realm = config.realm
 
             verifier(
                 config.generateVerifier()

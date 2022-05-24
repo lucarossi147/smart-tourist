@@ -93,6 +93,7 @@ fun Application.configureRouting(config: JWTConfig) {
          * All the requests inside this route has to be authenticated
          */
         authenticate("auth-jwt") {
+
             get("/test-auth") {
                 println("HERE")
                 val principal = call.principal<JWTPrincipal>()
@@ -107,9 +108,7 @@ fun Application.configureRouting(config: JWTConfig) {
              */
             get("/game/visitByUser") {
                 val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString()
-                println("username: $username")
                 val id = usersCollection.findOne(User::username eq username)?._id
-                println("id: $id")
                 val res = cl.get("https://game-service-container-cup3lszycq-uc.a.run.app/visitsByUser") {
                     parameter("id", id)
                 }

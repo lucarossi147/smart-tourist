@@ -13,8 +13,8 @@ class JWTConfig(
 ){
     fun generateToken(username: String): String? {
         return JWT.create()
-            .withAudience(audience)
-            .withIssuer(issuer)
+            //.withAudience(audience)
+            //.withIssuer(issuer)
             .withClaim("username", username)
             .withExpiresAt(Date(System.currentTimeMillis() + 60000 * 60 * 24)) //A day
             .sign(Algorithm.HMAC256(secret))
@@ -22,8 +22,8 @@ class JWTConfig(
 
     fun generateVerifier(): JWTVerifier {
         return JWT.require(Algorithm.HMAC256(secret))
-            .withAudience(audience)
-            .withIssuer(issuer)
+            //.withAudience(audience)
+            //.withIssuer(issuer)
             .build()
     }
 }

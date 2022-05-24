@@ -28,6 +28,7 @@ class ApplicationTest {
             .drop(1)
             .dropLast(1)
     }
+
     /**
      * Create a pseudo-random number for the user creation
      */
@@ -36,12 +37,12 @@ class ApplicationTest {
     /**
      * Create a random User with pseudo-random password and username
      */
-    private fun createRandomUser(): User =  User( ObjectId().toString(),"user$rand", "password$rand")
+    private fun createRandomUser(): User = User(ObjectId().toString(), "user$rand", "password$rand")
 
     /**
      * Utility function for the signup of a user
      */
-    private suspend fun signup(user: User, client: HttpClient) : HttpResponse{
+    private suspend fun signup(user: User, client: HttpClient): HttpResponse {
         return client.post("/signup") {
             contentType(ContentType.Application.Json)
             setBody(user)
@@ -118,7 +119,7 @@ class ApplicationTest {
 
         val jwt = getToken(responseToLogin.bodyAsText())
 
-        val responseToAuth = client.get("/test-auth"){
+        val responseToAuth = client.get("/test-auth") {
             header("Authorization", "Bearer $jwt")
         }
 
@@ -134,17 +135,17 @@ class ApplicationTest {
         }
 
         val client = createClient {
-            install(ContentNegotiation){
+            install(ContentNegotiation) {
                 json()
             }
         }
 
-        val responseToBadAuth = client.get("/test-auth"){
+        val responseToBadAuth = client.get("/test-auth") {
             bearerAuth("")
         }
 
         assertEquals(HttpStatusCode.Unauthorized, responseToBadAuth.status)
-        assertEquals(responseToBadAuth.bodyAsText(),"Token is not valid or has expired")
+        assertEquals(responseToBadAuth.bodyAsText(), "Token is not valid or has expired")
     }
 
     @Ignore
@@ -194,7 +195,7 @@ class ApplicationTest {
         }
         """.trimIndent()
 
-        val res = client.post("/game/addVisit"){
+        val res = client.post("/game/addVisit") {
             header("Authorization", "Bearer $jwt")
             contentType(ContentType.Application.Json)
             setBody(Json.parseToJsonElement(postRequest))
