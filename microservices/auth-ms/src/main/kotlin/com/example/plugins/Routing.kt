@@ -107,13 +107,17 @@ fun Application.configureRouting(config: JWTConfig) {
              * Call game microservice for getting the visits made by a user
              */
             get("/game/visitByUser") {
+                println("Inside visitByUser")
                 val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString()
+                println("Username: $username")
                 val id = usersCollection.findOne(User::username eq username)?._id
-                val res = cl.get("https://game-service-container-cup3lszycq-uc.a.run.app/visitsByUser") {
+                println("Id: $id")
+                val res = cl.get("https://game-service-container-cup3lszycq-uc.a.run.app/visitByUser/") {
                     parameter("id", id)
                 }
 
-                call.respond(res.bodyAsText())
+                println("Response: ${res.bodyAsText()}")
+                call.respondText(res.bodyAsText(), status = res.status)
             }
 
             /**
