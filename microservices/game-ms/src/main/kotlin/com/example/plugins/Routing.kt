@@ -13,7 +13,7 @@ import org.litote.kmongo.*
  * Il numero (sul totale) di poi visitati in una città da un utente
  * Quanti poi sono stati visitati in una città
  * Quante volte è stato visitato un poi
- * Le firme dato un poi (game)
+ * Le firme dato un poi (game) *** IN PROGRESS
  */
 
 fun Application.configureRouting() {
@@ -25,6 +25,7 @@ fun Application.configureRouting() {
     val visitCollection = client.getDatabase(databaseEnvironment).getCollection<Visit>("visits")
 
     routing {
+
         /**
          * Get list of a signature given a Poi id
          */
@@ -38,12 +39,15 @@ fun Application.configureRouting() {
                     match(
                         Visit::idPoi eq idPoi
                     )
-                    //project(Visit::idPoi)
             ).toList()
 
             val poiList : List<String> = visits.map { it.idPoi }
             call.respond(poiList)
         }
+
+        /**
+         * Add a visit made by an User
+         */
         post("/addVisit") {
             val receivedVisit = call.receive<Visit>()
             if (visitCollection.findOne(Visit::_id eq receivedVisit._id) != null) {
@@ -57,7 +61,7 @@ fun Application.configureRouting() {
         }
 
         /**
-         * Returns the visit made
+         * Returns the visit made by an user
          */
         get("/visitByUser/") {
 

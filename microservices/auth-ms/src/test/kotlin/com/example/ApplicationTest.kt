@@ -204,4 +204,26 @@ class ApplicationTest {
         assertEquals(HttpStatusCode.OK, res.status)
     }
 
+    @Test
+    /*
+    TODO settare auth token
+     */
+    fun testGetSignatures() =  testApplication {
+        environment {
+            config = ApplicationConfig("application-custom.conf")
+        }
+
+        val client = createClient {
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+
+        val response = client.get("/game/signatures") {
+            contentType(ContentType.Application.Json)
+            parameter("id", "inesistentPoiId")
+        }.bodyAsText()
+
+        println(response)
+    }
 }

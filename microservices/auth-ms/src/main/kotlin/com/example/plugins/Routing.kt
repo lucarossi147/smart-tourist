@@ -95,7 +95,6 @@ fun Application.configureRouting(config: JWTConfig) {
         authenticate("auth-jwt") {
 
             get("/test-auth") {
-                println("HERE")
                 val principal = call.principal<JWTPrincipal>()
                 val username = principal!!.payload.getClaim("username").asString()
                 val expiresAt = principal.expiresAt?.time?.minus(System.currentTimeMillis())
@@ -133,6 +132,23 @@ fun Application.configureRouting(config: JWTConfig) {
 
             get("/cleanUsersDb") {
                 client.getDatabase("test").getCollection<User>("users").deleteMany()
+            }
+
+            /**
+             * Return the signatures of a Poi
+             */
+            get("/game/signatures"){
+                val idPoi = call.parameters["id"] ?: return@get call.respondText(
+                    "Missing id of the Poi",
+                    status = HttpStatusCode.BadRequest
+                )
+
+                val res = cl.get("https://game-service-container-cup3lszycq-uc.a.run.app/signatures") {
+                    contentType(ContentType.Application.Json)
+                    parameter("id", idPoi)
+                }
+
+                call.respond(res.bodyAsText())
             }
         }
     }
