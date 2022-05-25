@@ -148,7 +148,7 @@ class ApplicationTest {
         addVisit(client, visit.copy(idUser = "userTest", _id = "visit2", idPoi = "anotherPoi2"))
 
         //Get list of poi visited given the user id
-        val response = client.get("/signatures/") {
+        val response = client.get("/visitedPoiByUser/") {
             parameter("id", "userTest")
         }
 
