@@ -153,6 +153,7 @@ class MapsFragment : Fragment() {
                     pois = Gson()
                         .fromJson(res.bodyAsText(), Array<POI>::class.java)
                         .toList()
+                        .map { it.copy(visited = it.id in user.visitedPois) }
                     cities = pois.map { it.city }
                 }
             }
@@ -247,6 +248,7 @@ class MapsFragment : Fragment() {
                 bearerAuth(user.token)
             }
             if(res.status.isSuccess()){
+                // TODO: use real body of response when ready 
                 val fakeBody = "[\"10000\"]"
                 user.visitedPois = Gson().fromJson(fakeBody, Array<String>::class.java).toSet()
             }
