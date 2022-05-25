@@ -145,6 +145,20 @@ fun Application.configureRouting(config: JWTConfig) {
 
                 call.respond(res.bodyAsText())
             }
+
+            /**
+             * Return the signatures of a Poi
+             */
+            get("/game/visitedPoiByUser/"){
+                val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString()
+                val idUser = usersCollection.findOne(User::username eq username)?._id
+
+                val res = cl.get("https://game-service-container-cup3lszycq-uc.a.run.app/visitedPoiByUser/") {
+                    parameter("id", idUser)
+                }
+
+                call.respond(res.bodyAsText())
+            }
         }
     }
 
