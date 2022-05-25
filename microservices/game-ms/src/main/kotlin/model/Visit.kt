@@ -9,6 +9,5 @@ data class Visit(
     val _id: String,
     val idUser: String,
     val idPoi: String,
-    //val date: Date,
     val signature: String
 )

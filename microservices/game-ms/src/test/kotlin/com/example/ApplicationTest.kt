@@ -74,7 +74,6 @@ class ApplicationTest {
         addVisit(client, visit)
 
         val response = client.get("/visitByUser/") {
-            contentType(ContentType.Application.Json)
             parameter("id", visit.idUser)
         }
 
@@ -86,7 +85,7 @@ class ApplicationTest {
     }
 
     /**
-     *
+     * Test getting signatures of a Poi
      */
     @Test
     fun testGetSignaturesFromPoi() = testApplication {
@@ -108,13 +107,53 @@ class ApplicationTest {
         addVisit(client, visit.copy(_id = "visit1"))
         addVisit(client, visit.copy(_id = "visit2"))
 
+        //Get list of signatures given the test poi id
         val response = client.get("/signatures/") {
-            contentType(ContentType.Application.Json)
             parameter("id", visit.idPoi)
         }
 
         val visits = Json.decodeFromString<List<String>>(response.bodyAsText())
         assertEquals(3, visits.size)
-        //assertContains(visits, visit)
+        assertContains(visits, visit.signature, "Array of signature contains the correct signature")
+
+
+        //Get count of visits given the test poi id
+        val response2 = client.get("/numberOfVisits/") {
+            parameter("id", visit.idPoi)
+        }
+
+        val numOfVisits = Integer.valueOf(response2.bodyAsText())
+
+        assertEquals(3, numOfVisits)
+    }
+
+    @Test
+    fun testGettingPoiVisited() = testApplication {
+        environment {
+            config = ApplicationConfig("application-custom.conf")
+        }
+
+        val client = createClient {
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+
+        assertEquals(client.get("/cleanVisits/").status, HttpStatusCode.OK)
+
+        //Create 3 visit with the same  id
+        val visit = randomVisit()
+        addVisit(client, visit.copy(idUser = "userTest", _id = "visit0", idPoi = "anotherPoi0"))
+        addVisit(client, visit.copy(idUser = "userTest", _id = "visit1", idPoi = "anotherPoi1"))
+        addVisit(client, visit.copy(idUser = "userTest", _id = "visit2", idPoi = "anotherPoi2"))
+
+        //Get list of poi visited given the user id
+        val response = client.get("/signatures/") {
+            parameter("id", "userTest")
+        }
+
+        println(response.bodyAsText())
+        val poisVisited = Json.decodeFromString<List<String>>(response.bodyAsText())
+        assertEquals(3, poisVisited.size)
     }
 }
