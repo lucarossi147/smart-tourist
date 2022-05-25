@@ -13,8 +13,6 @@ import io.ktor.server.netty.EngineMain
 
 /* TODO
 Cifrare password quando vengono salvate
-
-Usare 201 come risposta?
  */
 
 
@@ -41,7 +39,6 @@ fun Application.module() {
 
     install(Authentication) {
         jwt("auth-jwt") {
-            realm = config.realm
 
             verifier(
                 config.generateVerifier()

@@ -33,31 +33,31 @@ dependencies {
 
     // For kotling mongo impl
     implementation("org.litote.kmongo:kmongo:4.5.1")
+    implementation("io.ktor:ktor-client-java-jvm:2.0.1")
+    implementation("io.ktor:ktor-server-core-jvm:2.0.1")
+    implementation("io.ktor:ktor-server-netty-jvm:2.0.1")
+    implementation("io.ktor:ktor-client-cio-jvm:2.0.1")
 
     //For Ktor testing
-    testImplementation("io.ktor:ktor-server-test-host:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlin_version")
 
     //For Java engine
-    implementation("io.ktor:ktor-client-java:$ktor_version")
 
     //For html responses
     implementation("io.ktor:ktor-server-html-builder:$ktor_version")
 
     //For CIO engine
-    implementation("io.ktor:ktor-client-cio:$ktor_version")
 
     //
     implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
 
     //From ktor docs
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
-    implementation("io.ktor:ktor-server-core:$ktor_version")
-    implementation("io.ktor:ktor-server-netty:$ktor_version")
     implementation("io.ktor:ktor-server-auth:$ktor_version")
     implementation("io.ktor:ktor-server-auth-jwt:$ktor_version")
     implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
     implementation("ch.qos.logback:logback-classic:$logback_version")
     testImplementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
+    testImplementation("io.ktor:ktor-server-test-host-jvm:2.0.1")
 }

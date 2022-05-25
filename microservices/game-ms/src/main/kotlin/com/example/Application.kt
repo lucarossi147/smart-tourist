@@ -13,7 +13,7 @@ fun main(args: Array<String>) {
 @Suppress("unused")
 fun Application.module() {
 
-    install(ContentNegotiation){
+    install(ContentNegotiation) {
         json()
     }
 

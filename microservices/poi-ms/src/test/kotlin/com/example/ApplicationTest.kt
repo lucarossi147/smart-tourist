@@ -2,6 +2,8 @@ package com.example
 
 import com.example.model.City
 import com.example.model.Poi
+import com.example.model.PoiWithCity
+
 import io.ktor.client.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
@@ -41,8 +43,16 @@ class ApplicationTest {
         "poiname$rand",
         (rand.toFloat() % 90) - 90,
         (rand.toFloat() % 180) - 180,
-        randomCity(),
+        ObjectId().toString(),
     )
+
+    private suspend fun createPoiAndCity(client: HttpClient): Pair<Poi, City> {
+        val city = randomCity()
+        val poi = randomPoi().copy(city = city._id)
+        addCity(client, city)
+        addPoi(client, poi)
+        return Pair(poi, city)
+    }
 
     private suspend fun addPoi(client: HttpClient, poi: Poi): HttpResponse{
         return client.post("/addPoi") {
@@ -70,8 +80,11 @@ class ApplicationTest {
             }
         }
 
-        //Create a random Poi and add it to the database
-        val poi = randomPoi()
+        //Create a random Poi and add it to the database, it should have a correct city Id
+        val city = randomCity()
+        addCity(client, city)
+
+        val poi = randomPoi().copy(city = city._id)
         val response = addPoi(client, poi)
 
         assertEquals(HttpStatusCode.OK, response.status)
@@ -126,18 +139,18 @@ class ApplicationTest {
             }
         }
 
-        val poi = randomPoi()
-
-        addPoi(client, poi)
+        val (poi, city) = createPoiAndCity(client)
 
         val response = client.get("/poi/") {
             contentType(ContentType.Application.Json)
             parameter("id", poi._id)
         }
 
-        val returnedPoi = Json.decodeFromString<Poi>(response.bodyAsText())
+        println(response.bodyAsText())
+        val returnedPoi = Json.decodeFromString<List<PoiWithCity>>(response.bodyAsText())
         assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals(poi, returnedPoi)
+        assertEquals(poi.city, city._id)
+        assertEquals(poi._id, returnedPoi.first()._id)
     }
 
     @Test
@@ -178,19 +191,18 @@ class ApplicationTest {
             }
         }
 
-        val poi = randomPoi()
-        val city = poi.city
-
-        //Add the poi and the city
-        addPoi(client, poi)
-        addCity(client, city)
+        val (poi, city) = createPoiAndCity(client)
+        assertEquals(poi.city, city._id)
 
         val response = client.get("/poisFromCity/") {
             contentType(ContentType.Application.Json)
-            parameter("id", city._id)
+            parameter("id", poi.city)
         }
 
-        val poisReturned = Json.decodeFromString<List<Poi>>(response.bodyAsText())
+        println(response.bodyAsText())
+        val poisReturned = Json.decodeFromString<List<PoiWithCity>>(response.bodyAsText())
+        println(poisReturned)
+
         assertEquals( 1, poisReturned.size) //Added only one poi inside the city
         assertEquals(HttpStatusCode.OK, response.status)
     }
@@ -218,6 +230,7 @@ class ApplicationTest {
      * Get pois near the one given as parameter
      * TODO testaree senza radius fornito
      * TODO testare se non ci sono pois nella zona
+     * TODO testare se il clean del db funzioni
      */
     @Test
     fun getNearPois() = testApplication {
@@ -232,13 +245,14 @@ class ApplicationTest {
         }
 
         client.get("cleanTestDatabases")
+
+        val (oldPoi, _) = createPoiAndCity(client)
         //Add two other pois near the one created here
-        val poi = Poi(
+        val poi = oldPoi.copy(
             _id = "nearPoiTestId",
             name = "near0",
             lat = 100000F,
             lng = 100000F,
-            randomCity()
         )
 
         addPoi(client, poi)
@@ -285,8 +299,7 @@ class ApplicationTest {
             }
         }
 
-        val poi = randomPoi()
-        addPoi(client, poi)
+        val (poi, _) = createPoiAndCity(client)
 
         val response = client.get("/cityByPoi/") {
             contentType(ContentType.Application.Json)
@@ -294,6 +307,6 @@ class ApplicationTest {
         }
 
         val returnedCity = Json.decodeFromString<City>(response.bodyAsText())
-        assertEquals(poi.city, returnedCity)
+        assertEquals(poi.city, returnedCity._id)
     }
 }
