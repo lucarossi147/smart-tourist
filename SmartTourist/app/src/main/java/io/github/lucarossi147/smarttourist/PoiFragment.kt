@@ -7,10 +7,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.navigation.findNavController
+import com.google.gson.JsonObject
 import com.squareup.picasso.Picasso
+import io.github.lucarossi147.smarttourist.Constants.ADD_VISIT_URL
 import io.github.lucarossi147.smarttourist.Constants.ARG_USER
 import io.github.lucarossi147.smarttourist.data.model.LoggedInUser
 import io.github.lucarossi147.smarttourist.data.model.POI
+import io.ktor.client.*
+import io.ktor.client.engine.android.*
+import io.ktor.client.request.*
+import io.ktor.http.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 private const val ARG_POI = "poi"
 
@@ -57,6 +66,27 @@ class PoiFragment : Fragment() {
             //remove sign yourself from UI
             // TODO: send signature and comment to server
             //if result is success remove editText and make a toast
+            val nonNullUser = user?:return@setOnClickListener
+            val nonNullPoi = poi?:return@setOnClickListener
+
+            CoroutineScope(Dispatchers.IO).launch {
+                val jsonObject = JsonObject()
+                jsonObject.addProperty("idPoi", nonNullPoi.id)
+                jsonObject.addProperty("signature", signEditText?.text.toString())
+                val res = HttpClient(Android)
+                    .post(ADD_VISIT_URL){
+                        contentType(ContentType.Application.Json)
+                        setBody(jsonObject.toString())
+                        bearerAuth(nonNullUser.token)
+                    }
+                CoroutineScope(Dispatchers.Main).launch {
+                    if (res.status.isSuccess()){
+                        Toast.makeText(context, "Signed successfully!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "Sign was not successful", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
             signEditText?.visibility = View.GONE
             signButton?.visibility = View.GONE
 

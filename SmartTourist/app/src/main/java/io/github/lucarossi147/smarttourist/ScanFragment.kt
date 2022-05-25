@@ -80,7 +80,7 @@ class ScanFragment : Fragment() {
                 //could go wrong if poi isn't serialized correctly
                 if (user!=null) {
                     val bundle = bundleOf(
-                        "poi" to poi,
+                        "poi" to poi.copy(visited = poi.id in user.visitedPois),
                         ARG_USER to user,
                     )
                     view?.findNavController()?.navigate(R.id.poiFragment, bundle)
@@ -204,8 +204,9 @@ class ScanFragment : Fragment() {
                 .setBackpressureStrategy(STRATEGY_KEEP_ONLY_LATEST)
                 .build()
                 .also {
-                    it.setAnalyzer(cameraExecutor, QrScanner(QrObservable(view, arguments?.getParcelable(
-                        ARG_USER)), ProgressBarHandler(view?.findViewById(R.id.scanProgressBar))))
+                    it.setAnalyzer(cameraExecutor,
+                        QrScanner(QrObservable(view, arguments?.getParcelable(ARG_USER)),
+                            ProgressBarHandler(view?.findViewById(R.id.scanProgressBar))))
                 }
             // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA

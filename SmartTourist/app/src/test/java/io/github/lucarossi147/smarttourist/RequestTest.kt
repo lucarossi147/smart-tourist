@@ -1,17 +1,12 @@
 package io.github.lucarossi147.smarttourist
 
-import com.google.gson.Gson
-import io.github.lucarossi147.smarttourist.data.model.POI
-import io.github.lucarossi147.smarttourist.data.model.Token
+import com.google.gson.JsonObject
 import io.ktor.client.*
-import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
-import org.json.JSONObject
-import org.junit.Ignore
 import org.junit.Test
 import kotlin.random.Random
 
@@ -125,6 +120,29 @@ class RequestTest {
                 println(res.bodyAsText())
             } else {
                 println("failure")
+            }
+        }
+    }
+
+    @Test
+    fun testAddVisit(){
+        val jsonObject = JsonObject()
+        jsonObject.addProperty("_id","idVisit4")
+        jsonObject.addProperty("idUser","628610ad9c28104c492cbef7")
+        jsonObject.addProperty("idPoi", "idPoi")
+        jsonObject.addProperty("signature", "Hello, World!")
+        val token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2NTM1NTkyMjIsInVzZXJuYW1lIjoibHVjYXJvc3NpMTQ3QGdtYWlsLmNvbSJ9.g8mBipfOHQ6WFP32cPhqSxAp1Px4MaqEx1E75xeD_4k"
+
+        runBlocking {
+            val res = HttpClient(Android)
+                .post("https://smart-tourist-cup3lszycq-uc.a.run.app/game/addVisit"){
+                contentType(ContentType.Application.Json)
+//                setBody(Visit("idVisit4","628610ad9c28104c492cbef7", "idPoi", "Hello, World!"))
+                setBody(jsonObject.toString())
+                bearerAuth(token)
+            }
+            if(res.status.isSuccess()){
+                assert(res.bodyAsText() == "Visit with this id already exist")
             }
         }
     }

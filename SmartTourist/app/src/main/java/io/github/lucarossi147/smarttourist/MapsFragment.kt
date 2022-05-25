@@ -19,6 +19,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.navigation.findNavController
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
@@ -289,7 +290,8 @@ class MapsFragment : Fragment() {
         mapFragment?.getMapAsync(callback)
         val button: Button = view.findViewById(R.id.scan)
         button.setOnClickListener {
-            view.findNavController().navigate(R.id.scanFragment)
+            val bundle = bundleOf(ARG_USER to mapHandler.user)
+            view.findNavController().navigate(R.id.scanFragment, bundle)
         }
     }
 }
