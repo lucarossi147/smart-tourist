@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.fragment.app.Fragment
@@ -19,6 +20,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.navigation.findNavController
+import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -26,6 +28,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.android.gms.tasks.Task
 import com.google.gson.Gson
 import io.github.lucarossi147.smarttourist.data.model.Category
 import io.github.lucarossi147.smarttourist.data.model.City
@@ -44,6 +47,7 @@ import java.util.*
 import kotlin.properties.Delegates
 
 private const val REQUESTING_LOCATION_UPDATES_KEY: String = "prove"
+private const val REQUEST_CHECK_SETTINGS = 0x1
 
 private const val CESENA_LAT = 44.133331
 private const val CESENA_LNG = 12.233333
@@ -181,10 +185,11 @@ class MapsFragment : Fragment() {
                 }
                 else -> {
 //                    Log.i("PERMISSION", "NO PERMISSION GRANTED")
+                    requestPermission()
                 }
             }
         }
-        requestPermission()
+
     }
 
     override fun onPause() {
@@ -231,8 +236,6 @@ class MapsFragment : Fragment() {
             Looper.getMainLooper())
     }
 
-
-    @SuppressLint("MissingPermission")
     private val callback = OnMapReadyCallback { googleMap ->
 
         val user: LoggedInUser = arguments?.getParcelable(ARG_USER) ?: return@OnMapReadyCallback
@@ -241,6 +244,22 @@ class MapsFragment : Fragment() {
         val context: Context = context?: return@OnMapReadyCallback
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
             requestPermission()
+        }
+        val client: SettingsClient = LocationServices.getSettingsClient(activity)
+        val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
+        task.addOnFailureListener { exception ->
+            if (exception is ResolvableApiException){
+                // Location settings are not satisfied, but this can be fixed
+                // by showing the user a dialog.
+                try {
+                    // Show the dialog by calling startResolutionForResult(),
+                    // and check the result in onActivityResult().
+                    exception.startResolutionForResult(activity,
+                        REQUEST_CHECK_SETTINGS)
+                } catch (sendEx: IntentSender.SendIntentException) {
+                    // Ignore the error.
+                }
+            }
         }
     }
 
