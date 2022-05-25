@@ -41,7 +41,7 @@ fun Application.configureRouting() {
                     )
             ).toList()
 
-            val poiList : List<String> = visits.map { it.idPoi }
+            val poiList : List<String> = visits.map { it.signature }
             call.respond(poiList)
         }
 
