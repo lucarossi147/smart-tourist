@@ -13,5 +13,5 @@ data class LoggedInUser(
     val token: String,
     var lat: Double = DEFAULT_POSITION,
     var lng: Double = DEFAULT_POSITION,
-    var visitedPOIs: List<POI> = emptyList()
+    var visitedPois: Set<String> = emptySet()
 ) : Parcelable
