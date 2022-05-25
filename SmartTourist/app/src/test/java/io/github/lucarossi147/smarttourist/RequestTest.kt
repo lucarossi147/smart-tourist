@@ -112,4 +112,20 @@ class RequestTest {
 //            }
 //        }
 //    }
+    @Test
+    fun testGetVisitFromToken(){
+        runBlocking {
+            val res = HttpClient(Android).get("https://smart-tourist-cup3lszycq-uc.a.run.app/game/visitByUser"){
+                val token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2NTM1NTkyMjIsInVzZXJuYW1lIjoibHVjYXJvc3NpMTQ3QGdtYWlsLmNvbSJ9.g8mBipfOHQ6WFP32cPhqSxAp1Px4MaqEx1E75xeD_4k"
+//                headers.append("Authorization", "Bearer:$token")
+                bearerAuth(token)
+            }
+            if(res.status.isSuccess()){
+                println("success")
+                println(res.bodyAsText())
+            } else {
+                println("failure")
+            }
+        }
+    }
 }

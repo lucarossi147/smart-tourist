@@ -116,6 +116,7 @@ class MapsFragment : Fragment() {
 
     private class MapHandler (googleMap: GoogleMap, user:LoggedInUser){
         var mapUI: MapUI = MapUI(googleMap)
+        var lastUpdate = Long.MAX_VALUE
         init{
             fetchPOIs()
         }
@@ -124,7 +125,9 @@ class MapsFragment : Fragment() {
             _,_, updatedUser ->
             CoroutineScope(Dispatchers.Main).launch {
                 mapUI.drawUser(updatedUser.lat, updatedUser.lng)
-                fetchPOIs(updatedUser.lat, updatedUser.lng)
+                if (System.currentTimeMillis() - lastUpdate > Constants.MINIMUM_REFRESH_TIME){
+                    fetchPOIs(updatedUser.lat, updatedUser.lng)
+                }
             }
         }
         var pois:List<POI> by Delegates.observable(emptyList()) {
@@ -239,7 +242,16 @@ class MapsFragment : Fragment() {
     private val callback = OnMapReadyCallback { googleMap ->
 
         val user: LoggedInUser = arguments?.getParcelable(ARG_USER) ?: return@OnMapReadyCallback
-        mapHandler = MapHandler(googleMap, user)
+        CoroutineScope(Dispatchers.IO).launch {
+            val res = HttpClient(Android).get("${Constants.AUTH_URL}game/visitByUser"){
+                bearerAuth(user.token)
+            }
+            if(res.status.isSuccess()){
+                val fakeBody = "[\"10000\"]"
+                user.visitedPois = Gson().fromJson(fakeBody, Array<String>::class.java).toSet()
+            }
+            mapHandler = MapHandler(googleMap, user)
+        }
         val activity: Activity = activity?: return@OnMapReadyCallback
         val context: Context = context?: return@OnMapReadyCallback
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){

@@ -47,16 +47,20 @@ class SerializationTest {
     @Test
     fun serializeListOfPOI(){
         val listOfPOI = listOf(poi, poi, poi)
-        println(listOfPOI::class.java)
-        println(Gson().toJson(listOfPOI))
+        assert(Gson().toJson(listOfPOI)!=null)
     }
 
     @Test
     fun deSerializeListOfPOI(){
 //        val listType:Type = object : TypeToken<List<POI>>(){}.type
         val listOfPOI = Gson().fromJson(serializedPOIs, Array<POI>::class.java)
-        println(listOfPOI.get(0))
-        println(Gson().toJson(listOfPOI))
+        assert(listOfPOI[0].id == "ciccia")
+    }
+
+    @Test
+    fun deserializeStringArray(){
+        val response = Gson().fromJson("[\"ciccia\",\"cicci\"]", Array<String>::class.java).toSet()
+        assert("ciccia" in response)
     }
 //    @Test
 //    fun testWrongDeserialization(){
