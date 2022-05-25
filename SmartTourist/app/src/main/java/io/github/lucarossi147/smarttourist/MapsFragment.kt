@@ -47,6 +47,7 @@ import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.properties.Delegates
 import io.github.lucarossi147.smarttourist.Constants.ARG_USER
+import io.github.lucarossi147.smarttourist.Constants.POI_VISITED_BY_USER_URL
 
 private const val REQUESTING_LOCATION_UPDATES_KEY: String = "prove"
 private const val REQUEST_CHECK_SETTINGS = 0x1
@@ -245,7 +246,7 @@ class MapsFragment : Fragment() {
 
         val user: LoggedInUser = arguments?.getParcelable(ARG_USER) ?: return@OnMapReadyCallback
         CoroutineScope(Dispatchers.IO).launch {
-            val res = HttpClient(Android).get("${Constants.AUTH_URL}game/visitedPoiByUser/"){
+            val res = HttpClient(Android).get(POI_VISITED_BY_USER_URL){
                 bearerAuth(user.token)
             }
             if(res.status.isSuccess()){

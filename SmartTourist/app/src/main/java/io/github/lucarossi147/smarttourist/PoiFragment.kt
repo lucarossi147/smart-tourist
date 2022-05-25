@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.core.os.bundleOf
 import androidx.navigation.findNavController
 import com.google.gson.JsonObject
 import com.squareup.picasso.Picasso
@@ -99,7 +100,8 @@ class PoiFragment : Fragment() {
         }
         val backToMapButton: Button = view.findViewById(R.id.backToMapButton)
         backToMapButton.setOnClickListener {
-            view.findNavController().navigate(R.id.mapsFragment)
+
+            view.findNavController().navigate(R.id.mapsFragment, bundleOf(ARG_USER to user))
         }
         poi?.pictures?.forEach {
             val iv = ImageView(context)
