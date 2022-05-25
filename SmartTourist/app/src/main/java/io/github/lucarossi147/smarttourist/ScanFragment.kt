@@ -25,6 +25,8 @@ import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import io.github.lucarossi147.smarttourist.Constants.ARG_USER
+import io.github.lucarossi147.smarttourist.data.model.LoggedInUser
 import io.github.lucarossi147.smarttourist.data.model.POI
 import io.github.lucarossi147.smarttourist.databinding.FragmentScanBinding
 import io.ktor.client.*
@@ -70,14 +72,19 @@ class ScanFragment : Fragment() {
         }
     }
 
-    private class QrObservable (val view: View?) {
+    private class QrObservable (val view: View?, user:LoggedInUser? ) {
         var poiDeserializer :String? by Delegates.observable(null){
             _, _, newValue ->
             val poi = Gson().fromJson(newValue,POI::class.java)
             try {
-                val bundle = bundleOf("poi" to poi)
-                println(poi.id)
-                view?.findNavController()?.navigate(R.id.poiFragment, bundle )
+                //could go wrong if poi isn't serialized correctly
+                if (user!=null) {
+                    val bundle = bundleOf(
+                        "poi" to poi,
+                        ARG_USER to user,
+                    )
+                    view?.findNavController()?.navigate(R.id.poiFragment, bundle)
+                }
             }catch (e:java.lang.Exception) {
                 //don't do anything
             }
@@ -117,7 +124,6 @@ class ScanFragment : Fragment() {
                                                 qrObservable.poiDeserializer = res.body()
                                             }
                                         }
-                                        pbh.analyzing = false
                                     }
                                 }
                             }
@@ -198,7 +204,8 @@ class ScanFragment : Fragment() {
                 .setBackpressureStrategy(STRATEGY_KEEP_ONLY_LATEST)
                 .build()
                 .also {
-                    it.setAnalyzer(cameraExecutor, QrScanner(QrObservable(view), ProgressBarHandler(view?.findViewById(R.id.scanProgressBar))))
+                    it.setAnalyzer(cameraExecutor, QrScanner(QrObservable(view, arguments?.getParcelable(
+                        ARG_USER)), ProgressBarHandler(view?.findViewById(R.id.scanProgressBar))))
                 }
             // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA

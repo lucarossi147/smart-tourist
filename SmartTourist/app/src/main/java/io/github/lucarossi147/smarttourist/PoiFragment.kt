@@ -8,6 +8,8 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.navigation.findNavController
 import com.squareup.picasso.Picasso
+import io.github.lucarossi147.smarttourist.Constants.ARG_USER
+import io.github.lucarossi147.smarttourist.data.model.LoggedInUser
 import io.github.lucarossi147.smarttourist.data.model.POI
 
 private const val ARG_POI = "poi"
@@ -19,6 +21,7 @@ private const val ARG_POI = "poi"
  */
 class PoiFragment : Fragment() {
     private var poi: POI? = null
+    private var user: LoggedInUser? = null
     private var signEditText: EditText? = null
     private var signButton: Button? = null
 
@@ -26,6 +29,7 @@ class PoiFragment : Fragment() {
         super.onCreate(savedInstanceState)
         arguments?.let {
             poi = it.getParcelable(ARG_POI)
+            user = it.getParcelable(ARG_USER)
         }
     }
 
@@ -59,8 +63,8 @@ class PoiFragment : Fragment() {
         }
         val goToSignatureButton: Button = view.findViewById(R.id.goToSignaturesButton)
         goToSignatureButton.setOnClickListener {
-            // TODO: maybe ask to server for signature asyncronously in the onCreate and make
-            //  fragment take a list as argument so user dosen´t have to wait
+            // TODO: maybe ask to server for signature asynchronously in the onCreate and make
+            //  fragment take a list as argument so user does not have to wait
             view.findNavController().navigate(R.id.signaturesFragment)
         }
         val backToMapButton: Button = view.findViewById(R.id.backToMapButton)

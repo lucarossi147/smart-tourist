@@ -45,6 +45,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.properties.Delegates
+import io.github.lucarossi147.smarttourist.Constants.ARG_USER
 
 private const val REQUESTING_LOCATION_UPDATES_KEY: String = "prove"
 private const val REQUEST_CHECK_SETTINGS = 0x1
@@ -52,7 +53,6 @@ private const val REQUEST_CHECK_SETTINGS = 0x1
 private const val CESENA_LAT = 44.133331
 private const val CESENA_LNG = 12.233333
 private const val DEFAULT_ZOOM = 14.0F
-private const val ARG_USER = "user"
 
 class MapsFragment : Fragment() {
 
@@ -244,7 +244,7 @@ class MapsFragment : Fragment() {
 
         val user: LoggedInUser = arguments?.getParcelable(ARG_USER) ?: return@OnMapReadyCallback
         CoroutineScope(Dispatchers.IO).launch {
-            val res = HttpClient(Android).get("${Constants.AUTH_URL}game/visitByUser"){
+            val res = HttpClient(Android).get("${Constants.AUTH_URL}game/visitedPoiByUser/"){
                 bearerAuth(user.token)
             }
             if(res.status.isSuccess()){
