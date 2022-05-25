@@ -143,7 +143,7 @@ fun Application.configureRouting(config: JWTConfig) {
                     status = HttpStatusCode.BadRequest
                 )
 
-                val res = cl.get("https://game-service-container-cup3lszycq-uc.a.run.app/signatures") {
+                val res = cl.get("https://game-service-container-cup3lszycq-uc.a.run.app/signatures/") {
                     contentType(ContentType.Application.Json)
                     parameter("id", idPoi)
                 }
