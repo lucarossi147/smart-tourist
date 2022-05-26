@@ -18,9 +18,16 @@ import kotlinx.html.body
 import kotlinx.html.h1
 import kotlinx.html.head
 import kotlinx.html.title
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import org.litote.kmongo.*
 
-
+/**
+ * (GAME)
+ * Il numero (sul totale) di poi visitati in una città da un utente
+ * Quanti poi sono stati visitati in una città
+ */
 fun Application.configureRouting(config: JWTConfig) {
 
     val databaseEnvironment = environment.config.property("ktor.environment").getString()
@@ -98,8 +105,13 @@ fun Application.configureRouting(config: JWTConfig) {
                 val principal = call.principal<JWTPrincipal>()
                 val username = principal!!.payload.getClaim("username").asString()
                 val expiresAt = principal.expiresAt?.time?.minus(System.currentTimeMillis())
-
-                call.respondText("Hello, $username! Token will expire in $expiresAt ms.")
+                if (expiresAt != null) {
+                    if(expiresAt < 1000){
+                        call.respondText("Token is expired", status = HttpStatusCode.Forbidden)
+                    } else {
+                        call.respondText("Hello, $username! Token will expire in $expiresAt ms.", status = HttpStatusCode.OK)
+                    }
+                }
             }
 
             /**
@@ -141,13 +153,20 @@ fun Application.configureRouting(config: JWTConfig) {
 
                 val res = cl.get("https://game-service-container-cup3lszycq-uc.a.run.app/signatures/") {
                     parameter("id", idPoi)
-                }
+                }.bodyAsText()
 
-                call.respond(res.bodyAsText())
+                //res contiene varie righe userId signature
+                //Json con username e signature
+                val jsonSignatureList = Json.decodeFromString<List<Signature>>(res)
+                jsonSignatureList.map { usersCollection.findOne(User::_id eq it.userId)?.username?.let { it1 ->
+                    Signature(
+                        it1, it.signature)
+                } }
+                call.respond(jsonSignatureList)
             }
 
             /**
-             * Return the signatures of a Poi
+             * Return the pois visited by the User
              */
             get("/game/visitedPoiByUser/"){
                 val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString()
@@ -159,7 +178,24 @@ fun Application.configureRouting(config: JWTConfig) {
 
                 call.respond(res.bodyAsText())
             }
+
+            /**
+             *  Returns the number of Poi visited in a city and the total of the pois
+             */
+            get("/game/poiVisitedOfTotal"){
+                val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString()
+                val idUser = usersCollection.findOne(User::username eq username)?._id
+
+                val numOfVisits = cl.get("https://game-service-container-cup3lszycq-uc.a.run.app/visitCount/") {
+                    parameter("id", idUser)
+                }.bodyAsText().toInt()
+
+                call.respond(numOfVisits)
+            }
         }
     }
 
 }
+
+@Serializable
+data class Signature(val userId : String, val signature: String)

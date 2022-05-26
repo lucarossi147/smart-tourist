@@ -1,27 +1,28 @@
 package com.example.plugins
 
+import com.google.gson.JsonObject
 import io.ktor.http.*
-import io.ktor.server.routing.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import kotlinx.serialization.Serializable
 import model.Visit
 import org.litote.kmongo.*
-
-/**
- * (GAME)
- * Il numero (sul totale) di poi visitati in una città da un utente
- * Quanti poi sono stati visitati in una città
- */
 
 fun Application.configureRouting() {
 
     val password = environment.config.property("ktor.deployment.DB_PWD").getString()
     val databaseEnvironment = environment.config.property("ktor.environment").getString()
-    val client = KMongo.createClient("mongodb+srv://smart-tourism:$password@cluster0.2cwaw.mongodb.net/?retryWrites=true&w=majority")
+    val client =
+        KMongo.createClient("mongodb+srv://smart-tourism:$password@cluster0.2cwaw.mongodb.net/?retryWrites=true&w=majority")
     val visitCollection = client.getDatabase(databaseEnvironment).getCollection<Visit>("visits")
 
     routing {
+
+        /**
+         * Get the number of poi in a city
+         */
 
         /**
          * Get list of a signature given a Poi id
@@ -38,8 +39,14 @@ fun Application.configureRouting() {
                 )
             ).toList()
 
-            val poiList: List<String> = visits.map { it.signature }
-            call.respond(poiList)
+            val signatureList = visits.map {Signature(it.idUser, it.signature)}
+            /*val gson = JsonObject()
+            visits.forEach {
+                gson.addProperty("userId", it.idUser)
+                gson.addProperty("signature", it.signature)
+            }*/
+            //println(gson)
+            call.respond(signatureList)
         }
 
 
@@ -77,7 +84,6 @@ fun Application.configureRouting() {
         }
 
 
-
         /**
          * Add a visit made by an User
          */
@@ -108,7 +114,7 @@ fun Application.configureRouting() {
         }
 
         /**
-         * Returns the visit made by an user
+         * Returns the list of poi visited by an user
          */
         get("/visitedPoiByUser/") {
 
@@ -117,7 +123,21 @@ fun Application.configureRouting() {
                 status = HttpStatusCode.BadRequest
             )
 
-            val visits = visitCollection.find(Visit::idUser eq idUser).toList().map {it.idPoi}
+            val visits = visitCollection.find(Visit::idUser eq idUser).toList().map { it.idPoi }
+            call.respond(visits)
+        }
+
+        /**
+         * Returns the list of poi visited by an user
+         */
+        get("/visitCount/") {
+
+            val idUser = call.parameters["id"] ?: return@get call.respondText(
+                "Missing id of the user",
+                status = HttpStatusCode.BadRequest
+            )
+
+            val visits = visitCollection.find(Visit::idUser eq idUser).toList().size
             call.respond(visits)
         }
 
@@ -127,3 +147,6 @@ fun Application.configureRouting() {
         }
     }
 }
+
+@Serializable
+data class Signature(val userId: String, val signature: String)
