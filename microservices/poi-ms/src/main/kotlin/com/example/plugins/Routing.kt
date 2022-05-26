@@ -32,24 +32,24 @@ fun Application.configureRouting() {
          * is returned
          */
         post("/addPoi") {
-            println("Inside AddPoi function")
+            call.application.environment.log.info("Inside AddPoi function")
             val poi = call.receive<Poi>() //Receive a poi using json in POST request
-            println("POI RECEIVED: $poi")
+            call.application.environment.log.info("POI RECEIVED: $poi")
 
             if (poiCollection.findOne(Poi::_id eq poi._id) != null) {
-                println("id: ${poi._id} already in collection")
+                call.application.environment.log.info("id: ${poi._id} already in collection")
                 call.respondText("Poi with this id already exist", status = HttpStatusCode.BadRequest)
             } else {
                 if (citiesCollection.findOne(City::_id eq poi.city) != null) {
-                    println("id: ${poi.city} correctly already in collection")
+                    call.application.environment.log.info("id: ${poi.city} correctly already in collection")
                     poiCollection.insertOne(poi)
                     call.respondText("Poi correctly inserted", status = HttpStatusCode.OK)
                 } else {
-                    println("Incorrect city id ${poi.city}")
+                    call.application.environment.log.info("Incorrect city id ${poi.city}")
                     call.respondText("Poi has a incorrect city Id", status = HttpStatusCode.BadRequest)
                 }
             }
-            println("Non so perchè è qua")
+            call.application.environment.log.info("Non so perchè è qua")
         }
 
         /**
