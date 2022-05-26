@@ -1,6 +1,7 @@
 package io.github.lucarossi147.smarttourist
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -12,8 +13,10 @@ import com.google.gson.JsonObject
 import com.squareup.picasso.Picasso
 import io.github.lucarossi147.smarttourist.Constants.ADD_VISIT_URL
 import io.github.lucarossi147.smarttourist.Constants.ARG_USER
+import io.github.lucarossi147.smarttourist.Constants.getSignatures
 import io.github.lucarossi147.smarttourist.data.model.LoggedInUser
 import io.github.lucarossi147.smarttourist.data.model.POI
+import io.github.lucarossi147.smarttourist.data.model.Signature
 import io.ktor.client.*
 import io.ktor.client.engine.android.*
 import io.ktor.client.request.*
@@ -26,14 +29,13 @@ private const val ARG_POI = "poi"
 
 /**
  * A simple [Fragment] subclass.
- * Use the [PoiFragment.newInstance] factory method to
- * create an instance of this fragment.
  */
 class PoiFragment : Fragment() {
     private var poi: POI? = null
     private var user: LoggedInUser? = null
     private var signEditText: EditText? = null
     private var signButton: Button? = null
+    private var signatures: List<Signature> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,17 +61,31 @@ class PoiFragment : Fragment() {
             signEditText?.visibility = View.VISIBLE
             signButton?.visibility = View.VISIBLE
         }
+        val nonNullUser = user?:return
+        val nonNullPoi = poi?:return
 
         val tv: TextView = view.findViewById(R.id.poiInfoTextView)
         tv.text = poi?.info
+        Log.i("signatures", nonNullPoi.id)
+        Log.i("signatures", nonNullUser.token)
+        //get signatures
+        CoroutineScope(Dispatchers.IO).launch {
+            val res = HttpClient(Android)
+                .get(getSignatures(nonNullPoi.id)){
+                    bearerAuth(nonNullUser.token)
+                }
+            CoroutineScope(Dispatchers.Main).launch {
+                if (res.status.isSuccess()){
+                    // TODO: unmarshall response
+                }
+            }
+
+        }
 
         signButton?.setOnClickListener {
             //remove sign yourself from UI
             // TODO: send signature and comment to server
             //if result is success remove editText and make a toast
-            val nonNullUser = user?:return@setOnClickListener
-            val nonNullPoi = poi?:return@setOnClickListener
-
             CoroutineScope(Dispatchers.IO).launch {
                 val jsonObject = JsonObject()
                 jsonObject.addProperty("idPoi", nonNullPoi.id)
@@ -90,7 +106,6 @@ class PoiFragment : Fragment() {
             }
             signEditText?.visibility = View.GONE
             signButton?.visibility = View.GONE
-
         }
         val goToSignatureButton: Button = view.findViewById(R.id.goToSignaturesButton)
         goToSignatureButton.setOnClickListener {
@@ -100,7 +115,6 @@ class PoiFragment : Fragment() {
         }
         val backToMapButton: Button = view.findViewById(R.id.backToMapButton)
         backToMapButton.setOnClickListener {
-
             view.findNavController().navigate(R.id.mapsFragment, bundleOf(ARG_USER to user))
         }
         poi?.pictures?.forEach {
@@ -114,18 +128,5 @@ class PoiFragment : Fragment() {
         }
 
 
-    }
-    companion object {
-        /**
-         * @param poi Point of interest to display.
-         * @return A new instance of fragment PoiFragment.
-         */
-        @JvmStatic
-        fun newInstance(poi: POI) =
-            PoiFragment().apply {
-                arguments = Bundle().apply {
-                    putParcelable(ARG_POI, poi)
-                }
-            }
     }
 }

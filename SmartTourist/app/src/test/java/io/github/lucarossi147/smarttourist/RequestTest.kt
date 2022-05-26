@@ -7,6 +7,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
+import org.json.JSONArray
 import org.junit.Test
 import kotlin.random.Random
 
@@ -107,43 +108,64 @@ class RequestTest {
 //            }
 //        }
 //    }
-    @Test
-    fun testGetVisitFromToken(){
-        runBlocking {
-            val res = HttpClient(Android).get("https://smart-tourist-cup3lszycq-uc.a.run.app/game/visitByUser"){
-                val token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2NTM1NTkyMjIsInVzZXJuYW1lIjoibHVjYXJvc3NpMTQ3QGdtYWlsLmNvbSJ9.g8mBipfOHQ6WFP32cPhqSxAp1Px4MaqEx1E75xeD_4k"
-//                headers.append("Authorization", "Bearer:$token")
-                bearerAuth(token)
-            }
-            if(res.status.isSuccess()){
-                println("success")
-                println(res.bodyAsText())
-            } else {
-                println("failure")
-            }
-        }
-    }
+//    @Test
+//    fun testGetVisitFromToken(){
+//        runBlocking {
+//            val res = HttpClient(Android).get("https://smart-tourist-cup3lszycq-uc.a.run.app/game/visitByUser"){
+//                val token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2NTM1NTkyMjIsInVzZXJuYW1lIjoibHVjYXJvc3NpMTQ3QGdtYWlsLmNvbSJ9.g8mBipfOHQ6WFP32cPhqSxAp1Px4MaqEx1E75xeD_4k"
+////                headers.append("Authorization", "Bearer:$token")
+//                bearerAuth(token)
+//            }
+//            if(res.status.isSuccess()){
+//                println("success")
+//                println(res.bodyAsText())
+//            } else {
+//                println("failure")
+//            }
+//        }
+//    }
 
-    @Test
-    fun testAddVisit(){
-        val jsonObject = JsonObject()
-        jsonObject.addProperty("_id","idVisit4")
-        jsonObject.addProperty("idUser","628610ad9c28104c492cbef7")
-        jsonObject.addProperty("idPoi", "idPoi")
-        jsonObject.addProperty("signature", "Hello, World!")
-        val token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2NTM1NTkyMjIsInVzZXJuYW1lIjoibHVjYXJvc3NpMTQ3QGdtYWlsLmNvbSJ9.g8mBipfOHQ6WFP32cPhqSxAp1Px4MaqEx1E75xeD_4k"
+//    @Test
+//    fun testAddVisit(){
+//        val jsonObject = JsonObject()
+//        jsonObject.addProperty("_id","idVisit4")
+//        jsonObject.addProperty("idUser","628610ad9c28104c492cbef7")
+//        jsonObject.addProperty("idPoi", "idPoi")
+//        jsonObject.addProperty("signature", "Hello, World!")
+//        val token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2NTM1NTkyMjIsInVzZXJuYW1lIjoibHVjYXJvc3NpMTQ3QGdtYWlsLmNvbSJ9.g8mBipfOHQ6WFP32cPhqSxAp1Px4MaqEx1E75xeD_4k"
+//
+//        runBlocking {
+//            val res = HttpClient(Android)
+//                .post("https://smart-tourist-cup3lszycq-uc.a.run.app/game/addVisit"){
+//                contentType(ContentType.Application.Json)
+////                setBody(Visit("idVisit4","628610ad9c28104c492cbef7", "idPoi", "Hello, World!"))
+//                setBody(jsonObject.toString())
+//                bearerAuth(token)
+//            }
+//            if(res.status.isSuccess()){
+//                assert(res.bodyAsText() == "Visit with this id already exist")
+//            }
+//        }
+//    }
 
-        runBlocking {
-            val res = HttpClient(Android)
-                .post("https://smart-tourist-cup3lszycq-uc.a.run.app/game/addVisit"){
-                contentType(ContentType.Application.Json)
-//                setBody(Visit("idVisit4","628610ad9c28104c492cbef7", "idPoi", "Hello, World!"))
-                setBody(jsonObject.toString())
-                bearerAuth(token)
-            }
-            if(res.status.isSuccess()){
-                assert(res.bodyAsText() == "Visit with this id already exist")
-            }
-        }
-    }
+//    @Test
+//    fun testSignatures() {
+//        runBlocking {
+//            val res =
+//                HttpClient(Android).get(Constants.getSignatures("10000")) {
+//                    val token =
+//                        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2NTM1NTkyMjIsInVzZXJuYW1lIjoibHVjYXJvc3NpMTQ3QGdtYWlsLmNvbSJ9.g8mBipfOHQ6WFP32cPhqSxAp1Px4MaqEx1E75xeD_4k"
+//                    bearerAuth(token)
+//                }
+//            if (res.status.isSuccess()) {
+//                val jsonObject = JsonObject()
+//                jsonObject.addProperty("username", "ciccia")
+//                jsonObject.addProperty("signature", "cicci")
+//                println("success")
+//                println(res.bodyAsText())
+//            } else {
+//                println("failure")
+//            }
+//        }
+//    }
 }

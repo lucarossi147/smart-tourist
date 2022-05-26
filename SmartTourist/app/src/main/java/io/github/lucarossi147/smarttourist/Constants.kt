@@ -7,4 +7,6 @@ object Constants {
     const val MINIMUM_REFRESH_TIME = 1000 * 60 * 5
     const val ADD_VISIT_URL = AUTH_URL+"game/addVisit"
     const val POI_VISITED_BY_USER_URL = AUTH_URL+"game/visitedPoiByUser/"
+    fun getSignatures(poiId: String) = "${AUTH_URL}game/signatures/?id=$poiId"
+
 }
