@@ -14,5 +14,4 @@ data class PoiWithCity(
     val info: String = "",
     val pictures: List<String> = emptyList(),
     val category: Category = Category.CULTURE,
-    val visited: Boolean = false
 )
