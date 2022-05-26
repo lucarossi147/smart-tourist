@@ -1,6 +1,5 @@
 package com.example.plugins
 
-import com.google.gson.JsonObject
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -38,14 +37,7 @@ fun Application.configureRouting() {
                     Visit::idPoi eq idPoi
                 )
             ).toList()
-
             val signatureList = visits.map {Signature(it.idUser, it.signature)}
-            /*val gson = JsonObject()
-            visits.forEach {
-                gson.addProperty("userId", it.idUser)
-                gson.addProperty("signature", it.signature)
-            }*/
-            //println(gson)
             call.respond(signatureList)
         }
 

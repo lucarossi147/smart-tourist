@@ -1,5 +1,6 @@
 package com.example
 
+import com.example.plugins.Signature
 import io.ktor.client.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
@@ -13,7 +14,6 @@ import kotlinx.serialization.json.Json
 import model.Visit
 import org.bson.types.ObjectId
 import kotlin.test.Test
-import kotlin.test.assertContains
 import kotlin.test.assertEquals
 
 class ApplicationTest {
@@ -112,19 +112,16 @@ class ApplicationTest {
             parameter("id", visit.idPoi)
         }
 
-        //val visits = Json.decodeFromString<String>(response.bodyAsText())
+        val visits = Json.decodeFromString<List<Signature>>(response.bodyAsText())
 
-        //assertEquals(3, visits.size)
-        //assertContains(visits, "${visit.idUser} ${visit.signature}", "Array of signature contains the correct signature")
+        assertEquals(3, visits.size)
 
         //Get count of visits given the test poi id
         val response2 = client.get("/numberOfVisits/") {
             parameter("id", visit.idPoi)
         }
 
-        val numOfVisits = Integer.valueOf(response2.bodyAsText())
-
-        assertEquals(3, numOfVisits)
+        assertEquals(3, response2.bodyAsText().toInt())
     }
 
     @Test
