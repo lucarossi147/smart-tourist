@@ -114,7 +114,7 @@ class ScanFragment : Fragment() {
                             when (barcode.valueType) {
                                 Barcode.TYPE_URL -> {
 //                                    val title = barcode.url!!.title
-                                    val url = barcode.url!!.url?:"none"
+                                    val url = barcode.url?.url!!
                                     pbh.analyzing = true
                                     CoroutineScope(context = Dispatchers.IO).launch {
                                         val res = client.get(url)
@@ -122,6 +122,13 @@ class ScanFragment : Fragment() {
                                             //needs to run on main thread or Android throws a tantrum
                                             CoroutineScope(Dispatchers.Main).launch {
                                                 qrObservable.poiDeserializer = res.body()
+                                            }
+                                        } else {
+                                            if (res.status.value == 404) {
+                                                // TODO: maybe make a toast to user 
+                                                CoroutineScope(Dispatchers.Main).launch {
+                                                    pbh.analyzing = false
+                                                }
                                             }
                                         }
                                     }
