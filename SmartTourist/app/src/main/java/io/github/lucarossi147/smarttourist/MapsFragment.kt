@@ -48,6 +48,7 @@ import java.util.*
 import kotlin.properties.Delegates
 import io.github.lucarossi147.smarttourist.Constants.ARG_USER
 import io.github.lucarossi147.smarttourist.Constants.POI_VISITED_BY_USER_URL
+import io.github.lucarossi147.smarttourist.Constants.getPois
 
 private const val REQUESTING_LOCATION_UPDATES_KEY: String = "prove"
 private const val REQUEST_CHECK_SETTINGS = 0x1
@@ -150,7 +151,7 @@ class MapsFragment : Fragment() {
         fun fetchPOIs(lat:Double = CESENA_LAT, lng: Double = CESENA_LNG, radius: Int = 10 ){
             CoroutineScope(Dispatchers.IO).launch {
                 val res = HttpClient(Android)
-                    .get("${Constants.POI_URL}poisInArea/?lat=${lat}&lng=${lng}&radius=${radius}")
+                    .get(getPois(lat,lng,radius))
                 if (res.status.isSuccess()){
                     pois = Gson()
                         .fromJson(res.bodyAsText(), Array<POI>::class.java)
