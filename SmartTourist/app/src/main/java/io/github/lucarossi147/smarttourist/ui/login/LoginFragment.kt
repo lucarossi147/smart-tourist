@@ -61,6 +61,18 @@ class LoginFragment : Fragment() {
                 }
             })
 
+        loginViewModel.stillLoggedIn.observe(viewLifecycleOwner,
+            Observer { stillLoggedInResult ->
+                stillLoggedInResult?:return@Observer
+                stillLoggedInResult.error?.let {
+                    showLoginFailed(it)
+                }
+                stillLoggedInResult.success?.let {
+                    welcomeBackToast(it)
+                    navigateToMapsFragment(it)
+                }
+            })
+
         loginViewModel.loginResult.observe(viewLifecycleOwner,
             Observer { loginResult ->
                 loginResult ?: return@Observer
@@ -109,11 +121,7 @@ class LoginFragment : Fragment() {
             )
         }
 
-        val user = loginViewModel.getUser()
-        if (user != null) {
-            welcomeBackToast(user)
-            navigateToMapsFragment(user)
-        }
+        loginViewModel.stillLoggedIn()
     }
 
     private fun welcomeToast(model: LoggedInUserView){

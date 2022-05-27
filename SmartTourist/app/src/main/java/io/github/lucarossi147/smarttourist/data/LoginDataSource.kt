@@ -18,6 +18,16 @@ import java.io.IOException
 
 class LoginDataSource {
 
+    suspend fun stillLoggedIn(token: String): Result<LoggedInUser> {
+        val response = HttpClient(Android).get(Constants.AUTH_URL + "test-auth"){
+            bearerAuth(token)
+        }
+        if(response.status.isSuccess()) {
+            return Result.Success(LoggedInUser("toFill","toFill"))
+        }
+        return Result.Error(IOException("Token expired"))
+    }
+
 suspend fun login(username: String, password: String): Result<LoggedInUser> {
     val jsonObject = JSONObject()
     jsonObject.put("username", username)

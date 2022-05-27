@@ -18,11 +18,28 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
     private val _loginResult = MutableLiveData<LoginResult>()
     val loginResult: LiveData<LoginResult> = _loginResult
 
-    fun getUser():LoggedInUser? {
+    private val _stillLoggedIn = MutableLiveData<StillLoggedInResult>()
+    val stillLoggedIn: LiveData<StillLoggedInResult> = _stillLoggedIn
+
+    fun getUser():LoggedInUser?{
+        return loginRepository.user
+    }
+
+    fun stillLoggedIn() {
         if (loginRepository.isLoggedIn) {
-            return loginRepository.user
+            viewModelScope.launch(Dispatchers.IO) {
+                when (val result = loginRepository.stillLoggedIn(loginRepository.user?.token!!)) {
+                    is Result.Success ->
+                    viewModelScope.launch(Dispatchers.Main) {
+                            _stillLoggedIn.value = StillLoggedInResult(success = result.data)
+                        }
+                    else ->
+                        viewModelScope.launch(Dispatchers.Main) {
+                            _stillLoggedIn.value = StillLoggedInResult(error = R.string.token_expired)
+                        }
+                }
+            }
         }
-        return null
     }
 
     fun login(username: String, password: String) {
