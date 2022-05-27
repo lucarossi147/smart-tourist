@@ -116,12 +116,9 @@ class ApplicationTest {
 
         assertEquals(3, visits.size)
 
-        //Get count of visits given the test poi id
-        val response2 = client.get("/numberOfVisits/") {
+        assertEquals(3, client.get("/numberOfVisits/") {
             parameter("id", visit.idPoi)
-        }
-
-        assertEquals(3, response2.bodyAsText().toInt())
+        }.bodyAsText().toInt())
     }
 
     @Test
@@ -149,8 +146,35 @@ class ApplicationTest {
             parameter("id", "userTest")
         }
 
-        println(response.bodyAsText())
         val poisVisited = Json.decodeFromString<List<String>>(response.bodyAsText())
         assertEquals(3, poisVisited.size)
+    }
+
+    @Test
+    fun testVisitCount() = testApplication {
+        environment {
+            config = ApplicationConfig("application-custom.conf")
+        }
+
+        val client = createClient {
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+
+        assertEquals(client.get("/cleanVisits/").status, HttpStatusCode.OK)
+
+        val visit = randomVisit()
+        addVisit(client, visit.copy(idUser = "testCount0", _id = "visitn", idPoi = "poi0"))
+
+        assertEquals(1, client.get("/visitCount/") {
+            parameter("id", "testCount0")
+        }.bodyAsText().toInt())
+
+        addVisit(client, visit.copy(idUser = "testCount0", _id = "visitn1", idPoi = "poi01"))
+
+        assertEquals(2, client.get("/visitCount/") {
+            parameter("id", "testCount0")
+        }.bodyAsText().toInt())
     }
 }

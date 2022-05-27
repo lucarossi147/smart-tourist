@@ -13,18 +13,15 @@ fun Application.configureRouting() {
 
     val password = environment.config.property("ktor.deployment.DB_PWD").getString()
     val databaseEnvironment = environment.config.property("ktor.environment").getString()
-    val client =
-        KMongo.createClient("mongodb+srv://smart-tourism:$password@cluster0.2cwaw.mongodb.net/?retryWrites=true&w=majority")
+    val client = KMongo.createClient("mongodb+srv://smart-tourism:$password@cluster0.2cwaw.mongodb.net")
     val visitCollection = client.getDatabase(databaseEnvironment).getCollection<Visit>("visits")
 
     routing {
 
         /**
-         * Get the number of poi in a city
-         */
-
-        /**
-         * Get list of a signature given a Poi id
+         * Given a Poi Id, this methods returns all the signature made in that Poi.
+         * The signatures are returned as a list of (userId, signature)
+         * Other microservices can then convert the userid in a username or other name
          */
         get("/signatures/") {
             val idPoi = call.parameters["id"] ?: return@get call.respondText(
@@ -37,11 +34,15 @@ fun Application.configureRouting() {
                     Visit::idPoi eq idPoi
                 )
             ).toList()
-            val signatureList = visits.map {Signature(it.idUser, it.signature)}
+
+            val signatureList = visits.map { Signature(it.idUser, it.signature) }
+
             call.respond(signatureList)
         }
 
-
+        /**
+         * Given a Poi Id, this method returns THE NUMBER of all the visits made in that Poi
+         */
         get("/numberOfVisits/") {
             val idPoi = call.parameters["id"] ?: return@get call.respondText(
                 "Missing id of the Poi",
@@ -77,7 +78,8 @@ fun Application.configureRouting() {
 
 
         /**
-         * Add a visit made by an User
+         * Method for adding a visit in the Visit collection
+         * A visit is expected as parameter, otherwise an Exception is launched
          */
         post("/addVisit") {
             val receivedVisit = call.receive<Visit>()
@@ -92,7 +94,7 @@ fun Application.configureRouting() {
         }
 
         /**
-         * Returns the visit made by an user
+         * This method returns all the visit made by an User
          */
         get("/visitByUser/") {
 
@@ -120,7 +122,7 @@ fun Application.configureRouting() {
         }
 
         /**
-         * Returns the list of poi visited by an user
+         * Returns the number of poi visited by an user
          */
         get("/visitCount/") {
 

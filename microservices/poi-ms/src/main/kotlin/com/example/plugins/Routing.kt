@@ -16,9 +16,8 @@ import org.litote.kmongo.*
 fun Application.configureRouting() {
 
     val password = environment.config.property("ktor.deployment.DB_PWD").getString()
-    val client = KMongo.createClient("mongodb+srv://smart-tourism:$password@cluster0.2cwaw.mongodb.net/")
+    val client = KMongo.createClient("mongodb+srv://smart-tourism:$password@cluster0.2cwaw.mongodb.net")
     val databaseEnvironment = environment.config.property("ktor.environment").getString()
-
     val poiCollection = client.getDatabase(databaseEnvironment).getCollection<Poi>("pois")
     val citiesCollection = client.getDatabase(databaseEnvironment).getCollection<City>("cities")
 
@@ -32,24 +31,20 @@ fun Application.configureRouting() {
          * is returned
          */
         post("/addPoi") {
-            call.application.environment.log.info("Inside AddPoi function")
             val poi = call.receive<Poi>() //Receive a poi using json in POST request
-            call.application.environment.log.info("POI RECEIVED: $poi")
+            val poiId = poi._id
+            val cityId = poi.city
 
-            if (poiCollection.findOne(Poi::_id eq poi._id) != null) {
-                call.application.environment.log.info("id: ${poi._id} already in collection")
+            if (poiCollection.findOne(Poi::_id eq poiId) != null) {
                 call.respondText("Poi with this id already exist", status = HttpStatusCode.BadRequest)
             } else {
-                if (citiesCollection.findOne(City::_id eq poi.city) != null) {
-                    call.application.environment.log.info("id: ${poi.city} correctly already in collection")
+                if (citiesCollection.findOne(City::_id eq cityId) != null) {
                     poiCollection.insertOne(poi)
                     call.respondText("Poi correctly inserted", status = HttpStatusCode.OK)
                 } else {
-                    call.application.environment.log.info("Incorrect city id ${poi.city}")
                     call.respondText("Poi has a incorrect city Id", status = HttpStatusCode.BadRequest)
                 }
             }
-            call.application.environment.log.info("Non so perchè è qua")
         }
 
         /**
@@ -92,8 +87,9 @@ fun Application.configureRouting() {
 
             if (pois.isEmpty()) {
                 call.respondText("No poi with this id: $idString", status = HttpStatusCode.NotFound)
+            } else {
+                call.respond(pois.first())
             }
-            call.respond(pois)
         }
 
         /**
@@ -186,8 +182,8 @@ fun Application.configureRouting() {
          * Clean the test collection of pois and cities
          */
         get("/cleanTestDatabases") {
-            client.getDatabase("test").getCollection<Poi>("pois").deleteMany()
-            client.getDatabase("test").getCollection<City>("cities").deleteMany()
+            //client.getDatabase("test").getCollection<Poi>("pois").deleteMany()
+            //client.getDatabase("test").getCollection<City>("cities").deleteMany()
             call.respond(status = HttpStatusCode.OK, "Test databases correctly cleared")
         }
 

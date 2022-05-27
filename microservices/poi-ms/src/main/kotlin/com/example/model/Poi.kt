@@ -1,11 +1,12 @@
 package com.example.model
 
 import kotlinx.serialization.*
+import org.bson.types.ObjectId
 
 @Serializable
 data class Poi (
     @Contextual
-    val _id: String,
+    val _id: String = ObjectId().toString(),
     val name: String,
     val lat: Float,
     val lng: Float,

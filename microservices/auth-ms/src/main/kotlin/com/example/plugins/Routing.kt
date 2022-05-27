@@ -24,7 +24,6 @@ import kotlinx.serialization.json.Json
 import org.litote.kmongo.*
 
 /**
- * (GAME)
  * Il numero (sul totale) di poi visitati in una città da un utente
  * Quanti poi sono stati visitati in una città
  */
@@ -39,6 +38,11 @@ fun Application.configureRouting(config: JWTConfig) {
     val cl = HttpClient(CIO)
 
     routing {
+
+        /**
+         * ON "/", the root route, a message in Html format is returned, so visitors that access the website using a web
+         * app instead of the mobile app can be bringed to the downloable version
+         */
         get("/") {
             call.respondHtml(HttpStatusCode.OK) {
                 head {
@@ -52,6 +56,14 @@ fun Application.configureRouting(config: JWTConfig) {
             }
         }
 
+        /**
+         * Login Route
+         * A User is expected as Parameter, otherwise an Exception is launched
+         * When a User is correctly passed, user collection is checked for the same Id, if no User with same
+         * Id exist, badRequest responses is returned
+         * If the user exist, the password as parameter is checked against the one in the collection
+         * returning a Unauthorized if the password are different, Success otherwise, with JWT Token
+         */
         post("/login") {
             val user = call.receive<User>()
             val userInDb = usersCollection.findOne(User::username eq user.username)
@@ -74,7 +86,11 @@ fun Application.configureRouting(config: JWTConfig) {
         }
 
         /**
-         * Signup of a User
+         * Signup Route
+         * A User is expected as Parameter, otherwise an Exception is launched
+         * When a User is correctly passed, user collection is checked for the same Id, if no User with same
+         * Id exist, Success response is returned with a new JWT Token, and a user in the collection is created
+         * If the user already exist, a BadRequest is returned
          */
         post("/signup") {
             val user = call.receive<User>()
@@ -97,7 +113,8 @@ fun Application.configureRouting(config: JWTConfig) {
         }
 
         /**
-         * All the requests inside this route has to be authenticated
+         * All the requests inside this route has to be authenticated,
+         * with a valid jwt token inside the authentication header
          */
         authenticate("auth-jwt") {
 
@@ -111,6 +128,8 @@ fun Application.configureRouting(config: JWTConfig) {
                     } else {
                         call.respondText("Hello, $username! Token will expire in $expiresAt ms.", status = HttpStatusCode.OK)
                     }
+                } else {
+                    call.respondText("Token not valid", status = HttpStatusCode.Forbidden)
                 }
             }
 
@@ -155,11 +174,9 @@ fun Application.configureRouting(config: JWTConfig) {
                     parameter("id", idPoi)
                 }.bodyAsText()
 
-                //res contiene varie righe userId signature
-                //Json con username e signature
                 val jsonSignatureList = Json.decodeFromString<List<Signature>>(res)
                 jsonSignatureList.map { usersCollection.findOne(User::_id eq it.userId)?.username?.let { it1 ->
-                    Signature(
+                    OutSignature(
                         it1, it.signature)
                 } }
                 call.respond(jsonSignatureList)
@@ -199,3 +216,6 @@ fun Application.configureRouting(config: JWTConfig) {
 
 @Serializable
 data class Signature(val userId : String, val signature: String)
+
+@Serializable
+data class OutSignature(val username: String, val signature: String)
