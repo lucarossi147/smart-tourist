@@ -107,4 +107,5 @@
     <string name="go_back_and_explore_more">Go back and explore more!</string>
     <string name="username">username</string>
     <string name="token">token</string>
+    <string name="write_something_and_sign_yourself">Write something and sign yourself!</string>
 </resources>

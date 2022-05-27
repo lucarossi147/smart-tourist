@@ -1,16 +1,15 @@
 package io.github.lucarossi147.smarttourist
 
 import android.Manifest
-import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST
@@ -21,19 +20,21 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.navigation.findNavController
+import com.google.gson.Gson
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
-import io.github.lucarossi147.smarttourist.data.model.Category
-import io.github.lucarossi147.smarttourist.data.model.City
+import io.github.lucarossi147.smarttourist.Constants.ARG_USER
+import io.github.lucarossi147.smarttourist.data.model.LoggedInUser
 import io.github.lucarossi147.smarttourist.data.model.POI
 import io.github.lucarossi147.smarttourist.databinding.FragmentScanBinding
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.properties.Delegates
@@ -44,43 +45,65 @@ class ScanFragment : Fragment() {
     private lateinit var viewBinding: FragmentScanBinding
     private lateinit var myContext: Context
 
-    private class QrObservable (val view: View?,) {
-        val poi = POI("1","monsampietro morico",
-            lat = 45.0,
-            lng = 45.0,
-            pictures = listOf(
-                "https://placedog.net/800",
-                "https://placedog.net/820",
-                "https://placedog.net/840",
-                "https://placedog.net/860",
-                "https://placedog.net/880",
-                "https://placedog.net/900",
-                ),
-            category = Category.CULTURE,
-            city = City("id", "Monsampietro", lat = 45.0, 45.0),
-            visited = true)
+    private val requestPermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
+            if (isGranted) {
+                startCamera()
+            } else {
+                view?.findNavController()?.navigate(R.id.mapsFragment)
+                // Explain to the user that the feature is unavailable because the
+                // features requires a permission that the user has denied. At the
+                // same time, respect the user's decision. Don't link to system
+                // settings in an effort to convince the user to change their
+                // decision.
+            }
+        }
 
-        var qr:String by Delegates.observable(""){
+    private class ProgressBarHandler(val progressBar: ProgressBar?) {
+        var analyzing: Boolean by Delegates.observable(false) {
+            _,_, newValue ->
+                if (newValue) {
+                    progressBar?.visibility = View.VISIBLE
+                } else {
+                    progressBar?.visibility = View.INVISIBLE
+                }
+        }
+    }
+
+    private class QrObservable (val view: View?, user:LoggedInUser? ) {
+        var poiDeserializer :String? by Delegates.observable(null){
             _, _, newValue ->
-            // TODO: deserialize poi from the response and pass it to the fragment
-            val bundle = bundleOf("poi" to poi)
-            view?.findNavController()?.navigate(R.id.poiFragment, bundle )
+            val poi = Gson().fromJson(newValue,POI::class.java)
+            try {
+                //could go wrong if poi isn't serialized correctly
+                if (user!=null) {
+                    val bundle = bundleOf(
+                        "poi" to poi.copy(visited = poi.id in user.visitedPois),
+                        ARG_USER to user,
+                    )
+                    view?.findNavController()?.navigate(R.id.poiFragment, bundle)
+                }
+            }catch (e:java.lang.Exception) {
+                //don't do anything
+            }
         }
     }
 
     // TODO: Consider using glider instead of picasso
-    // TODO: BUG WITH PERMISSION FIRST TIME USER USES CAMERA
-    private class QrScanner(val qrObservable: QrObservable ) : ImageAnalysis.Analyzer {
+    private class QrScanner(val qrObservable: QrObservable, val pbh: ProgressBarHandler ) : ImageAnalysis.Analyzer {
         val client = HttpClient(Android)
+
         override fun analyze(imageProxy: ImageProxy) {
             @androidx.camera.core.ExperimentalGetImage
             val mediaImage = imageProxy.image
+
             if (mediaImage != null) {
                 val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
                 // Pass image to an ML Kit Vision API
                 val options = BarcodeScannerOptions.Builder()
-                    .setBarcodeFormats(
-                        Barcode.FORMAT_QR_CODE)
+                    .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
                     .build()
 
                 val scanner = BarcodeScanning.getClient(options)
@@ -90,14 +113,16 @@ class ScanFragment : Fragment() {
                             // See API reference for complete list of supported types
                             when (barcode.valueType) {
                                 Barcode.TYPE_URL -> {
-                                    Log.d("Camera", "barcode found")
 //                                    val title = barcode.url!!.title
                                     val url = barcode.url!!.url?:"none"
-                                    runBlocking {
-                                        Log.d("Camera", "inside runBlocking")
+                                    pbh.analyzing = true
+                                    CoroutineScope(context = Dispatchers.IO).launch {
                                         val res = client.get(url)
                                         if (res.status.isSuccess()){
-                                            qrObservable.qr = url
+                                            //needs to run on main thread or Android throws a tantrum
+                                            CoroutineScope(Dispatchers.Main).launch {
+                                                qrObservable.poiDeserializer = res.body()
+                                            }
                                         }
                                     }
                                 }
@@ -110,11 +135,6 @@ class ScanFragment : Fragment() {
             }
             imageProxy.close()
         }
-    }
-
-    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
-        ContextCompat.checkSelfPermission(
-            myContext, it) == PackageManager.PERMISSION_GRANTED
     }
 
     override fun onDestroy() {
@@ -136,30 +156,35 @@ class ScanFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_scan, container, false)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        viewBinding = FragmentScanBinding.bind(view)
-        if (allPermissionsGranted()) {
-            startCamera()
-        } else {
-            ActivityCompat.requestPermissions(
-                context as Activity, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
+    private fun requestPermission() {
+        val activity = activity?:return
+        when {
+            ContextCompat.checkSelfPermission(
+                activity,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                //permission granted
+                startCamera()
+            }
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                activity,
+                Manifest.permission.CAMERA
+            ) -> {
+                //additional rationale
+                requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+            }
+            else -> {
+                //not been asked yet
+                requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+            }
         }
-
-        cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
-    companion object {
-        private const val REQUEST_CODE_PERMISSIONS = 10
-        private val REQUIRED_PERMISSIONS =
-            mutableListOf (
-                Manifest.permission.CAMERA
-            ).apply {
-                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
-                    add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                }
-            }.toTypedArray()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        viewBinding = FragmentScanBinding.bind(view)
+        requestPermission()
+        cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
     private fun startCamera() {
@@ -179,7 +204,9 @@ class ScanFragment : Fragment() {
                 .setBackpressureStrategy(STRATEGY_KEEP_ONLY_LATEST)
                 .build()
                 .also {
-                    it.setAnalyzer(cameraExecutor, QrScanner(QrObservable(view)))
+                    it.setAnalyzer(cameraExecutor,
+                        QrScanner(QrObservable(view, arguments?.getParcelable(ARG_USER)),
+                            ProgressBarHandler(view?.findViewById(R.id.scanProgressBar))))
                 }
             // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
