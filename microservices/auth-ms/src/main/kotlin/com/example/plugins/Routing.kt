@@ -179,6 +179,7 @@ fun Application.configureRouting(config: JWTConfig) {
                     OutSignature(
                         it1, it.signature)
                 } }
+
                 call.respond(jsonSignatureList)
             }
 

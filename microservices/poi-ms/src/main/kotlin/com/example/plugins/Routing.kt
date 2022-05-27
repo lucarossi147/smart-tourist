@@ -142,7 +142,18 @@ fun Application.configureRouting() {
                 lt("lng", longitude + radius),
             )
 
-            val pois = poiCollection.find(filterInRange).toList()
+            val pois = poiCollection.aggregate<PoiWithCity>(
+                lookup(
+                    from = "cities",
+                    localField = "city",
+                    foreignField = "_id",
+                    newAs = "city"
+                ),
+                match(
+                    filterInRange
+                ),
+                unwind("\$city")
+            ).toList()
 
             if (pois.isEmpty()) {
                 call.respondText("No poi near these coordinates: [ LAT: $latitude , LNG: $longitude]",

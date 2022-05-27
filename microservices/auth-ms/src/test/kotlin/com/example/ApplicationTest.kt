@@ -219,11 +219,25 @@ class ApplicationTest {
             }
         }
 
-        val response = client.get("/game/signatures") {
+        //Create a random User and sign into the server
+        val user = createRandomUser()
+        signup(user, client)
+
+        //Login the User
+        val response1 = client.post("/login") {
             contentType(ContentType.Application.Json)
-            parameter("id", "inesistentPoiId")
+            setBody(user)
         }.bodyAsText()
 
-        println(response)
+        //Parse the token
+        val jwt = getToken(response1)
+
+        val response2 = client.get("/game/signatures") {
+            contentType(ContentType.Application.Json)
+            header("Authorization", "Bearer $jwt")
+            parameter("id", "idPoi")
+        }.bodyAsText()
+
+        println(response2)
     }
 }
