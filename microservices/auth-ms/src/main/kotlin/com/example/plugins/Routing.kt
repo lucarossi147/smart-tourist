@@ -26,6 +26,8 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.bson.types.ObjectId
 import org.litote.kmongo.*
+import javax.net.ssl.HttpsURLConnection
+import kotlin.math.sign
 
 /**
  * Il numero (sul totale) di poi visitati in una città da un utente
@@ -40,7 +42,7 @@ fun Application.configureRouting(config: JWTConfig) {
     val usersCollection = client.getDatabase(databaseEnvironment).getCollection<User>("users")
 
     val cl = HttpClient(CIO) {
-        install(ContentNegotiation){
+        install(ContentNegotiation) {
             json()
         }
     }
@@ -197,12 +199,12 @@ fun Application.configureRouting(config: JWTConfig) {
                     parameter("id", idPoi)
                 }.bodyAsText()
 
-                val jsonSignatureList = Json.decodeFromString<List<Signature>>(res)
-                jsonSignatureList.map {
-                    usersCollection.findOne(User::_id eq it.userId)?.username?.let { it1 ->
-                        OutSignature(
-                            it1, it.signature
-                        )
+                val jsonSignatureList = Json.decodeFromString<List<Signature>>(res).map {
+                    val username = usersCollection.findOne { User::_id eq it.userId }?.username
+                    if (username != null) {
+                        OutSignature(username, it.signature)
+                    } else {
+                        call.respondText("Error on name resolving", status = HttpStatusCode.BadRequest)
                     }
                 }
 
