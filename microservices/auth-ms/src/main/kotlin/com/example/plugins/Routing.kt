@@ -4,9 +4,11 @@ import com.example.JWTConfig
 import com.example.model.User
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -18,9 +20,11 @@ import kotlinx.html.body
 import kotlinx.html.h1
 import kotlinx.html.head
 import kotlinx.html.title
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import org.bson.types.ObjectId
 import org.litote.kmongo.*
 
 /**
@@ -35,7 +39,11 @@ fun Application.configureRouting(config: JWTConfig) {
 
     val usersCollection = client.getDatabase(databaseEnvironment).getCollection<User>("users")
 
-    val cl = HttpClient(CIO)
+    val cl = HttpClient(CIO) {
+        install(ContentNegotiation){
+            json()
+        }
+    }
 
     routing {
 
@@ -123,10 +131,13 @@ fun Application.configureRouting(config: JWTConfig) {
                 val username = principal!!.payload.getClaim("username").asString()
                 val expiresAt = principal.expiresAt?.time?.minus(System.currentTimeMillis())
                 if (expiresAt != null) {
-                    if(expiresAt < 1000){
+                    if (expiresAt < 1000) {
                         call.respondText("Token is expired", status = HttpStatusCode.Forbidden)
                     } else {
-                        call.respondText("Hello, $username! Token will expire in $expiresAt ms.", status = HttpStatusCode.OK)
+                        call.respondText(
+                            "Hello, $username! Token will expire in $expiresAt ms.",
+                            status = HttpStatusCode.OK
+                        )
                     }
                 } else {
                     call.respondText("Token not valid", status = HttpStatusCode.Forbidden)
@@ -150,10 +161,22 @@ fun Application.configureRouting(config: JWTConfig) {
              * Call the game microservice for adding a visit
              */
             post("/game/addVisit") {
+                val visitReceived = call.receive<Visit>()
+                val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString()
+                val userId = usersCollection.findOne(User::username eq username)?._id
+                call.application.log.info("Visit Received: [ $visitReceived ]")
+                val outVisit =
+                    OutVisit(idUser = userId!!, idPoi = visitReceived.idPoi, signature = visitReceived.signature)
+
+                call.application.log.info("OutVisit Created: [ $outVisit ]")
+
                 val res = cl.post("https://game-service-container-cup3lszycq-uc.a.run.app/addVisit") {
                     contentType(ContentType.Application.Json)
-                    setBody(call.receiveText())
+                    setBody(outVisit)
                 }
+
+                call.application.log.info("RESPONSE TO GAME MS: [ $res ]")
+
                 call.respond(res.bodyAsText())
             }
 
@@ -164,7 +187,7 @@ fun Application.configureRouting(config: JWTConfig) {
             /**
              * Return the signatures of a Poi
              */
-            get("/game/signatures/"){
+            get("/game/signatures/") {
                 val idPoi = call.parameters["id"] ?: return@get call.respondText(
                     "Missing id of the Poi",
                     status = HttpStatusCode.BadRequest
@@ -175,10 +198,13 @@ fun Application.configureRouting(config: JWTConfig) {
                 }.bodyAsText()
 
                 val jsonSignatureList = Json.decodeFromString<List<Signature>>(res)
-                jsonSignatureList.map { usersCollection.findOne(User::_id eq it.userId)?.username?.let { it1 ->
-                    OutSignature(
-                        it1, it.signature)
-                } }
+                jsonSignatureList.map {
+                    usersCollection.findOne(User::_id eq it.userId)?.username?.let { it1 ->
+                        OutSignature(
+                            it1, it.signature
+                        )
+                    }
+                }
 
                 call.respond(jsonSignatureList)
             }
@@ -186,7 +212,7 @@ fun Application.configureRouting(config: JWTConfig) {
             /**
              * Return the pois visited by the User
              */
-            get("/game/visitedPoiByUser/"){
+            get("/game/visitedPoiByUser/") {
                 val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString()
                 val idUser = usersCollection.findOne(User::username eq username)?._id
 
@@ -200,7 +226,7 @@ fun Application.configureRouting(config: JWTConfig) {
             /**
              *  Returns the number of Poi visited in a city and the total of the pois
              */
-            get("/game/poiVisitedOfTotal"){
+            get("/game/poiVisitedOfTotal") {
                 val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString()
                 val idUser = usersCollection.findOne(User::username eq username)?._id
 
@@ -212,11 +238,25 @@ fun Application.configureRouting(config: JWTConfig) {
             }
         }
     }
-
 }
 
 @Serializable
-data class Signature(val userId : String, val signature: String)
+data class Signature(val userId: String, val signature: String)
 
 @Serializable
 data class OutSignature(val username: String, val signature: String)
+
+@Serializable
+data class Visit(
+    val idPoi: String,
+    val signature: String
+)
+
+@Serializable
+data class OutVisit(
+    @Contextual
+    val _id: String = ObjectId().toString(),
+    val idUser: String,
+    val idPoi: String,
+    val signature: String
+)

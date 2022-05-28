@@ -11,6 +11,7 @@ plugins {
 
 group = "com.example"
 version = "0.0.1"
+
 application {
     mainClass.set("io.ktor.server.netty.EngineMain")
 
@@ -48,7 +49,7 @@ dependencies {
 
     //For CIO engine
 
-    //
+    //For making post request with json body
     implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
 
     //From ktor docs
@@ -58,6 +59,5 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
     implementation("ch.qos.logback:logback-classic:$logback_version")
-    testImplementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
     testImplementation("io.ktor:ktor-server-test-host-jvm:2.0.1")
 }

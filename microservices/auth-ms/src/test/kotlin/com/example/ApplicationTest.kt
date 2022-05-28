@@ -173,6 +173,7 @@ class ApplicationTest {
                 json()
             }
         }
+
         //Create a random User and sign into the server
         val user = createRandomUser()
         signup(user, client)
@@ -188,8 +189,6 @@ class ApplicationTest {
 
         val postRequest = """
         {
-            "_id": "idVisit",
-            "idUser": "user0",
             "idPoi": "idPoi",
             "signature": "testSignature"
         }
