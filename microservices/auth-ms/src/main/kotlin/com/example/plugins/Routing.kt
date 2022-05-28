@@ -199,16 +199,19 @@ fun Application.configureRouting(config: JWTConfig) {
                     parameter("id", idPoi)
                 }.bodyAsText()
 
-                val jsonSignatureList = Json.decodeFromString<List<Signature>>(res).map {
-                    val username = usersCollection.findOne { User::_id eq it.userId }?.username
-                    if (username != null) {
-                        OutSignature(username, it.signature)
-                    } else {
-                        call.respondText("Error on name resolving", status = HttpStatusCode.BadRequest)
+                val jsonSignatureList = Json.decodeFromString<List<Signature>>(res)
+                println("Json of signature list: $jsonSignatureList")
+                val outSignatureList = jsonSignatureList.map {
+                    usersCollection.findOne(User::_id eq it.userId)?.username?.let { it1 ->
+                        OutSignature(
+                            it1, it.signature
+                        )
                     }
                 }
 
-                call.respond(jsonSignatureList)
+                println("Json of OUTsignature list: $outSignatureList")
+
+                call.respond(outSignatureList)
             }
 
             /**
