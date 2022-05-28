@@ -125,7 +125,7 @@ class ScanFragment : Fragment() {
                                             }
                                         } else {
                                             if (res.status.value == 404) {
-                                                // TODO: maybe make a toast to user 
+                                                // TODO: maybe make a toast to user
                                                 CoroutineScope(Dispatchers.Main).launch {
                                                     pbh.analyzing = false
                                                 }

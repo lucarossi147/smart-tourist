@@ -1,6 +1,9 @@
 package io.github.lucarossi147.smarttourist
 
+import com.google.gson.Gson
 import com.google.gson.JsonObject
+import io.github.lucarossi147.smarttourist.data.model.POI
+import io.github.lucarossi147.smarttourist.data.model.Signature
 import io.ktor.client.*
 import io.ktor.client.engine.android.*
 import io.ktor.client.request.*
@@ -152,19 +155,33 @@ class RequestTest {
 //    fun testSignatures() {
 //        runBlocking {
 //            val res =
-//                HttpClient(Android).get(Constants.getSignatures("10000")) {
+//                HttpClient(Android).get(Constants.getSignatures("idPoi")) {
 //                    val token =
-//                        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2NTM1NTkyMjIsInVzZXJuYW1lIjoibHVjYXJvc3NpMTQ3QGdtYWlsLmNvbSJ9.g8mBipfOHQ6WFP32cPhqSxAp1Px4MaqEx1E75xeD_4k"
+//                        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2NTM3MzEzMTUsInVzZXJuYW1lIjoibHVjYSJ9.LrgjEs2_AaaJ3kC-LwXJOt7Esto03-FiWh1XODWgWp4"
 //                    bearerAuth(token)
 //                }
 //            if (res.status.isSuccess()) {
-//                val jsonObject = JsonObject()
-//                jsonObject.addProperty("username", "ciccia")
-//                jsonObject.addProperty("signature", "cicci")
+//                val signatures = Gson().fromJson(res.bodyAsText(),Array<Signature>::class.java).toList()
+//                println(signatures[0].message)
 //                println("success")
 //                println(res.bodyAsText())
 //            } else {
 //                println("failure")
+//            }
+//        }
+//    }
+//
+//    @Test
+//    fun testGetPois() {
+//        runBlocking {
+//            val res = HttpClient(Android)
+//                .get(Constants.getPois(0.0, 0.0, 10))
+//            if (res.status.isSuccess()){
+//                val pois = Gson()
+//                    .fromJson(res.bodyAsText(), Array<POI>::class.java)
+//                    .toList()
+//                println(pois)
+//                val cities = pois.map { it.city }
 //            }
 //        }
 //    }
