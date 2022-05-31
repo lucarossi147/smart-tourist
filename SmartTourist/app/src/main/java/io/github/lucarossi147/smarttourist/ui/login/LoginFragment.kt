@@ -64,6 +64,7 @@ class LoginFragment : Fragment() {
         loginViewModel.stillLoggedIn.observe(viewLifecycleOwner,
             Observer { stillLoggedInResult ->
                 stillLoggedInResult?:return@Observer
+                loadingProgressBar.visibility = View.GONE
                 stillLoggedInResult.error?.let {
                     showLoginFailed(it)
                 }
@@ -121,7 +122,10 @@ class LoginFragment : Fragment() {
             )
         }
 
-        loginViewModel.stillLoggedIn()
+        if (loginViewModel.getUser()!=null){
+            loadingProgressBar.visibility = View.VISIBLE
+            loginViewModel.stillLoggedIn()
+        }
     }
 
     private fun welcomeToast(model: LoggedInUserView){

@@ -254,6 +254,11 @@ class MapsFragment : Fragment() {
                 user.visitedPois = Gson().fromJson(res.bodyAsText(), Array<String>::class.java).toSet()
             }
             mapHandler = MapHandler(googleMap, user)
+            val button: Button? = view?.findViewById(R.id.scan)
+            button?.setOnClickListener {
+                val bundle = bundleOf(ARG_USER to mapHandler.user)
+                view?.findNavController()?.navigate(R.id.scanFragment, bundle)
+            }
         }
         val activity: Activity = activity?: return@OnMapReadyCallback
         val context: Context = context?: return@OnMapReadyCallback
@@ -290,11 +295,6 @@ class MapsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(callback)
-        val button: Button = view.findViewById(R.id.scan)
-        button.setOnClickListener {
-            val bundle = bundleOf(ARG_USER to mapHandler.user)
-            view.findNavController().navigate(R.id.scanFragment, bundle)
-        }
     }
 }
 
