@@ -50,7 +50,6 @@ import io.github.lucarossi147.smarttourist.Constants.ARG_USER
 import io.github.lucarossi147.smarttourist.Constants.POI_VISITED_BY_USER_URL
 import io.github.lucarossi147.smarttourist.Constants.getPois
 
-private const val REQUESTING_LOCATION_UPDATES_KEY: String = "prove"
 private const val REQUEST_CHECK_SETTINGS = 0x1
 
 private const val CESENA_LAT = 44.133331
@@ -148,10 +147,10 @@ class MapsFragment : Fragment() {
         fun updateUserPosition(lat:Double, lng: Double) {
             user = user.copy(lat = lat, lng = lng)
         }
-        fun fetchPOIs(lat:Double = CESENA_LAT, lng: Double = CESENA_LNG, radius: Int = 10 ){
+        fun fetchPOIs(lat:Double = CESENA_LAT, lng: Double = CESENA_LNG ){
             CoroutineScope(Dispatchers.IO).launch {
                 val res = HttpClient(Android)
-                    .get(getPois(lat,lng,radius))
+                    .get(getPois(lat,lng))
                 if (res.status.isSuccess()){
                     pois = Gson()
                         .fromJson(res.bodyAsText(), Array<POI>::class.java)
@@ -169,7 +168,6 @@ class MapsFragment : Fragment() {
         priority = LocationRequest.PRIORITY_HIGH_ACCURACY
     }
 
-    private var requestingLocationUpdates = true
     private val builder = LocationSettingsRequest.Builder()
         .addLocationRequest(locationRequest)
 
@@ -196,7 +194,6 @@ class MapsFragment : Fragment() {
                 }
             }
         }
-
     }
 
     override fun onPause() {
@@ -210,12 +207,7 @@ class MapsFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        if (requestingLocationUpdates) startLocationUpdates()
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY, requestingLocationUpdates)
-        super.onSaveInstanceState(outState)
+        startLocationUpdates()
     }
 
     private fun requestPermission() {
