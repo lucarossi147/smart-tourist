@@ -43,7 +43,6 @@ class ScanFragment : Fragment() {
 
     private lateinit var cameraExecutor: ExecutorService
     private lateinit var viewBinding: FragmentScanBinding
-    private lateinit var myContext: Context
 
     private val requestPermissionLauncher =
         registerForActivityResult(
@@ -149,11 +148,6 @@ class ScanFragment : Fragment() {
         cameraExecutor.shutdown()
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        myContext = context
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -165,20 +159,13 @@ class ScanFragment : Fragment() {
 
     private fun requestPermission() {
         val activity = activity?:return
-        when {
+        when (PackageManager.PERMISSION_GRANTED) {
             ContextCompat.checkSelfPermission(
                 activity,
                 Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED -> {
+            ) -> {
                 //permission granted
                 startCamera()
-            }
-            ActivityCompat.shouldShowRequestPermissionRationale(
-                activity,
-                Manifest.permission.CAMERA
-            ) -> {
-                //additional rationale
-                requestPermissionLauncher.launch(Manifest.permission.CAMERA)
             }
             else -> {
                 //not been asked yet
@@ -195,7 +182,7 @@ class ScanFragment : Fragment() {
     }
 
     private fun startCamera() {
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(myContext)
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
 
         cameraProviderFuture.addListener({
             // Used to bind the lifecycle of cameras to the lifecycle owner
@@ -227,7 +214,7 @@ class ScanFragment : Fragment() {
             } catch(exc: Exception) {
 
             }
-        }, ContextCompat.getMainExecutor(myContext))
+        }, ContextCompat.getMainExecutor(requireContext()))
     }
 
 }
