@@ -1,7 +1,6 @@
 package io.github.lucarossi147.smarttourist
 
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -16,7 +15,6 @@ import androidx.camera.core.ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.navigation.findNavController
@@ -115,7 +113,7 @@ class ScanFragment : Fragment() {
 //                                    val title = barcode.url!!.title
                                     val url = barcode.url?.url!!
                                     pbh.analyzing = true
-                                    CoroutineScope(context = Dispatchers.IO).launch {
+                                    CoroutineScope(Dispatchers.IO).launch {
                                         val res = client.get(url)
                                         if (res.status.isSuccess()){
                                             //needs to run on main thread or Android throws a tantrum
@@ -158,10 +156,9 @@ class ScanFragment : Fragment() {
     }
 
     private fun requestPermission() {
-        val activity = activity?:return
         when (PackageManager.PERMISSION_GRANTED) {
             ContextCompat.checkSelfPermission(
-                activity,
+                requireActivity(),
                 Manifest.permission.CAMERA
             ) -> {
                 //permission granted
