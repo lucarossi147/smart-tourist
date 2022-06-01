@@ -2,8 +2,6 @@ package io.github.lucarossi147.smarttourist
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.Context
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.os.Build
@@ -11,6 +9,7 @@ import androidx.fragment.app.Fragment
 
 import android.os.Bundle
 import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -29,7 +28,6 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
-import com.google.android.gms.tasks.Task
 import com.google.gson.Gson
 import io.github.lucarossi147.smarttourist.data.model.Category
 import io.github.lucarossi147.smarttourist.data.model.City
@@ -66,7 +64,9 @@ class MapsFragment : Fragment() {
         override fun onLocationResult(p0: LocationResult) {
             super.onLocationResult(p0)
             for (l in p0.locations) {
-                mapHandler.updateUserPosition(l.latitude, l.longitude)
+                if(::mapHandler.isInitialized) {
+                    mapHandler.updateUserPosition(l.latitude, l.longitude)
+                }
             }
         }
     }
@@ -174,23 +174,20 @@ class MapsFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.N)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val activity:Activity = activity?:return
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(activity)
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
         locationPermissionRequest = registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) { permissions ->
             when {
                 permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
-//                    Log.i("PERMISSION", "FINE LOCATION")
+                    Log.d("PERMISSION", "FINE LOCATION")
                 }
                 permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
-//                    Log.i("PERMISSION", "COARSE LOCATION")
+                    Log.d("PERMISSION", "COARSE LOCATION")
                 }
                 else -> {
-//                    Log.i("PERMISSION", "NO PERMISSION GRANTED")
-                    requestPermission()
+                    Log.d("PERMISSION", "NO PERMISSION GRANTED")
                 }
             }
         }
@@ -224,7 +221,6 @@ class MapsFragment : Fragment() {
     }
 
     private val callback = OnMapReadyCallback { googleMap ->
-
         val user: LoggedInUser = arguments?.getParcelable(ARG_USER) ?: return@OnMapReadyCallback
         CoroutineScope(Dispatchers.IO).launch {
             val res = HttpClient(Android).get(POI_VISITED_BY_USER_URL){
@@ -240,21 +236,17 @@ class MapsFragment : Fragment() {
                 view?.findNavController()?.navigate(R.id.scanFragment, bundle)
             }
         }
-        val activity: Activity = activity?: return@OnMapReadyCallback
-        val context: Context = context?: return@OnMapReadyCallback
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-            requestPermission()
-        }
-        val client: SettingsClient = LocationServices.getSettingsClient(activity)
-        val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
-        task.addOnFailureListener { exception ->
+        LocationServices
+            .getSettingsClient(requireActivity())
+            .checkLocationSettings(builder.build())
+            .addOnFailureListener { exception ->
             if (exception is ResolvableApiException){
                 // Location settings are not satisfied, but this can be fixed
                 // by showing the user a dialog.
                 try {
                     // Show the dialog by calling startResolutionForResult(),
                     // and check the result in onActivityResult().
-                    exception.startResolutionForResult(activity,
+                    exception.startResolutionForResult(requireActivity(),
                         REQUEST_CHECK_SETTINGS)
                 } catch (sendEx: IntentSender.SendIntentException) {
                     // Ignore the error.
@@ -275,6 +267,12 @@ class MapsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(callback)
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED){
+            Log.d("PERMISSION", "permission denied")
+            requestPermission()
+        }
     }
 }
 
