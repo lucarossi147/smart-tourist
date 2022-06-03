@@ -60,10 +60,12 @@ class PoiFragment : Fragment() {
         val nonNullUser = user?:return
         val nonNullPoi = poi?:return
 
+        val progressBar: ProgressBar = view.findViewById(R.id.signatureProgressBar)
         val tv: TextView = view.findViewById(R.id.poiInfoTextView)
         tv.text = poi?.info
 
         signButton?.setOnClickListener {
+            progressBar.visibility = View.VISIBLE
             CoroutineScope(Dispatchers.IO).launch {
                 val jsonObject = JsonObject()
                 jsonObject.addProperty("idPoi", nonNullPoi.id)
@@ -77,6 +79,7 @@ class PoiFragment : Fragment() {
                 CoroutineScope(Dispatchers.Main).launch {
                     if (res.status.isSuccess()){
                         nonNullUser.visitedPois  = nonNullUser.visitedPois + nonNullPoi.id
+                        progressBar.visibility = View.GONE
                         signEditText?.visibility = View.GONE
                         signButton?.visibility = View.GONE
                     } else {

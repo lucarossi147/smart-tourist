@@ -174,8 +174,8 @@ class ScanFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewBinding = FragmentScanBinding.bind(view)
-        requestPermission()
         cameraExecutor = Executors.newSingleThreadExecutor()
+        requestPermission()
     }
 
     private fun startCamera() {
