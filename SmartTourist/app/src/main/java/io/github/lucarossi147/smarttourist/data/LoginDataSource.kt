@@ -19,7 +19,7 @@ import java.io.IOException
 class LoginDataSource {
 
     suspend fun stillLoggedIn(token: String): Result<LoggedInUser> {
-        val response = HttpClient(Android).get(Constants.AUTH_URL + "test-auth"){
+        val response = HttpClient(Android).get(Constants.TEST_AUTH){
             bearerAuth(token)
         }
         if(response.status.isSuccess()) {
@@ -38,7 +38,7 @@ suspend fun login(username: String, password: String): Result<LoggedInUser> {
         //create client
         val client = HttpClient(Android)
         //try to login
-        val response = client.post(Constants.AUTH_URL.plus("login")){
+        val response = client.post(Constants.LOGIN_URL){
             contentType(ContentType.Application.Json)
             setBody(jsonObject.toString())
         }
@@ -54,7 +54,7 @@ suspend fun login(username: String, password: String): Result<LoggedInUser> {
         //username does not exist
         if(response.status.value == 400){
             //do signup with that username
-            val signupResponse = client.post(Constants.AUTH_URL.plus("signup")){
+            val signupResponse = client.post(Constants.SIGNUP_URL){
                 contentType(ContentType.Application.Json)
                 setBody(jsonObject.toString())
             }
