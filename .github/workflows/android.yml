@@ -23,8 +23,14 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         cache: gradle
-    - name: Create local.properties
-      run: echo MAPS_API_KEY=${{ secrets.MAPS_API_KEY }} > local.properties
+    - name: add Maps api key in local.properties
+      run: echo MAPS_API_KEY=${{ secrets.MAPS_API_KEY }} >> local.properties
+      working-directory: ${{env.working-directory}}
+    - name: add username for testing
+      run: echo USERNAME=${{secrets.TEST_LOGIN_USERNAME}} >> local.properties
+      working-directory: ${{env.working-directory}}
+    - name: add password for testing
+      run: echo PASSWORD=${{secrets.TEST_LOGIN_PASSWORD}} >> local.properties
       working-directory: ${{env.working-directory}}
     - name: Run Gradle build
       run: ./gradlew build
@@ -47,8 +53,14 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         cache: gradle
-    - name: Create local.properties
-      run: echo MAPS_API_KEY=${{ secrets.MAPS_API_KEY }} > local.properties
+    - name: add Maps api key in local.properties
+      run: echo MAPS_API_KEY=${{ secrets.MAPS_API_KEY }} >> local.properties
+      working-directory: ${{env.working-directory}}
+    - name: add username for testing
+      run: echo USERNAME=${{secrets.TEST_LOGIN_USERNAME}} >> local.properties
+      working-directory: ${{env.working-directory}}
+    - name: add password for testing
+      run: echo PASSWORD=${{secrets.TEST_LOGIN_PASSWORD}} >> local.properties
       working-directory: ${{env.working-directory}}
     - name: Build debug APK
       run: ./gradlew assembleDebug

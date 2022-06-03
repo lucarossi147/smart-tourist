@@ -17,6 +17,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
@@ -27,7 +28,10 @@ class RequestTest {
     private val poiId = "10000"
     private val client = HttpClient(Android)
     private val gson = Gson()
-    lateinit var token: Token
+    private lateinit var token: Token
+    private val username = BuildConfig.USERNAME
+    private val password = BuildConfig.PASSWORD
+
 
     private fun generateRandomUsername():String {
         val stringLength = Random.nextInt(6, 25)
@@ -72,8 +76,8 @@ class RequestTest {
     @Before
     fun testLogin(){
         val jsonObject = JSONObject()
-        jsonObject.put("username", "luca")
-        jsonObject.put("password", "password")
+        jsonObject.put("username", username)
+        jsonObject.put("password", password)
 
         runBlocking {
             val result = client.post(LOGIN_URL){
@@ -90,11 +94,11 @@ class RequestTest {
     @Test
     fun testLoginWithWrongPassword(){
         val jsonObject = JSONObject()
-        jsonObject.put("username", "luca")
-        jsonObject.put("password", "wrong password")
+        jsonObject.put("username", username)
+        jsonObject.put("password", "this is a wrong password")
 
         runBlocking {
-            val result = client.post(Constants.LOGIN_URL){
+            val result = client.post(LOGIN_URL){
                 contentType(ContentType.Application.Json)
                 setBody(jsonObject.toString())
             }
@@ -127,8 +131,6 @@ class RequestTest {
     @Test
     fun testAddVisit(){
         val jsonObject = JsonObject()
-        jsonObject.addProperty("_id","idVisit4")
-        jsonObject.addProperty("idUser","628610ad9c28104c492cbef7")
         jsonObject.addProperty("idPoi", "idPoi")
         jsonObject.addProperty("signature", "Hello, World!")
 
@@ -136,13 +138,10 @@ class RequestTest {
             val res = HttpClient(Android)
                 .post(ADD_VISIT_URL){
                 contentType(ContentType.Application.Json)
-//                setBody(Visit("idVisit4","628610ad9c28104c492cbef7", "idPoi", "Hello, World!"))
                 setBody(jsonObject.toString())
                 bearerAuth(token.value)
             }
-            if(res.status.isSuccess()){
-                assert(res.bodyAsText() == "Visit with this id already exist")
-            }
+            assert(res.status.isSuccess())
         }
     }
 
@@ -155,11 +154,9 @@ class RequestTest {
                 }
             if (res.status.isSuccess()) {
                 val signatures = Gson().fromJson(res.bodyAsText(),Array<Signature>::class.java).toList()
-                println(signatures[0].message)
-                println("success")
-                println(res.bodyAsText())
+                assert(signatures[0].message.isNotEmpty())
             } else {
-                println("failure")
+                fail("there should be at least a message")
             }
         }
     }
@@ -173,8 +170,9 @@ class RequestTest {
                 val pois = Gson()
                     .fromJson(res.bodyAsText(), Array<POI>::class.java)
                     .toList()
-                println(pois)
+                assert(pois.isNotEmpty())
                 val cities = pois.map { it.city }
+                assert(cities.isNotEmpty())
             }
         }
     }
