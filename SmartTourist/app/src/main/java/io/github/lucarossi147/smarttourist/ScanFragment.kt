@@ -1,7 +1,6 @@
 package io.github.lucarossi147.smarttourist
 
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -16,7 +15,6 @@ import androidx.camera.core.ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.navigation.findNavController
@@ -43,7 +41,6 @@ class ScanFragment : Fragment() {
 
     private lateinit var cameraExecutor: ExecutorService
     private lateinit var viewBinding: FragmentScanBinding
-    private lateinit var myContext: Context
 
     private val requestPermissionLauncher =
         registerForActivityResult(
@@ -114,14 +111,21 @@ class ScanFragment : Fragment() {
                             when (barcode.valueType) {
                                 Barcode.TYPE_URL -> {
 //                                    val title = barcode.url!!.title
-                                    val url = barcode.url!!.url?:"none"
+                                    val url = barcode.url?.url!!
                                     pbh.analyzing = true
-                                    CoroutineScope(context = Dispatchers.IO).launch {
+                                    CoroutineScope(Dispatchers.IO).launch {
                                         val res = client.get(url)
                                         if (res.status.isSuccess()){
                                             //needs to run on main thread or Android throws a tantrum
                                             CoroutineScope(Dispatchers.Main).launch {
                                                 qrObservable.poiDeserializer = res.body()
+                                            }
+                                        } else {
+                                            if (res.status.value == 404) {
+                                                // TODO: maybe make a toast to user
+                                                CoroutineScope(Dispatchers.Main).launch {
+                                                    pbh.analyzing = false
+                                                }
                                             }
                                         }
                                     }
@@ -142,11 +146,6 @@ class ScanFragment : Fragment() {
         cameraExecutor.shutdown()
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        myContext = context
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -157,21 +156,13 @@ class ScanFragment : Fragment() {
     }
 
     private fun requestPermission() {
-        val activity = activity?:return
-        when {
+        when (PackageManager.PERMISSION_GRANTED) {
             ContextCompat.checkSelfPermission(
-                activity,
-                Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                //permission granted
-                startCamera()
-            }
-            ActivityCompat.shouldShowRequestPermissionRationale(
-                activity,
+                requireActivity(),
                 Manifest.permission.CAMERA
             ) -> {
-                //additional rationale
-                requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+                //permission granted
+                startCamera()
             }
             else -> {
                 //not been asked yet
@@ -183,12 +174,12 @@ class ScanFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewBinding = FragmentScanBinding.bind(view)
-        requestPermission()
         cameraExecutor = Executors.newSingleThreadExecutor()
+        requestPermission()
     }
 
     private fun startCamera() {
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(myContext)
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
 
         cameraProviderFuture.addListener({
             // Used to bind the lifecycle of cameras to the lifecycle owner
@@ -220,7 +211,7 @@ class ScanFragment : Fragment() {
             } catch(exc: Exception) {
 
             }
-        }, ContextCompat.getMainExecutor(myContext))
+        }, ContextCompat.getMainExecutor(requireContext()))
     }
 
 }

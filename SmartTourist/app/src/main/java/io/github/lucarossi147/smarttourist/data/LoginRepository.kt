@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import io.github.lucarossi147.smarttourist.R
 import io.github.lucarossi147.smarttourist.data.model.LoggedInUser
+import io.ktor.utils.io.errors.*
 
 /**
  * Class that requests authentication and user information from the remote data source and
@@ -35,6 +36,18 @@ class LoginRepository(val dataSource: LoginDataSource, private val activity: Act
     fun logout() {
         user = null
         dataSource.logout()
+    }
+
+    suspend fun stillLoggedIn(token: String):Result<LoggedInUser>  {
+        val result = dataSource.stillLoggedIn(token)
+        if (result is Result.Success) {
+            if (user!= null){
+                return Result.Success(user!!)
+            }
+        } else {
+            return Result.Error(IOException("An error occurred"))
+        }
+        return result
     }
 
     suspend fun login(username: String, password: String): Result<LoggedInUser> {

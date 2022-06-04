@@ -61,6 +61,19 @@ class LoginFragment : Fragment() {
                 }
             })
 
+        loginViewModel.stillLoggedIn.observe(viewLifecycleOwner,
+            Observer { stillLoggedInResult ->
+                stillLoggedInResult?:return@Observer
+                loadingProgressBar.visibility = View.GONE
+                stillLoggedInResult.error?.let {
+                    showLoginFailed(it)
+                }
+                stillLoggedInResult.success?.let {
+                    welcomeBackToast(it)
+                    navigateToMapsFragment(it)
+                }
+            })
+
         loginViewModel.loginResult.observe(viewLifecycleOwner,
             Observer { loginResult ->
                 loginResult ?: return@Observer
@@ -109,10 +122,9 @@ class LoginFragment : Fragment() {
             )
         }
 
-        val user = loginViewModel.getUser()
-        if (user != null) {
-            welcomeBackToast(user)
-            navigateToMapsFragment(user)
+        if (loginViewModel.getUser()!=null){
+            loadingProgressBar.visibility = View.VISIBLE
+            loginViewModel.stillLoggedIn()
         }
     }
 

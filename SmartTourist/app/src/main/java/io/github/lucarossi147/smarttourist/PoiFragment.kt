@@ -1,7 +1,6 @@
 package io.github.lucarossi147.smarttourist
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -13,10 +12,8 @@ import com.google.gson.JsonObject
 import com.squareup.picasso.Picasso
 import io.github.lucarossi147.smarttourist.Constants.ADD_VISIT_URL
 import io.github.lucarossi147.smarttourist.Constants.ARG_USER
-import io.github.lucarossi147.smarttourist.Constants.getSignatures
 import io.github.lucarossi147.smarttourist.data.model.LoggedInUser
 import io.github.lucarossi147.smarttourist.data.model.POI
-import io.github.lucarossi147.smarttourist.data.model.Signature
 import io.ktor.client.*
 import io.ktor.client.engine.android.*
 import io.ktor.client.request.*
@@ -35,7 +32,6 @@ class PoiFragment : Fragment() {
     private var user: LoggedInUser? = null
     private var signEditText: EditText? = null
     private var signButton: Button? = null
-    private var signatures: List<Signature> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,28 +60,12 @@ class PoiFragment : Fragment() {
         val nonNullUser = user?:return
         val nonNullPoi = poi?:return
 
+        val progressBar: ProgressBar = view.findViewById(R.id.signatureProgressBar)
         val tv: TextView = view.findViewById(R.id.poiInfoTextView)
         tv.text = poi?.info
-        Log.i("signatures", nonNullPoi.id)
-        Log.i("signatures", nonNullUser.token)
-        //get signatures
-        CoroutineScope(Dispatchers.IO).launch {
-            val res = HttpClient(Android)
-                .get(getSignatures(nonNullPoi.id)){
-                    bearerAuth(nonNullUser.token)
-                }
-            CoroutineScope(Dispatchers.Main).launch {
-                if (res.status.isSuccess()){
-                    // TODO: unmarshall response
-                }
-            }
-
-        }
 
         signButton?.setOnClickListener {
-            //remove sign yourself from UI
-            // TODO: send signature and comment to server
-            //if result is success remove editText and make a toast
+            progressBar.visibility = View.VISIBLE
             CoroutineScope(Dispatchers.IO).launch {
                 val jsonObject = JsonObject()
                 jsonObject.addProperty("idPoi", nonNullPoi.id)
@@ -98,20 +78,25 @@ class PoiFragment : Fragment() {
                     }
                 CoroutineScope(Dispatchers.Main).launch {
                     if (res.status.isSuccess()){
-                        Toast.makeText(context, "Signed successfully!", Toast.LENGTH_SHORT).show()
+                        nonNullUser.visitedPois  = nonNullUser.visitedPois + nonNullPoi.id
+                        progressBar.visibility = View.GONE
+                        signEditText?.visibility = View.GONE
+                        signButton?.visibility = View.GONE
                     } else {
                         Toast.makeText(context, "Sign was not successful", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
+        }
+
+        if (nonNullPoi.id in nonNullUser.visitedPois){
             signEditText?.visibility = View.GONE
             signButton?.visibility = View.GONE
         }
+
         val goToSignatureButton: Button = view.findViewById(R.id.goToSignaturesButton)
         goToSignatureButton.setOnClickListener {
-            // TODO: maybe ask to server for signature asynchronously in the onCreate and make
-            //  fragment take a list as argument so user does not have to wait
-            view.findNavController().navigate(R.id.signaturesFragment)
+            view.findNavController().navigate(R.id.signaturesFragment, bundleOf(ARG_USER to user, "poiId" to poi!!.id))
         }
         val backToMapButton: Button = view.findViewById(R.id.backToMapButton)
         backToMapButton.setOnClickListener {
