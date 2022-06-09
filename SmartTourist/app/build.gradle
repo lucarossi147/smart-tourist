@@ -21,8 +21,25 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    def sf = properties.getProperty('STORE_FILE')
+    def sp = properties.getProperty('STORE_PASSWORD')
+    def ka = properties.getProperty('KEY_ALIAS')
+    signingConfigs {
+        release {
+            // You need to specify either an absolute path or include the
+            // keystore file in the same directory as the build.gradle file.
+            storeFile file(sf)
+            storePassword sp
+            keyAlias ka
+            keyPassword sp
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -60,7 +77,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
     // CameraX core library using the camera2 implementation
-    def camerax_version = "1.1.0-beta03"
+    def camerax_version = "1.2.0-alpha02"
     // The following line is optional, as the core library is included indirectly by camera-camera2
     implementation "androidx.camera:camera-core:${camerax_version}"
     implementation "androidx.camera:camera-camera2:${camerax_version}"

@@ -32,6 +32,21 @@ jobs:
     - name: add password for testing
       run: echo PASSWORD=${{secrets.TEST_LOGIN_PASSWORD}} >> local.properties
       working-directory: ${{env.working-directory}}
+
+
+    - name: create keyStore file in same directory of gradle module app
+      run: echo '${{secrets.ANDROID_APP_SIGNING_KEY_BASE64}}' | base64 -d > app/smartTouristReleaseKey.jks
+      working-directory: ${{env.working-directory}}
+    - name: add keyStore for signing release apk
+      run: echo STORE_FILE=smartTouristReleaseKey.jks >> local.properties
+      working-directory: ${{env.working-directory}}
+    - name: add password for signing release apk
+      run: echo STORE_PASSWORD=${{secrets.ANDROID_APP_SIGNING_PASSWORD}} >> local.properties
+      working-directory: ${{env.working-directory}}
+    - name: add keyAlias for signing release apk
+      run: echo KEY_ALIAS=${{secrets.ANDROID_APP_ALIAS}} >> local.properties
+      working-directory: ${{env.working-directory}}
+
     - name: Run Gradle build
       run: ./gradlew build
       working-directory: ${{env.working-directory}}
