@@ -24,22 +24,22 @@ jobs:
         distribution: 'temurin'
         cache: gradle
 
-    - name: add Maps api key in local.properties
+    - name: Add Maps api key in local.properties
       run: echo MAPS_API_KEY=${{ secrets.MAPS_API_KEY }} >> local.properties
-    - name: add username for testing
+    - name: Add username for testing
       run: echo USERNAME=${{secrets.TEST_LOGIN_USERNAME}} >> local.properties
-    - name: add password for testing
+    - name: Add password for testing
       run: echo PASSWORD=${{secrets.TEST_LOGIN_PASSWORD}} >> local.properties
-    - name: add keyStore for signing release apk
+    - name: Add keyStore for signing release apk
       run: echo STORE_FILE=smartTouristReleaseKey.jks >> local.properties
-    - name: add password for signing release apk
+    - name: Add password for signing release apk
       run: echo STORE_PASSWORD=${{secrets.ANDROID_APP_SIGNING_PASSWORD}} >> local.properties
-    - name: add keyAlias for signing release apk
+    - name: Add keyAlias for signing release apk
       run: echo KEY_ALIAS=${{secrets.ANDROID_APP_ALIAS}} >> local.properties
-    - name: move local.properties in the right folder
+    - name: Move local.properties in the right folder
       run: mv local.properties SmartTourist
 
-    - name: create keyStore file in same directory of gradle module app
+    - name: Create keyStore file in same directory of gradle module app
       run: echo '${{secrets.ANDROID_APP_SIGNING_KEY_BASE64}}' | base64 -d > app/smartTouristReleaseKey.jks
       working-directory: ${{env.working-directory}}
 
@@ -50,10 +50,10 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: apk
-        path: SmartTourist/app/build/outputs/apk/ # or path/to/artifact
+        path: SmartTourist/app/build/outputs/apk/
 
   release_debug_and_release_apk:
-    name: Generate and release debug and release APK
+    name: Release debug and release APK
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
@@ -77,6 +77,18 @@ jobs:
       with:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
+    
+    - name: Upload Debug APK
+      id: upload_release_asset
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: SmartTourist/app/build/outputs/apk/debug/app-debug.apk
+        asset_name: SmartTouristDebug.apk
+        asset_content_type: application/zip
+
     - name: Upload Release APK
       id: upload_release_asset
       uses: actions/upload-release-asset@v1.0.1
@@ -84,8 +96,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: SmartTourist/app/build/outputs/apk/
-        asset_name: apk
+        asset_path: SmartTourist/app/build/outputs/apk/release/app-release.apk
+        asset_name: SmartTouristRelease.apk
         asset_content_type: application/zip
 
   pull-request:
