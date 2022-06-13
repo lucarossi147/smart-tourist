@@ -8,7 +8,6 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -26,13 +25,8 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.bson.types.ObjectId
 import org.litote.kmongo.*
-import javax.net.ssl.HttpsURLConnection
-import kotlin.math.sign
+import io.ktor.serialization.kotlinx.json.*
 
-/**
- * Il numero (sul totale) di poi visitati in una città da un utente
- * Quanti poi sono stati visitati in una città
- */
 fun Application.configureRouting(config: JWTConfig) {
 
     val databaseEnvironment = environment.config.property("ktor.environment").getString()

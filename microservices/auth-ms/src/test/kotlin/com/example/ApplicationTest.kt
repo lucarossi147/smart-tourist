@@ -12,7 +12,6 @@ import io.ktor.server.testing.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import org.bson.types.ObjectId
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -146,20 +145,6 @@ class ApplicationTest {
 
         assertEquals(HttpStatusCode.Unauthorized, responseToBadAuth.status)
         assertEquals(responseToBadAuth.bodyAsText(), "Token is not valid or has expired")
-    }
-
-    @Ignore
-    fun testGetVisit() = testApplication {
-        environment {
-            config = ApplicationConfig("application-custom.conf")
-        }
-
-        val client = createClient {
-            install(ContentNegotiation) {
-                json()
-            }
-        }
-
     }
 
     @Test

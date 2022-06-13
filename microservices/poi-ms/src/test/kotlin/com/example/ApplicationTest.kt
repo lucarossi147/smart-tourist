@@ -15,12 +15,17 @@ import io.ktor.server.testing.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.bson.types.ObjectId
+import java.io.File
 import kotlin.test.Test
-import kotlin.test.assertContains
 import kotlin.test.assertEquals
 
 class ApplicationTest {
 
+    val configFile = if(File("application-custom.conf").exists()){
+        ApplicationConfig("application-custom.conf")
+    } else {
+        ApplicationConfig("application.conf")
+    }
     /**
      * Function for creating a random number, used for the pois and cities properties
      */
@@ -55,14 +60,14 @@ class ApplicationTest {
         return Pair(poi, city)
     }
 
-    private suspend fun addPoi(client: HttpClient, poi: Poi): HttpResponse{
+    private suspend fun addPoi(client: HttpClient, poi: Poi): HttpResponse {
         return client.post("/addPoi") {
             contentType(ContentType.Application.Json)
             setBody(poi)
         }
     }
 
-    private suspend fun addCity(client: HttpClient, city: City): HttpResponse{
+    private suspend fun addCity(client: HttpClient, city: City): HttpResponse {
         return client.post("/addCity") {
             contentType(ContentType.Application.Json)
             setBody(city)
@@ -72,7 +77,7 @@ class ApplicationTest {
     @Test
     fun poiAndCityAddingTest() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -107,7 +112,7 @@ class ApplicationTest {
         assertEquals(HttpStatusCode.NotFound, badPoiGetResponse.status)
 
         //Try to add the same city to the db
-        val badResponse =  addCity(client, city)
+        val badResponse = addCity(client, city)
 
         assertEquals(HttpStatusCode.BadRequest, badResponse.status)
         assertEquals("City with this id already exist", badResponse.bodyAsText())
@@ -120,7 +125,7 @@ class ApplicationTest {
     @Test
     fun getExistingPoi() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -144,7 +149,7 @@ class ApplicationTest {
     @Test
     fun getExistingCity() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -167,7 +172,7 @@ class ApplicationTest {
     @Test
     fun getPoisFromCity() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -188,20 +193,17 @@ class ApplicationTest {
         val poisReturned = Json.decodeFromString<List<PoiWithCity>>(response.bodyAsText())
         println(poisReturned)
 
-        assertEquals( 1, poisReturned.size) //Added only one poi inside the city
+        assertEquals(1, poisReturned.size) //Added only one poi inside the city
         assertEquals(HttpStatusCode.OK, response.status)
     }
 
     /**
      * Get pois near the one given as parameter
-     * TODO testaree senza radius fornito
-     * TODO testare se non ci sono pois nella zona
-     * TODO testare se il clean del db funzioni
      */
     @Test
     fun getNearPois() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -244,10 +246,10 @@ class ApplicationTest {
     /**
      * Get the city given the Poi
      */
-     @Test
-     fun getCityGivenPoi() = testApplication {
+    @Test
+    fun getCityGivenPoi() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {

@@ -156,8 +156,10 @@ fun Application.configureRouting() {
             ).toList()
 
             if (pois.isEmpty()) {
-                call.respondText("No poi near these coordinates: [ LAT: $latitude , LNG: $longitude]",
-                    status = HttpStatusCode.NotFound)
+                call.respondText(
+                    "No poi near these coordinates: [ LAT: $latitude , LNG: $longitude]",
+                    status = HttpStatusCode.NotFound
+                )
             }
 
             call.respond(pois)
