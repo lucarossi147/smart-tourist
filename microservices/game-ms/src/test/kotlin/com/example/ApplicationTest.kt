@@ -13,10 +13,17 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import model.Visit
 import org.bson.types.ObjectId
+import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ApplicationTest {
+
+    private val configFile = if(File("application-custom.conf").exists()){
+        ApplicationConfig("application-custom.conf")
+    } else {
+        ApplicationConfig("application.conf")
+    }
 
     private fun randomVisit() = Visit(
         ObjectId().toString(),
@@ -35,7 +42,7 @@ class ApplicationTest {
     @Test
     fun testAddVisit() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -58,7 +65,7 @@ class ApplicationTest {
     @Test
     fun testGetVisitFromUser() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -90,7 +97,7 @@ class ApplicationTest {
     @Test
     fun testGetSignaturesFromPoi() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -124,7 +131,7 @@ class ApplicationTest {
     @Test
     fun testGettingPoiVisited() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -153,7 +160,7 @@ class ApplicationTest {
     @Test
     fun testVisitCount() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {

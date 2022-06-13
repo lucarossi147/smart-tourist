@@ -21,11 +21,12 @@ import kotlin.test.assertEquals
 
 class ApplicationTest {
 
-    val configFile = if(File("application-custom.conf").exists()){
+    private val configFile = if(File("application-custom.conf").exists()){
         ApplicationConfig("application-custom.conf")
     } else {
         ApplicationConfig("application.conf")
     }
+
     /**
      * Function for creating a random number, used for the pois and cities properties
      */

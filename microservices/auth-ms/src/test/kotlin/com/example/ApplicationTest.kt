@@ -12,10 +12,17 @@ import io.ktor.server.testing.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import org.bson.types.ObjectId
+import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ApplicationTest {
+
+    private val configFile = if(File("application-custom.conf").exists()){
+        ApplicationConfig("application-custom.conf")
+    } else {
+        ApplicationConfig("application.conf")
+    }
 
     /**
      * Returns a jwt token given a default server response
@@ -55,7 +62,7 @@ class ApplicationTest {
     @Test
     fun testSignup() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -75,7 +82,7 @@ class ApplicationTest {
     @Test
     fun testExistingUserSignup() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
         val client = createClient {
             install(ContentNegotiation) {
@@ -97,7 +104,7 @@ class ApplicationTest {
     @Test
     fun testLogin() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -130,7 +137,7 @@ class ApplicationTest {
     @Test
     fun testBadAuthRequest() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -150,7 +157,7 @@ class ApplicationTest {
     @Test
     fun testPostVisit() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -194,7 +201,7 @@ class ApplicationTest {
      */
     fun testGetSignatures() =  testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
