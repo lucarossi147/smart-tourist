@@ -77,27 +77,17 @@ jobs:
       with:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
-    
-    - name: Upload Debug APK
-      uses: actions/upload-release-asset@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Upload Release Assets
+  # You may pin to the exact commit or the version.
+  # uses: alexellis/upload-assets@5586bc227f8525a5e3525e6edf64da5350bfb5b1
+      uses: alexellis/upload-assets@0.3.0
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: SmartTourist/app/build/outputs/apk/debug/app-debug.apk
-        asset_name: SmartTouristDebug.apk
-        asset_content_type: application/zip
-
-    - name: Upload Release APK
-      uses: actions/upload-release-asset@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: SmartTourist/app/build/outputs/apk/release/app-release.apk
-        asset_name: SmartTouristRelease.apk
-        asset_content_type: application/zip
-
+    # The paths to the assets you want to upload as a JSON array. You can use a glob pattern.
+        asset_paths:
+          SmartTourist/app/build/outputs/apk/debug/app-debug.apk
+          SmartTourist/app/build/outputs/apk/release/app-release.apk
+          
   pull-request:
     name: Pull request
     needs: build
