@@ -52,13 +52,25 @@ jobs:
         name: apk
         path: SmartTourist/app/build/outputs/apk/
 
-  release_debug_and_release_apk:
-    name: Release debug and release APK
+  create_release:
+    name: Create release
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
-    env:
-      working-directory: ./SmartTourist
+   
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+
+  release_debug_apk:
+    name: Release debug APK
+    needs: create_release
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
       with:
@@ -68,20 +80,41 @@ jobs:
       with:
         name: apk
         path: SmartTourist/app/build/outputs/apk/
-        
-    - name: Create release
-      uses: Roang-zero1/github-create-release-action@v2.1.0
+
+    - name: Upload Debug APK
+      uses: actions/upload-release-asset@v1.0.1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
-    - name: GitHub Upload Release Artifacts
-      # You may pin to the exact commit or the version.
-      # uses: Roang-zero1/github-upload-release-artifacts-action@f0677c0645db8d52dddaee4e83ce2c150f95e8e1
-      uses: Roang-zero1/github-upload-release-artifacts-action@v2.1.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}      
       with:
-        args: SmartTourist/app/build/outputs/apk/
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: SmartTourist/app/build/outputs/apk/debug/app-debug.apk
+        asset_name: SmartTouristDebug.apk
+        asset_content_type: application/zip
+
+  release_signed_release_apk:
+    name: Release Signed Release APK
+    needs: create_release
+    runs-on: ubuntu-latest
+    steps:
+    
+    - uses: actions/checkout@v3
+      with:
+        ref: android_app
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: apk
+        path: SmartTourist/app/build/outputs/apk/
+
+    - name: Upload Signed Release APK
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: SmartTourist/app/build/outputs/apk/release/app-release.apk
+        asset_name: SmartTouristRelease.apk
+        asset_content_type: application/zip
           
   pull-request:
     name: Pull request
