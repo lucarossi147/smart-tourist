@@ -33,7 +33,7 @@ dependencies {
 
     // For kotling mongo impl
     implementation("org.litote.kmongo:kmongo:4.5.1")
-    implementation("io.ktor:ktor-client-java-jvm:2.0.1")
+    implementation("io.ktor:ktor-client-java-jvm:2.0.2")
     implementation("io.ktor:ktor-server-core-jvm:2.0.1")
     implementation("io.ktor:ktor-server-netty-jvm:2.0.1")
     implementation("io.ktor:ktor-client-cio-jvm:2.0.1")
