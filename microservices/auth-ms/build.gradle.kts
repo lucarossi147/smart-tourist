@@ -59,5 +59,5 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
     implementation("ch.qos.logback:logback-classic:$logback_version")
     testImplementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
-    testImplementation("io.ktor:ktor-server-test-host-jvm:2.0.1")
+    testImplementation("io.ktor:ktor-server-test-host-jvm:2.0.2")
 }
