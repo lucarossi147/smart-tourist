@@ -51,6 +51,9 @@ dependencies {
     //For making post request with json body
     implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
 
+    //Bcrypt
+    implementation("org.mindrot:jbcrypt:0.4")
+
     //From ktor docs
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
     implementation("io.ktor:ktor-server-auth:$ktor_version")
