@@ -1,0 +1,10 @@
+# Basic set up for three package managers
+
+version: 2
+updates:
+
+  # Maintain dependencies for Ktor microservices
+  - package-ecosystem: "microservices"
+    directory: "microservices"
+    schedule:
+      interval: "daily"
