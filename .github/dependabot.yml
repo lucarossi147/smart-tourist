@@ -2,26 +2,26 @@ version: 2
 updates:
 
   # Maintain dependencies for visit microservices
-  - package-ecosystem: "microservices"
+  - package-ecosystem: "gradle"
     directory: "microservices/game-ms"
     schedule:
       interval: "daily"
 
   # Maintain dependencies for Ktor microservices
-  - package-ecosystem: "microservices"
+  - package-ecosystem: "gradle"
     directory: "microservices/auth-ms"
     schedule:
       interval: "daily"
 
 # Maintain dependencies for Ktor microservices
-  - package-ecosystem: "microservices"
+  - package-ecosystem: "gradle"
     directory: "microservices/poi-ms"
     schedule:
       interval: "daily"
       
       
  # Maintain dependencies for Ktor microservices
-  - package-ecosystem: "android app"
-    directory: "SmartTourist"
+  - package-ecosystem: "gradle"
+    directory: "SmartTourist/app"
     schedule:
       interval: "daily"
