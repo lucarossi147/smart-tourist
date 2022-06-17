@@ -8,11 +8,4 @@ data class User(
     @Contextual
     val _id: String = ObjectId().toString(),
     val username: String,
-    val password: String)
-
-data class UserStored(
-    @Contextual
-    val _id: String = ObjectId().toString(),
-    val username: String,
-    val hashedPassword: String,
-    val salt: String)
+    val hashedPassword: String)

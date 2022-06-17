@@ -2,7 +2,6 @@ package com.example.plugins
 
 import com.example.JWTConfig
 import com.example.model.User
-import com.example.model.UserStored
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -35,7 +34,7 @@ fun Application.configureRouting(config: JWTConfig) {
     val password = environment.config.property("ktor.deployment.DB_PWD").getString()
     val client = KMongo.createClient("mongodb+srv://smart-tourism:$password@cluster0.2cwaw.mongodb.net")
 
-    val usersCollection = client.getDatabase(databaseEnvironment).getCollection<UserStored>("users")
+    val usersCollection = client.getDatabase(databaseEnvironment).getCollection<User>("users")
 
     val cl = HttpClient(CIO) {
         install(ContentNegotiation) {
@@ -75,7 +74,7 @@ fun Application.configureRouting(config: JWTConfig) {
             val userInDb = usersCollection.findOne(User::username eq user.username)
 
             if (userInDb != null) {
-                if (BCrypt.checkpw(user.password, userInDb.hashedPassword)) {
+                if (BCrypt.checkpw(user.hashedPassword, userInDb.hashedPassword)) {
                     call.respond(hashMapOf("token" to config.generateToken(user.username)))
                 } else {
                     call.respondText(
@@ -104,13 +103,11 @@ fun Application.configureRouting(config: JWTConfig) {
             if (userInDb != null) {
                 call.respondText("User with this username already exist", status = HttpStatusCode.BadRequest)
             } else {
-                val salt = BCrypt.gensalt()
-                val hashedPassword = BCrypt.hashpw(user.password, salt)
-                usersCollection.insertOne(UserStored(
+                val hashedPassword = BCrypt.hashpw(user.hashedPassword, BCrypt.gensalt())
+                usersCollection.insertOne(User(
                     user._id,
                     user.username,
                     hashedPassword,
-                    salt
                 ))
                 call.respond(HttpStatusCode.Created, hashMapOf("token" to config.generateToken(user.username)))
             }
