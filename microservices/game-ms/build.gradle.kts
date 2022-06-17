@@ -29,7 +29,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
 
     //MongoDb kotlin
-    implementation("org.litote.kmongo:kmongo:4.5.1")
+    implementation("org.litote.kmongo:kmongo:4.6.0")
 
     //Content negotiation
     implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")
