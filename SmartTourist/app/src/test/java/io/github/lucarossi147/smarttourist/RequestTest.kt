@@ -15,8 +15,11 @@ import io.ktor.client.engine.android.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.json.JSONObject
+
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Ignore
@@ -25,7 +28,7 @@ import kotlin.random.Random
 
 class RequestTest {
 
-    private val poiId = "10000"
+    private val poiId = "62ada68ac7b7c975a53fde36" //colosseum
     private val client = HttpClient(Android)
     private val gson = Gson()
     private lateinit var token: Token
@@ -51,7 +54,7 @@ class RequestTest {
 
     @Test
     fun exampleGet() {
-        runBlocking {
+        CoroutineScope(Dispatchers.IO).launch {
             val result = client.get("https://www.google.com/")
             assert(result.status.value == 200)
         }
@@ -64,7 +67,7 @@ class RequestTest {
         jsonObject.put("username", generateRandomUsername())
         jsonObject.put("password", "password")
 
-        runBlocking {
+        CoroutineScope(Dispatchers.IO).launch {
             val result = client.post(SIGNUP_URL){
                 contentType(ContentType.Application.Json)
                 setBody(jsonObject.toString())
@@ -79,7 +82,7 @@ class RequestTest {
         jsonObject.put("username", username)
         jsonObject.put("password", password)
 
-        runBlocking {
+        CoroutineScope(Dispatchers.IO).launch {
             val result = client.post(LOGIN_URL){
                 contentType(ContentType.Application.Json)
                 setBody(jsonObject.toString())
@@ -97,7 +100,7 @@ class RequestTest {
         jsonObject.put("username", username)
         jsonObject.put("password", "this is a wrong password")
 
-        runBlocking {
+        CoroutineScope(Dispatchers.IO).launch {
             val result = client.post(LOGIN_URL){
                 contentType(ContentType.Application.Json)
                 setBody(jsonObject.toString())
@@ -108,7 +111,7 @@ class RequestTest {
 
     @Test
     fun testGetPoi(){
-        runBlocking {
+        CoroutineScope(Dispatchers.IO).launch {
             val res = HttpClient(Android)
                 .get(Constants.getPoi(poiId))
             if(res.status.isSuccess()){
@@ -119,7 +122,7 @@ class RequestTest {
     }
     @Test
     fun testGetVisitFromToken(){
-        runBlocking {
+        CoroutineScope(Dispatchers.IO).launch {
             val res = HttpClient(Android).get(POI_VISITED_BY_USER_URL){
 //                headers.append("Authorization", "Bearer:$token")
                 bearerAuth(token.value)
@@ -134,7 +137,7 @@ class RequestTest {
         jsonObject.addProperty("idPoi", "idPoi")
         jsonObject.addProperty("signature", "Hello, World!")
 
-        runBlocking {
+        CoroutineScope(Dispatchers.IO).launch {
             val res = HttpClient(Android)
                 .post(ADD_VISIT_URL){
                 contentType(ContentType.Application.Json)
@@ -147,23 +150,23 @@ class RequestTest {
 
     @Test
     fun testSignatures() {
-        runBlocking {
-            val res =
+        CoroutineScope(Dispatchers.IO).launch {
+                val res =
                 HttpClient(Android).get(Constants.getSignatures(poiId)) {
                     bearerAuth(token.value)
                 }
             if (res.status.isSuccess()) {
                 val signatures = Gson().fromJson(res.bodyAsText(),Array<Signature>::class.java).toList()
-                assert(signatures[0].message.isNotEmpty())
+                assert(signatures[0].message == "Hello, World!")
             } else {
                 fail("there should be at least a message")
             }
-        }
+        }    
     }
 
     @Test
     fun testGetPois() {
-        runBlocking {
+        CoroutineScope(Dispatchers.IO).launch {
             val res = HttpClient(Android)
                 .get(Constants.getPois(0.0, 0.0, 10))
             if (res.status.isSuccess()){
