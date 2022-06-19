@@ -74,7 +74,7 @@ fun Application.configureRouting(config: JWTConfig) {
             val userInDb = usersCollection.findOne(User::username eq user.username)
 
             if (userInDb != null) {
-                if (BCrypt.checkpw(user.hashedPassword, userInDb.hashedPassword)) {
+                if (BCrypt.checkpw(user.password, userInDb.password)) {
                     call.respond(hashMapOf("token" to config.generateToken(user.username)))
                 } else {
                     call.respondText(
@@ -103,7 +103,7 @@ fun Application.configureRouting(config: JWTConfig) {
             if (userInDb != null) {
                 call.respondText("User with this username already exist", status = HttpStatusCode.BadRequest)
             } else {
-                val hashedPassword = BCrypt.hashpw(user.hashedPassword, BCrypt.gensalt())
+                val hashedPassword = BCrypt.hashpw(user.password, BCrypt.gensalt())
                 usersCollection.insertOne(User(
                     user._id,
                     user.username,
