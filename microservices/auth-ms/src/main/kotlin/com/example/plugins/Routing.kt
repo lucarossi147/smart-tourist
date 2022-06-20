@@ -189,13 +189,13 @@ fun Application.configureRouting(config: JWTConfig) {
             /**
              * Return the signatures of a Poi
              */
-            get("/game/signatures/") {
+            get("/game/signatures") {
                 val idPoi = call.parameters["id"] ?: return@get call.respondText(
                     "Missing id of the Poi",
                     status = HttpStatusCode.BadRequest
                 )
 
-                val res = cl.get("https://game-service-container-cup3lszycq-uc.a.run.app/signatures/") {
+                val res = cl.get("https://game-service-container-cup3lszycq-uc.a.run.app/signatures") {
                     parameter("id", idPoi)
                 }.bodyAsText()
 
@@ -217,11 +217,11 @@ fun Application.configureRouting(config: JWTConfig) {
             /**
              * Return the pois visited by the User
              */
-            get("/game/visitedPoiByUser/") {
+            get("/game/visitedPoiByUser") {
                 val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString()
                 val idUser = usersCollection.findOne(User::username eq username)?._id
 
-                val res = cl.get("https://game-service-container-cup3lszycq-uc.a.run.app/visitedPoiByUser/") {
+                val res = cl.get("https://game-service-container-cup3lszycq-uc.a.run.app/visitedPoiByUser") {
                     parameter("id", idUser)
                 }
 
