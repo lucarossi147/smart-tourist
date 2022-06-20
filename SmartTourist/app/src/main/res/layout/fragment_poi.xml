@@ -20,6 +20,12 @@
             android:gravity="center"
             android:orientation="vertical">
 
+            <TextView
+                android:id="@+id/poiName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="34sp" />
+
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">

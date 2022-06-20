@@ -50,6 +50,7 @@ class PoiFragment : Fragment() {
     // TODO: invert view
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val poiName: TextView = view.findViewById(R.id.poiName)
         val signButton:Button = view.findViewById(R.id.signButton)
         val signEditText:EditText = view.findViewById(R.id.editTextTextSignYourself)
         val progressBar: ProgressBar = view.findViewById(R.id.signatureProgressBar)
@@ -57,6 +58,7 @@ class PoiFragment : Fragment() {
         val backToMapButton: Button = view.findViewById(R.id.backToMapButton)
         val nonNullUser = user?:return
         val nonNullPoi = poi?:return
+        poiName.text = nonNullPoi.name
         val tv: TextView = view.findViewById(R.id.poiInfoTextView)
         tv.text = poi?.info
 
