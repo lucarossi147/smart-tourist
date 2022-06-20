@@ -166,18 +166,13 @@ fun Application.configureRouting(config: JWTConfig) {
                 val visitReceived = call.receive<Visit>()
                 val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString()
                 val userId = usersCollection.findOne(User::username eq username)?._id
-                call.application.log.info("Visit Received: [ $visitReceived ]")
                 val outVisit =
                     OutVisit(idUser = userId!!, idPoi = visitReceived.idPoi, signature = visitReceived.signature)
-
-                call.application.log.info("OutVisit Created: [ $outVisit ]")
 
                 val res = cl.post("https://game-service-container-cup3lszycq-uc.a.run.app/addVisit") {
                     contentType(ContentType.Application.Json)
                     setBody(outVisit)
                 }
-
-                call.application.log.info("RESPONSE TO GAME MS: [ $res ]")
 
                 call.respond(res.bodyAsText())
             }
@@ -189,7 +184,7 @@ fun Application.configureRouting(config: JWTConfig) {
             /**
              * Return the signatures of a Poi
              */
-            get("/game/signatures") {
+            get("/game/signatures/{id?}") {
                 val idPoi = call.parameters["id"] ?: return@get call.respondText(
                     "Missing id of the Poi",
                     status = HttpStatusCode.BadRequest
@@ -200,7 +195,6 @@ fun Application.configureRouting(config: JWTConfig) {
                 }.bodyAsText()
 
                 val jsonSignatureList = Json.decodeFromString<List<Signature>>(res)
-                println("Json of signature list: $jsonSignatureList")
                 val outSignatureList = jsonSignatureList.map {
                     usersCollection.findOne(User::_id eq it.userId)?.username?.let { it1 ->
                         OutSignature(
@@ -208,8 +202,6 @@ fun Application.configureRouting(config: JWTConfig) {
                         )
                     }
                 }
-
-                println("Json of OUTsignature list: $outSignatureList")
 
                 call.respond(outSignatureList)
             }

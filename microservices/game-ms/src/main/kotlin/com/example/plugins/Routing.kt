@@ -23,7 +23,7 @@ fun Application.configureRouting() {
          * The signatures are returned as a list of (userId, signature)
          * Other microservices can then convert the userid in a username or other name
          */
-        get("/signatures/") {
+        get("/signatures") {
             val idPoi = call.parameters["id"] ?: return@get call.respondText(
                 "Missing id of the Poi",
                 status = HttpStatusCode.BadRequest
@@ -110,7 +110,7 @@ fun Application.configureRouting() {
         /**
          * Returns the list of poi visited by an user
          */
-        get("/visitedPoiByUser/") {
+        get("/visitedPoiByUser") {
 
             val idUser = call.parameters["id"] ?: return@get call.respondText(
                 "Missing id of the user",

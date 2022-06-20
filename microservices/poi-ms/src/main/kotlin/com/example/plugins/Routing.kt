@@ -118,7 +118,7 @@ fun Application.configureRouting() {
          * If Latitude or Longitude parameters are not given as query param, a BadRequest is returned.
          * If no Poi exist in the area, a NotFound is returned
          */
-        get("/poisInArea/") {
+        get("/poisInArea") {
             val lat = call.parameters["lat"] ?: return@get call.respondText(
                 "Missing lat of the poi",
                 status = HttpStatusCode.BadRequest
@@ -206,7 +206,7 @@ fun Application.configureRouting() {
          * If the Poi Id is not found in the collection, a NotFound is returned.
          * If the City id of the poi is not valid, a BadRequest is returned
          */
-        get("/cityByPoi/") {
+        get("/cityByPoi") {
             val idPoi = call.parameters["id"] ?: return@get call.respondText(
                 "Missing id of the Poi",
                 status = HttpStatusCode.BadRequest
