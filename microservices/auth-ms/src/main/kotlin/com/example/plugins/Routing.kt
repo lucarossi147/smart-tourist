@@ -217,7 +217,7 @@ fun Application.configureRouting(config: JWTConfig) {
                     parameter("id", idUser)
                 }
 
-                call.respond(res.bodyAsText())
+                call.respond(res)
             }
 
             /**
