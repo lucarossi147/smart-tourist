@@ -32,7 +32,7 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")
 
     // For kotling mongo impl
-    implementation("org.litote.kmongo:kmongo-id:4.6.0")
+    implementation("org.litote.kmongo:kmongo-id:4.6.1")
     implementation("org.litote.kmongo:kmongo-id-serialization:4.6.0")
     implementation("org.litote.kmongo:kmongo:4.5.1")
 
