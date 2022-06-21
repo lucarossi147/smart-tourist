@@ -217,11 +217,7 @@ fun Application.configureRouting(config: JWTConfig) {
                     parameter("id", idUser)
                 }
 
-                println("Normal respons: $res")
-                println("Normal response body: ${res.bodyAsText()}")
-                println("Normal response body escaped: ${res.bodyAsText().replace("\\\\", "")}")
-
-                call.respond(res.bodyAsText().replace("\\\\", ""))
+                call.respondText(res.bodyAsText())
             }
 
             /**
