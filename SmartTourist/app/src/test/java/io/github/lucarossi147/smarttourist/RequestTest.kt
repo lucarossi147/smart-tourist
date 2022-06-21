@@ -15,17 +15,22 @@ import io.ktor.client.engine.android.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
+
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 import kotlin.random.Random
+import kotlin.reflect.typeOf
 
 class RequestTest {
 
-    private val poiId = "10000"
+    private val poiId = "62ada68ac7b7c975a53fde36" //colosseum
     private val client = HttpClient(Android)
     private val gson = Gson()
     private lateinit var token: Token
@@ -148,17 +153,12 @@ class RequestTest {
     @Test
     fun testSignatures() {
         runBlocking {
-            val res =
+                val res =
                 HttpClient(Android).get(Constants.getSignatures(poiId)) {
                     bearerAuth(token.value)
                 }
-            if (res.status.isSuccess()) {
-                val signatures = Gson().fromJson(res.bodyAsText(),Array<Signature>::class.java).toList()
-                assert(signatures[0].message.isNotEmpty())
-            } else {
-                fail("there should be at least a message")
-            }
-        }
+            assert(res.status.isSuccess())
+        }    
     }
 
     @Test
@@ -174,6 +174,16 @@ class RequestTest {
                 val cities = pois.map { it.city }
                 assert(cities.isNotEmpty())
             }
+        }
+    }
+
+    @Test
+    fun testGetPoisVisitedByUser(){
+        runBlocking{
+            val res = HttpClient(Android).get(POI_VISITED_BY_USER_URL){
+                bearerAuth(token.value)
+            }
+            assert (res.status.isSuccess())
         }
     }
 }
