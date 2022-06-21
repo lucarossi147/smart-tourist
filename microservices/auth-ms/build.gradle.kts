@@ -11,6 +11,7 @@ plugins {
 
 group = "com.example"
 version = "0.0.1"
+
 application {
     mainClass.set("io.ktor.server.netty.EngineMain")
 
@@ -33,10 +34,9 @@ dependencies {
 
     // For kotling mongo impl
     implementation("org.litote.kmongo:kmongo:4.5.1")
-    implementation("io.ktor:ktor-client-java-jvm:2.0.1")
-    implementation("io.ktor:ktor-server-core-jvm:2.0.1")
-    implementation("io.ktor:ktor-server-netty-jvm:2.0.1")
-    implementation("io.ktor:ktor-client-cio-jvm:2.0.1")
+    implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
+    implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
+    implementation("io.ktor:ktor-client-cio-jvm:$ktor_version")
 
     //For Ktor testing
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlin_version")
@@ -48,8 +48,11 @@ dependencies {
 
     //For CIO engine
 
-    //
+    //For making post request with json body
     implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
+
+    //Bcrypt
+    implementation("org.mindrot:jbcrypt:0.4")
 
     //From ktor docs
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
@@ -58,6 +61,5 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
     implementation("ch.qos.logback:logback-classic:$logback_version")
-    testImplementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
-    testImplementation("io.ktor:ktor-server-test-host-jvm:2.0.1")
+    testImplementation("io.ktor:ktor-server-test-host-jvm:$ktor_version")
 }

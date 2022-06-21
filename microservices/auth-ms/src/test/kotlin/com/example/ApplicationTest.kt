@@ -12,11 +12,17 @@ import io.ktor.server.testing.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import org.bson.types.ObjectId
-import kotlin.test.Ignore
+import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ApplicationTest {
+
+    private val configFile = if(File("application-custom.conf").exists()){
+        ApplicationConfig("application-custom.conf")
+    } else {
+        ApplicationConfig("application.conf")
+    }
 
     /**
      * Returns a jwt token given a default server response
@@ -56,7 +62,7 @@ class ApplicationTest {
     @Test
     fun testSignup() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -76,7 +82,7 @@ class ApplicationTest {
     @Test
     fun testExistingUserSignup() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
         val client = createClient {
             install(ContentNegotiation) {
@@ -98,7 +104,7 @@ class ApplicationTest {
     @Test
     fun testLogin() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -131,7 +137,7 @@ class ApplicationTest {
     @Test
     fun testBadAuthRequest() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -148,24 +154,10 @@ class ApplicationTest {
         assertEquals(responseToBadAuth.bodyAsText(), "Token is not valid or has expired")
     }
 
-    @Ignore
-    fun testGetVisit() = testApplication {
-        environment {
-            config = ApplicationConfig("application-custom.conf")
-        }
-
-        val client = createClient {
-            install(ContentNegotiation) {
-                json()
-            }
-        }
-
-    }
-
     @Test
     fun testPostVisit() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -173,6 +165,7 @@ class ApplicationTest {
                 json()
             }
         }
+
         //Create a random User and sign into the server
         val user = createRandomUser()
         signup(user, client)
@@ -188,8 +181,6 @@ class ApplicationTest {
 
         val postRequest = """
         {
-            "_id": "idVisit",
-            "idUser": "user0",
             "idPoi": "idPoi",
             "signature": "testSignature"
         }
@@ -210,7 +201,7 @@ class ApplicationTest {
      */
     fun testGetSignatures() =  testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -219,11 +210,25 @@ class ApplicationTest {
             }
         }
 
-        val response = client.get("/game/signatures") {
+        //Create a random User and sign into the server
+        val user = createRandomUser()
+        signup(user, client)
+
+        //Login the User
+        val response1 = client.post("/login") {
             contentType(ContentType.Application.Json)
-            parameter("id", "inesistentPoiId")
+            setBody(user)
         }.bodyAsText()
 
-        println(response)
+        //Parse the token
+        val jwt = getToken(response1)
+
+        val response2 = client.get("/game/signatures") {
+            contentType(ContentType.Application.Json)
+            header("Authorization", "Bearer $jwt")
+            parameter("id", "idPoi")
+        }.bodyAsText()
+
+        println(response2)
     }
 }

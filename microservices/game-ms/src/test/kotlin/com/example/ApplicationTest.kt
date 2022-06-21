@@ -1,5 +1,6 @@
 package com.example
 
+import com.example.plugins.Signature
 import io.ktor.client.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
@@ -12,11 +13,17 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import model.Visit
 import org.bson.types.ObjectId
+import java.io.File
 import kotlin.test.Test
-import kotlin.test.assertContains
 import kotlin.test.assertEquals
 
 class ApplicationTest {
+
+    private val configFile = if(File("application-custom.conf").exists()){
+        ApplicationConfig("application-custom.conf")
+    } else {
+        ApplicationConfig("application.conf")
+    }
 
     private fun randomVisit() = Visit(
         ObjectId().toString(),
@@ -35,7 +42,7 @@ class ApplicationTest {
     @Test
     fun testAddVisit() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -58,7 +65,7 @@ class ApplicationTest {
     @Test
     fun testGetVisitFromUser() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -74,7 +81,6 @@ class ApplicationTest {
         addVisit(client, visit)
 
         val response = client.get("/visitByUser/") {
-            contentType(ContentType.Application.Json)
             parameter("id", visit.idUser)
         }
 
@@ -86,12 +92,12 @@ class ApplicationTest {
     }
 
     /**
-     *
+     * Test getting signatures of a Poi
      */
     @Test
     fun testGetSignaturesFromPoi() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -108,13 +114,74 @@ class ApplicationTest {
         addVisit(client, visit.copy(_id = "visit1"))
         addVisit(client, visit.copy(_id = "visit2"))
 
+        //Get list of signatures given the test poi id
         val response = client.get("/signatures/") {
-            contentType(ContentType.Application.Json)
             parameter("id", visit.idPoi)
         }
 
-        val visits = Json.decodeFromString<List<String>>(response.bodyAsText())
+        val visits = Json.decodeFromString<List<Signature>>(response.bodyAsText())
+
         assertEquals(3, visits.size)
-        //assertContains(visits, visit)
+
+        assertEquals(3, client.get("/numberOfVisits/") {
+            parameter("id", visit.idPoi)
+        }.bodyAsText().toInt())
+    }
+
+    @Test
+    fun testGettingPoiVisited() = testApplication {
+        environment {
+            config = configFile
+        }
+
+        val client = createClient {
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+
+        assertEquals(client.get("/cleanVisits/").status, HttpStatusCode.OK)
+
+        //Create 3 visit with the same  id
+        val visit = randomVisit()
+        addVisit(client, visit.copy(idUser = "userTest", _id = "visit0", idPoi = "anotherPoi0"))
+        addVisit(client, visit.copy(idUser = "userTest", _id = "visit1", idPoi = "anotherPoi1"))
+        addVisit(client, visit.copy(idUser = "userTest", _id = "visit2", idPoi = "anotherPoi2"))
+
+        //Get list of poi visited given the user id
+        val response = client.get("/visitedPoiByUser/") {
+            parameter("id", "userTest")
+        }
+
+        val poisVisited = Json.decodeFromString<List<String>>(response.bodyAsText())
+        assertEquals(3, poisVisited.size)
+    }
+
+    @Test
+    fun testVisitCount() = testApplication {
+        environment {
+            config = configFile
+        }
+
+        val client = createClient {
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+
+        assertEquals(client.get("/cleanVisits/").status, HttpStatusCode.OK)
+
+        val visit = randomVisit()
+        addVisit(client, visit.copy(idUser = "testCount0", _id = "visitn", idPoi = "poi0"))
+
+        assertEquals(1, client.get("/visitCount/") {
+            parameter("id", "testCount0")
+        }.bodyAsText().toInt())
+
+        addVisit(client, visit.copy(idUser = "testCount0", _id = "visitn1", idPoi = "poi01"))
+
+        assertEquals(2, client.get("/visitCount/") {
+            parameter("id", "testCount0")
+        }.bodyAsText().toInt())
     }
 }

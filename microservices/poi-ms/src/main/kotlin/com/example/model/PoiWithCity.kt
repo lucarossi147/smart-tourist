@@ -2,11 +2,12 @@ package com.example.model
 
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
+import org.bson.types.ObjectId
 
 @Serializable
 data class PoiWithCity(
     @Contextual
-    val _id: String,
+    val _id: String = ObjectId().toString(),
     val name: String,
     val lat: Float,
     val lng: Float,
@@ -14,5 +15,4 @@ data class PoiWithCity(
     val info: String = "",
     val pictures: List<String> = emptyList(),
     val category: Category = Category.CULTURE,
-    val visited: Boolean = false
 )

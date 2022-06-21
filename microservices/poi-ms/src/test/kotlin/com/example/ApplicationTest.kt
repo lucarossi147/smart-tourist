@@ -15,11 +15,18 @@ import io.ktor.server.testing.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.bson.types.ObjectId
+import java.io.File
 import kotlin.test.Test
-import kotlin.test.assertContains
 import kotlin.test.assertEquals
 
 class ApplicationTest {
+
+    private val configFile = if(File("application-custom.conf").exists()){
+        ApplicationConfig("application-custom.conf")
+    } else {
+        ApplicationConfig("application.conf")
+    }
+
     /**
      * Function for creating a random number, used for the pois and cities properties
      */
@@ -54,14 +61,14 @@ class ApplicationTest {
         return Pair(poi, city)
     }
 
-    private suspend fun addPoi(client: HttpClient, poi: Poi): HttpResponse{
+    private suspend fun addPoi(client: HttpClient, poi: Poi): HttpResponse {
         return client.post("/addPoi") {
             contentType(ContentType.Application.Json)
             setBody(poi)
         }
     }
 
-    private suspend fun addCity(client: HttpClient, city: City): HttpResponse{
+    private suspend fun addCity(client: HttpClient, city: City): HttpResponse {
         return client.post("/addCity") {
             contentType(ContentType.Application.Json)
             setBody(city)
@@ -69,9 +76,9 @@ class ApplicationTest {
     }
 
     @Test
-    fun poiAddingTest() = testApplication {
+    fun poiAndCityAddingTest() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -80,9 +87,11 @@ class ApplicationTest {
             }
         }
 
-        //Create a random Poi and add it to the database, it should have a correct city Id
         val city = randomCity()
-        addCity(client, city)
+        val responseCity = addCity(client, city)
+
+        assertEquals(HttpStatusCode.OK, responseCity.status)
+        assertEquals("City correctly inserted", responseCity.bodyAsText())
 
         val poi = randomPoi().copy(city = city._id)
         val response = addPoi(client, poi)
@@ -91,38 +100,25 @@ class ApplicationTest {
         assertEquals("Poi correctly inserted", response.bodyAsText())
 
         //Try to add the same poi to the db
-        val badResponse = addPoi(client, poi)
+        val alreadyAddPoiResponse = addPoi(client, poi)
 
-        assertEquals(HttpStatusCode.BadRequest, badResponse.status)
-        assertEquals("Poi with this id already exist", badResponse.bodyAsText())
-    }
+        assertEquals(HttpStatusCode.BadRequest, alreadyAddPoiResponse.status)
+        assertEquals("Poi with this id already exist", alreadyAddPoiResponse.bodyAsText())
 
-
-    @Test
-    fun cityAddingTest() = testApplication {
-        environment {
-            config = ApplicationConfig("application-custom.conf")
+        val badPoiGetResponse = client.get("/poi/") {
+            parameter("id", "12345678")
         }
 
-        val client = createClient {
-            install(ContentNegotiation) {
-                json()
-            }
-        }
-
-        //Create a random city and add it to the database
-        val city = randomCity()
-        val response = addCity(client, city)
-
-        assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals("City correctly inserted", response.bodyAsText())
+        assertEquals("No poi with this id: 12345678", badPoiGetResponse.bodyAsText())
+        assertEquals(HttpStatusCode.NotFound, badPoiGetResponse.status)
 
         //Try to add the same city to the db
-        val badResponse =  addCity(client, city)
+        val badResponse = addCity(client, city)
 
         assertEquals(HttpStatusCode.BadRequest, badResponse.status)
         assertEquals("City with this id already exist", badResponse.bodyAsText())
     }
+
 
     /**
      * Test get of a poi given is id
@@ -130,7 +126,7 @@ class ApplicationTest {
     @Test
     fun getExistingPoi() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -139,24 +135,22 @@ class ApplicationTest {
             }
         }
 
-        val (poi, city) = createPoiAndCity(client)
-
         val response = client.get("/poi/") {
             contentType(ContentType.Application.Json)
-            parameter("id", poi._id)
+            parameter("id", "629094d02588d2501e70935d")
         }
 
-        println(response.bodyAsText())
-        val returnedPoi = Json.decodeFromString<List<PoiWithCity>>(response.bodyAsText())
+        val returnedPoi = Json.decodeFromString<PoiWithCity>(response.bodyAsText())
+
         assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals(poi.city, city._id)
-        assertEquals(poi._id, returnedPoi.first()._id)
+        assertEquals("poiname779", returnedPoi.name)
+        assertEquals("629094d02588d2501e70935d", returnedPoi._id)
     }
 
     @Test
     fun getExistingCity() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -165,24 +159,21 @@ class ApplicationTest {
             }
         }
 
-        val city = randomCity()
-        addCity(client, city)
-
         val response = client.get("/city/") {
             contentType(ContentType.Application.Json)
-            parameter("id", city._id)
+            parameter("id", "629094d02588d2501e70935c")
         }
 
-        print(response.bodyAsText())
         val returnedCity = Json.decodeFromString<City>(response.bodyAsText())
         assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals(city, returnedCity)
+        assertEquals("cityname779", returnedCity.name)
+        assertEquals("629094d02588d2501e70935c", returnedCity._id)
     }
 
     @Test
     fun getPoisFromCity() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -203,39 +194,17 @@ class ApplicationTest {
         val poisReturned = Json.decodeFromString<List<PoiWithCity>>(response.bodyAsText())
         println(poisReturned)
 
-        assertEquals( 1, poisReturned.size) //Added only one poi inside the city
+        assertEquals(1, poisReturned.size) //Added only one poi inside the city
         assertEquals(HttpStatusCode.OK, response.status)
-    }
-
-    @Test
-    fun getPoiWithErrors() = testApplication {
-        environment {
-            config = ApplicationConfig("application-custom.conf")
-        }
-
-        val client = createClient {
-            install(ContentNegotiation) {
-                json()
-            }
-        }
-
-        val response = client.get("/poi/") {
-            parameter("id", "12345678")
-        }
-        assertEquals("No poi with this id: 12345678", response.bodyAsText())
-        assertEquals(HttpStatusCode.NotFound, response.status)
     }
 
     /**
      * Get pois near the one given as parameter
-     * TODO testaree senza radius fornito
-     * TODO testare se non ci sono pois nella zona
-     * TODO testare se il clean del db funzioni
      */
     @Test
     fun getNearPois() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {
@@ -244,53 +213,44 @@ class ApplicationTest {
             }
         }
 
-        client.get("cleanTestDatabases")
-
         val (oldPoi, _) = createPoiAndCity(client)
-        //Add two other pois near the one created here
-        val poi = oldPoi.copy(
-            _id = "nearPoiTestId",
-            name = "near0",
-            lat = 100000F,
-            lng = 100000F,
-        )
 
-        addPoi(client, poi)
-        addPoi(client, poi.copy(_id = poi._id + 1, name = "Near1", lat = poi.lat - 1))
-        addPoi(client, poi.copy(_id = poi._id + 2, name = "Near2", lng = poi.lng + 1))
+        println("name: ${oldPoi.name}")
+        addPoi(client, oldPoi.copy(_id = oldPoi._id + 1, name = "Near1", lat = oldPoi.lat - 1))
+        addPoi(client, oldPoi.copy(_id = oldPoi._id + 2, name = "Near2", lng = oldPoi.lng + 1))
 
         val response = client.get("/poisInArea/") {
             contentType(ContentType.Application.Json)
-            parameter("lat", poi.lat)
-            parameter("lng", poi.lng)
-            parameter("radius", 10)
+            parameter("lat", oldPoi.lat)
+            parameter("lng", oldPoi.lng)
+            parameter("radius", 5)
         }
 
-        val poisReturned = Json.decodeFromString<List<Poi>>(response.bodyAsText())
+        val poisReturned = Json.decodeFromString<List<PoiWithCity>>(response.bodyAsText())
 
         assertEquals(3, poisReturned.size)
-        assertContains(poisReturned, poi, "Starting poi is not present in the area")
+        //assertContains(poisReturned, oldPoi, "Starting poi is not present in the area")
 
         //Test without radius given
         val response2 = client.get("/poisInArea/") {
             contentType(ContentType.Application.Json)
-            parameter("lat", poi.lat)
-            parameter("lng", poi.lng)
+            parameter("lat", oldPoi.lat)
+            parameter("lng", oldPoi.lng)
         }
 
-        val poisReturned2 = Json.decodeFromString<List<Poi>>(response2.bodyAsText())
+        val poisReturned2 = Json.decodeFromString<List<PoiWithCity>>(response2.bodyAsText())
 
         assertEquals(3, poisReturned2.size)
-        assertContains(poisReturned2, poi, "Starting poi is not present in the area")
+        //assertContains(poisReturned2, oldPoi, "Starting poi is not present in the area")
     }
 
     /**
      * Get the city given the Poi
      */
-     @Test
-     fun getCityGivenPoi() = testApplication {
+    @Test
+    fun getCityGivenPoi() = testApplication {
         environment {
-            config = ApplicationConfig("application-custom.conf")
+            config = configFile
         }
 
         val client = createClient {

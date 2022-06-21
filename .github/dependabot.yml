@@ -8,21 +8,21 @@ updates:
       interval: "daily"
     target-branch: "server"
 
-  # Maintain dependencies for Ktor microservices
+  # Maintain dependencies for auth microservice
   - package-ecosystem: "gradle"
     directory: "microservices/auth-ms"
     schedule:
       interval: "daily"
     target-branch: "server"
     
-# Maintain dependencies for Ktor microservices
+# Maintain dependencies for pois microservice
   - package-ecosystem: "gradle"
     directory: "microservices/poi-ms"
     schedule:
       interval: "daily"
     target-branch: "server"  
       
- # Maintain dependencies for Ktor microservices
+ # Maintain dependencies for Android app
   - package-ecosystem: "gradle"
     directory: "SmartTourist/app"
     schedule:
