@@ -1,21 +1,37 @@
 package io.github.lucarossi147.smarttourist
 
 import com.google.gson.Gson
+import com.google.gson.JsonObject
+import io.github.lucarossi147.smarttourist.Constants.ADD_VISIT_URL
+import io.github.lucarossi147.smarttourist.Constants.LOGIN_URL
+import io.github.lucarossi147.smarttourist.Constants.POI_VISITED_BY_USER_URL
+import io.github.lucarossi147.smarttourist.Constants.SIGNUP_URL
+import io.github.lucarossi147.smarttourist.data.model.POI
+import io.github.lucarossi147.smarttourist.data.model.Signature
 import io.github.lucarossi147.smarttourist.data.model.Token
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.android.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
+import org.junit.Assert.fail
+import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import kotlin.random.Random
 
 class RequestTest {
 
+    private val poiId = "10000"
     private val client = HttpClient(Android)
     private val gson = Gson()
+    private lateinit var token: Token
+    private val username = BuildConfig.USERNAME
+    private val password = BuildConfig.PASSWORD
+
 
     private fun generateRandomUsername():String {
         val stringLength = Random.nextInt(6, 25)
@@ -41,34 +57,35 @@ class RequestTest {
         }
     }
 
-//    @Test
-//    fun testSignUp(){
-//        val jsonObject = JSONObject()
-//        jsonObject.put("username", generateRandomUsername())
-//        jsonObject.put("password", "password")
-//
-//        runBlocking {
-//            val result = client.post("https://smarttourist22-cup3lszycq-uc.a.run.app/signup"){
-//                contentType(ContentType.Application.Json)
-//                setBody(jsonObject.toString())
-//            }
-//            assert(result.status.value == 201)
-//        }
-//    }
-
     @Test
-    fun testLogin(){
+    @Ignore("Already tested signup, useless to add other users")
+    fun testSignUp(){
         val jsonObject = JSONObject()
-        jsonObject.put("username", "username")
+        jsonObject.put("username", generateRandomUsername())
         jsonObject.put("password", "password")
 
         runBlocking {
-            val result = client.post("https://smarttourist22-cup3lszycq-uc.a.run.app/login"){
+            val result = client.post(SIGNUP_URL){
+                contentType(ContentType.Application.Json)
+                setBody(jsonObject.toString())
+            }
+            assert(result.status.value == 201)
+        }
+    }
+
+    @Before
+    fun testLogin(){
+        val jsonObject = JSONObject()
+        jsonObject.put("username", username)
+        jsonObject.put("password", password)
+
+        runBlocking {
+            val result = client.post(LOGIN_URL){
                 contentType(ContentType.Application.Json)
                 setBody(jsonObject.toString())
             }
             val responseBody:String = result.body()
-            val token: Token = gson.fromJson(responseBody, Token::class.java)
+            token = gson.fromJson(responseBody, Token::class.java)
             assert(result.status.value == 200)
             assert(token.value.isNotEmpty())
         }
@@ -77,15 +94,86 @@ class RequestTest {
     @Test
     fun testLoginWithWrongPassword(){
         val jsonObject = JSONObject()
-        jsonObject.put("username", "username")
-        jsonObject.put("password", "wrong password")
+        jsonObject.put("username", username)
+        jsonObject.put("password", "this is a wrong password")
 
         runBlocking {
-            val result = client.post("https://smarttourist22-cup3lszycq-uc.a.run.app/login"){
+            val result = client.post(LOGIN_URL){
                 contentType(ContentType.Application.Json)
                 setBody(jsonObject.toString())
             }
             assert(result.status.value == 401)
+        }
+    }
+
+    @Test
+    fun testGetPoi(){
+        runBlocking {
+            val res = HttpClient(Android)
+                .get(Constants.getPoi(poiId))
+            if(res.status.isSuccess()){
+                val deserialized = Gson().fromJson(res.bodyAsText(),POI::class.java)
+                assert(deserialized.id == poiId )
+            }
+        }
+    }
+    @Test
+    fun testGetVisitFromToken(){
+        runBlocking {
+            val res = HttpClient(Android).get(POI_VISITED_BY_USER_URL){
+//                headers.append("Authorization", "Bearer:$token")
+                bearerAuth(token.value)
+            }
+            assert(res.status.isSuccess())
+        }
+    }
+
+    @Test
+    fun testAddVisit(){
+        val jsonObject = JsonObject()
+        jsonObject.addProperty("idPoi", "idPoi")
+        jsonObject.addProperty("signature", "Hello, World!")
+
+        runBlocking {
+            val res = HttpClient(Android)
+                .post(ADD_VISIT_URL){
+                contentType(ContentType.Application.Json)
+                setBody(jsonObject.toString())
+                bearerAuth(token.value)
+            }
+            assert(res.status.isSuccess())
+        }
+    }
+
+    @Test
+    fun testSignatures() {
+        runBlocking {
+            val res =
+                HttpClient(Android).get(Constants.getSignatures(poiId)) {
+                    bearerAuth(token.value)
+                }
+            if (res.status.isSuccess()) {
+                val signatures = Gson().fromJson(res.bodyAsText(),Array<Signature>::class.java).toList()
+                assert(signatures[0].message.isNotEmpty())
+            } else {
+                fail("there should be at least a message")
+            }
+        }
+    }
+
+    @Test
+    fun testGetPois() {
+        runBlocking {
+            val res = HttpClient(Android)
+                .get(Constants.getPois(0.0, 0.0, 10))
+            if (res.status.isSuccess()){
+                val pois = Gson()
+                    .fromJson(res.bodyAsText(), Array<POI>::class.java)
+                    .toList()
+                assert(pois.isNotEmpty())
+                val cities = pois.map { it.city }
+                assert(cities.isNotEmpty())
+            }
         }
     }
 }

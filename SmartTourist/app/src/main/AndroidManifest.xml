@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="io.github.lucarossi147.smarttourist">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!--  Always include this permission  -->
     <!--  Include only if your app benefits from precise location access.  -->
