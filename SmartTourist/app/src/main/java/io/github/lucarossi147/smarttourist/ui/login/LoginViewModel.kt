@@ -1,13 +1,14 @@
 package io.github.lucarossi147.smarttourist.ui.login
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import android.util.Patterns
+import androidx.lifecycle.*
 import io.github.lucarossi147.smarttourist.data.LoginRepository
 import io.github.lucarossi147.smarttourist.data.Result
 
 import io.github.lucarossi147.smarttourist.R
+import io.github.lucarossi147.smarttourist.data.model.LoggedInUser
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel() {
 
@@ -17,14 +18,43 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
     private val _loginResult = MutableLiveData<LoginResult>()
     val loginResult: LiveData<LoginResult> = _loginResult
 
-    suspend fun login(username: String, password: String) {
+    private val _stillLoggedIn = MutableLiveData<StillLoggedInResult>()
+    val stillLoggedIn: LiveData<StillLoggedInResult> = _stillLoggedIn
+
+    fun getUser():LoggedInUser?{
+        return loginRepository.user
+    }
+
+    fun stillLoggedIn() {
+        if (loginRepository.isLoggedIn) {
+            viewModelScope.launch(Dispatchers.IO) {
+                when (val result = loginRepository.stillLoggedIn(loginRepository.user?.token!!)) {
+                    is Result.Success ->
+                    viewModelScope.launch(Dispatchers.Main) {
+                            _stillLoggedIn.value = StillLoggedInResult(success = result.data)
+                        }
+                    else ->
+                        viewModelScope.launch(Dispatchers.Main) {
+                            _stillLoggedIn.value = StillLoggedInResult(error = R.string.token_expired)
+                        }
+                }
+            }
+        }
+    }
+
+    fun login(username: String, password: String) {
         // can be launched in a separate asynchronous job
-        val result = loginRepository.login(username, password)
-        if (result is Result.Success) {
-            _loginResult.value =
-                LoginResult(success = LoggedInUserView(displayName = result.data.username))
-        } else {
-            _loginResult.value = LoginResult(error = R.string.login_failed)
+        viewModelScope.launch(Dispatchers.IO) {
+            when (val result = loginRepository.login(username, password)) {
+                is Result.Success ->
+                    viewModelScope.launch(Dispatchers.Main) {
+                        _loginResult.value = LoginResult(success = LoggedInUserView(displayName = result.data.username))
+                    }
+                else ->
+                    viewModelScope.launch(Dispatchers.Main) {
+                        _loginResult.value = LoginResult(error = R.string.login_failed)
+                    }
+            }
         }
     }
 
