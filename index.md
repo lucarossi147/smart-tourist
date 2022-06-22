@@ -16,8 +16,13 @@ The Android app shows to the users a map with different points of interest next 
 
 
 # Domain Driven Design <a name="ddd"></a>
-TODO Scriver intro al domain driven design
 
+Domain-driven design is a software design and development approach presented by Eric Evans in his book of the same name. DDD is focused on modelling software so as to match a domain according to input created by the domain created by domain experts together with developers.
+
+This is a simple description of what is being thought of when thinking about ddd, but what ddd really is?
+Domain-driven design is a metodology, because defines software development support practices, entering the wider field of agile methodologies.
+Domain-driven design is a set of pattern, because defines a set of patterns for building domain models.
+Domain-driven design is a complexity management technique: it avoids unnecessary complexity and offers tools for scalable management of the complexity of our application.
 ## Knowledge crunching
 The team is composed by two people, Luca Rossi and Davide Schiaroli who are in fact the product owners too.
 We talked with each other to design the app, trying to understand what each other wanted to create with this project and even coming up with some terms that ended up being very important and important for the project but for us this process was not enough to be called *knowledge crunching*. 
@@ -112,6 +117,8 @@ Surely the main feature of the app is the possibility to show points of interest
 ![Get user position and show pois](images/get_user_position_and_show_pois.png "Get user position and show pois")
 
 ## API 
+The api have been written using [Swagger](https://swagger.io) and are  now available [here](openApi.html)
+
 ![Server api, 1 of 2](images/openapi1.jpg "Server api, 1 of 2")
 
 ![Server api, 2 of 2](images/openapi2.jpg "Server api, 2 of 2")
@@ -141,8 +148,9 @@ The most interesting one in our opinion is the presence of Multi-Platforms proje
 An interesting feature that has been used quite a lot are the coroutines, that enable by default to run asynchronous code in a pretty straightforward way, this feature has been extremely useful with requests to the server.
 ## Microservices
 All the three microservices developed in this project are made using Ktor, a framework useful for creating web application and Http apps in a simple and fast way.
-### Ktor
 
+We developed the server using a REST architecture TODO continuare
+### Ktor
 Ktor has been chosen instead of other similar framework like Quarkus, Spring and Vertx for some of his features like being Kotlin native, support of third party features using plugin (Jwt, Serialization, etc..) and the auto-reload of the server in development mode.
 
 ### Auth service
@@ -153,7 +161,7 @@ Some paramaters are added to the JWT verifier in order to make the application l
 
 For storing only the hashed password we used instead the Bcrpyto library, this makes the app up to date with minimum safety standards in this type of application.
 ### Poi service
-TODO
+The second microservice is the Poi one. It is used for managing Pois and cities. In addition to the basic functionality for adding cities and pois, it provides some useful functionalities for retrieve the pois given a position (latitude, longitude).
 ### Visit service
 TODO
 ## Build Automation
@@ -175,8 +183,7 @@ The shrinking and obfuscation process however created some problems making the a
 
 This app also relies on the Google Maps API, so we had to get an API key through the Google Cloud Console and place it in a separate local file, called local.properties.
 The local.properties file is not supposed to be versioned for security reasons and the contents inside it are accessed through the *mapsplatform.secrets-gradle-plugin* as the documentation suggests.
-
-Another cool feature that has been used in this project is the Android [Navigation Component](https://developer.android.com/guide/navigation/navigation-getting-started). It allowed us to define a graph inside an XML file where we specified all the [Fragments](https://developer.android.com/guide/fragments) in the app and the possible paths between them. The usage of this component greatly simplified the writing process and allowed us to abstract a little bit from the implementation of the underlying structure of the project.
+TODO I don't remember what i wanted to say..... Another cool feature that has been used in this project is the Android [Navigation Component](https://developer.android.com/guide/navigation/navigation-getting-started). It allowed us to define a graph inside an XML file where we specified all the [Fragments](https://developer.android.com/guide/fragments) in the app and the possible paths between them. The usage of this component greatly simplified the writing process and allowed us to abstract a little bit from the implementation of the underlying structure of the project.
 
 The build process of course also runs tests and only ends successfully if every test passes, however the Android test suite is quite large and the ecosystem is pretty complex and unfortunately we didn’t manage to find enough time to experiment with new types of tests, in fact only a bunch of unit tests have been made. 
 A copy of the working APK can be found online and can be used to test if everything works as expected on different smartphones.
@@ -200,15 +207,18 @@ In this project, all the commits made by the developers are signed, because it c
 
 We have often used the "squash" functionality, in order to remove lot of useless commit that unnecessarily filled the git log of commit.
 
+TODO Riguardare questa parte, abbiamo piu' di tre branch
 We have organized our repository in three branch, the default branch main, a branch for the development of the android app, one for the server, and other branch for other less important purposes like the report, the branch created automatically by dependabot and one for the github page.
  
  TODO possible use of rebase to implement features in one of the branch dependabot(?) organization is not example, where do we put it?
+ 
 ### Containerization
 In order to make the easier the process of distribution and deployment of the microservices, we encapsulated those services into separate Docker containers. 
 This was of crucial importance as it made the development process lighter, faster and easier to debug.
-Having different containers could have made the development even faster with an higher number of human resources, in fact being the microservices 
+Having different containers could have made the development even faster with an higher number of human resources, in fact being the microservices almost independent from each other the writing process could have scaled really well. 
 
-In order to create those containers, we have created three different Dockerfile, those Dockerfile are used by Google Cloud Run when we push a new commit so as creating a running container in the cloud. Every different update of the container is called "Revision"
+
+In order to create those containers, three different Dockerfile have been created, those Dockerfile are used by Google Cloud Run when a commit is pushed to create a running container in the cloud. Every different update of the container is called "Revision".
 
 ### Google Cloud Run
 We created also an action for every microservice, so a new istance of the container is deployed at every push in the server branch, or when a pull request is made.
@@ -217,7 +227,8 @@ This has been possible using the google cloud run api, that can be used for this
 # Conclusion <a name="conclusion"></a>
 ## Team components and workload
 
-The team is composed by two people, Luca Rossi and Davide Schiaroli. In the firsts phases of the team worked together to build an accurate model and define the Domain. After this process a server (composed by three microservices) and an Android app were identified. The team agreed to
+The team is composed by two people, Luca Rossi and Davide Schiaroli. In the firsts phases of the team worked together to build an accurate model and define the Domain. After this process a server (composed by three microservices) and an Android app were identified. The team agreed to divide the workload into two main parts, the server and the android App. The android app has been developed by Luca Rossi and the server by Davide Schiaroli.
+The parts regarding integration and deployment has been studied together, in order to choose the best strategy for distributing the app or the best way to make available the app online, but has been developed individually.
 
 ## How does it work?
 spiegazione del funzionamento dell’app, se lo si scrive bene si puo’ mettere anche nel readme.
