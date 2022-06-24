@@ -52,7 +52,7 @@ jobs:
         name: apk
         path: SmartTourist/app/build/outputs/apk/
 
-  create_release:
+  create-release:
     name: Create release
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
@@ -69,9 +69,9 @@ jobs:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
 
-  release_debug_apk:
+  release-debug-apk:
     name: Release debug APK
-    needs: create_release
+    needs: create-release
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -93,9 +93,9 @@ jobs:
         asset_name: SmartTouristDebug.apk
         asset_content_type: application/zip
 
-  release_signed_release_apk:
+  release-signed-release-apk:
     name: Release Signed Release APK
-    needs: create_release
+    needs: create-release
     runs-on: ubuntu-latest
     steps:
     
