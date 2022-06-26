@@ -22,3 +22,16 @@ First connect your smartphone and enable it to transfer files.
 For the Debug installation ```./gradlew installDebug```
 
 For the Release installation ```./gradlew installRelease```
+
+## Microservices / Server
+There are three directory, one for service. Every service has his gradle project so you can use usual commands for build local project and test:
+
+Build with ```./gradlew build```
+
+Run tests with ```./gradlew test```
+
+Furthermore, it is possible to build local version using Docker, and the command is slightly more complicated:
+
+For auth service: ```docker build . -t auth-ms``` and then ```docker run auth-ms -p 8080:8080```
+
+For other services: ```docker build . -t other-ms``` and then ```docker run other-ms -p 3001:3000```, being careful not to use the same socket twice.
