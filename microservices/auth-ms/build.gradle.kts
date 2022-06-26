@@ -9,9 +9,6 @@ plugins {
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
-group = "com.example"
-version = "0.0.1"
-
 application {
     mainClass.set("io.ktor.server.netty.EngineMain")
 
@@ -27,13 +24,13 @@ repositories {
 
 dependencies {
 
-    implementation("org.litote.kmongo:kmongo-id:4.6.0")
+    implementation("org.litote.kmongo:kmongo-id:4.6.1")
 
     //Cors
     implementation("io.ktor:ktor-server-cors:$ktor_version")
 
     // For kotling mongo impl
-    implementation("org.litote.kmongo:kmongo:4.5.1")
+    implementation("org.litote.kmongo:kmongo:4.6.1")
     implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
     implementation("io.ktor:ktor-client-cio-jvm:$ktor_version")

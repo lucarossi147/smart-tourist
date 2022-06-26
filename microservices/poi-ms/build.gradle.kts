@@ -10,8 +10,6 @@ plugins {
 
 }
 
-group = "com.example"
-version = "0.0.1"
 application {
     mainClass.set("io.ktor.server.netty.EngineMain")
 
@@ -32,9 +30,9 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")
 
     // For kotling mongo impl
-    implementation("org.litote.kmongo:kmongo-id:4.6.0")
-    implementation("org.litote.kmongo:kmongo-id-serialization:4.6.0")
-    implementation("org.litote.kmongo:kmongo:4.5.1")
+    implementation("org.litote.kmongo:kmongo-id:4.6.1")
+    implementation("org.litote.kmongo:kmongo-id-serialization:4.6.1")
+    implementation("org.litote.kmongo:kmongo:4.6.1")
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
     implementation("io.ktor:ktor-server-core-jvm:$ktor_version")

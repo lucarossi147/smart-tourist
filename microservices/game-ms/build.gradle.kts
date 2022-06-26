@@ -9,9 +9,6 @@ plugins {
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
-group = "com.example"
-version = "0.0.1"
-
 application {
     mainClass.set("com.example.ApplicationKt")
 
@@ -32,7 +29,7 @@ dependencies {
     implementation ("io.ktor:ktor-serialization-gson:$ktor_version")
 
     //MongoDb kotlin
-    implementation("org.litote.kmongo:kmongo:4.5.1")
+    implementation("org.litote.kmongo:kmongo:4.6.1")
 
     //Content negotiation
     implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")

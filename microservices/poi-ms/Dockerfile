@@ -9,4 +9,4 @@ COPY --from=build /home/gradle/src/build/libs/*.jar /app/
 
 EXPOSE 3000
 
-ENTRYPOINT ["java","-jar","/app/poi-ms-0.0.1-all.jar"]
+ENTRYPOINT ["java","-jar","/app/poi-ms-all.jar"]
