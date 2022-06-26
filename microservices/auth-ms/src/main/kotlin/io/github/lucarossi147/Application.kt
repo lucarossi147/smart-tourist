@@ -8,7 +8,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.plugins.cors.*
+import io.ktor.server.plugins.cors.CORS
 import io.ktor.server.response.*
 
 
