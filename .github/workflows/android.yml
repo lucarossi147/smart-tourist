@@ -82,6 +82,9 @@ jobs:
       with:
         name: apk
         path: SmartTourist/app/build/outputs/apk/
+        
+    - name: url
+      run: echo ${{ create_release.outputs.upload_url }}
 
     - name: Upload Debug APK
       uses: actions/upload-release-asset@v1.0.1
