@@ -52,79 +52,45 @@ jobs:
         name: apk
         path: SmartTourist/app/build/outputs/apk/
 
-  create-release:
+
+  pre-release:
+    name: "Pre Release"
+    needs: build
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: apk
+          path: SmartTourist/app/build/outputs/apk/
+
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "Development Build"
+          files: |
+            SmartTourist/app/build/outputs/apk/debug/app-debug.apk
+            SmartTourist/app/build/outputs/apk/release/app-release.apk
+
+  tagged-release:
     name: Create release
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: ${{ github.ref }}
-    
-    - name: why doesn't it work 
-      run: echo ${{ steps.create_release.outputs.upload_url }}
-
-  release-debug-apk:
-    name: Release debug APK
-    needs: create-release
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-      with:
-        ref: android_app
-
     - uses: actions/download-artifact@v3
       with:
         name: apk
         path: SmartTourist/app/build/outputs/apk/
-        
-    - name: url
-      run: echo ${{ needs.create_release.outputs.upload_url }}
-
-    - name: Upload Debug APK
-      uses: actions/upload-release-asset@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - uses: "marvinpinto/action-automatic-releases@latest"
       with:
-        upload_url: ${{ needs.create_release.outputs.upload_url }}
-        asset_path: SmartTourist/app/build/outputs/apk/debug/app-debug.apk
-        asset_name: SmartTouristDebug.apk
-        asset_content_type: application/zip
-
-  release-signed-release-apk:
-    name: Release Signed Release APK
-    needs: create-release
-    runs-on: ubuntu-latest
-    steps:
-    
-    - uses: actions/checkout@v3
-      with:
-        ref: android_app
-
-    - uses: actions/download-artifact@v3
-      with:
-        name: apk
-        path: SmartTourist/app/build/outputs/apk/
-
-    - run: echo ${{needs.create_release.outputs.upload_url}}
-
-    - name: Upload Signed Release APK
-      uses: actions/upload-release-asset@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ needs.create_release.outputs.upload_url }}
-        asset_path: SmartTourist/app/build/outputs/apk/release/app-release.apk
-        asset_name: SmartTouristRelease.apk
-        asset_content_type: application/zip
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        prerelease: false
+        files: |
+          SmartTourist/app/build/outputs/apk/debug/app-debug.apk
+          SmartTourist/app/build/outputs/apk/release/app-release.apk
           
   pull-request:
     name: Pull request
