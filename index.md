@@ -376,7 +376,7 @@ The next command gets the base64 value and creates the .jks file needed to sign 
 ```
 - name: Create keyStore file in same directory of gradle module app
   run: echo '${{secrets.ANDROID_APP_SIGNING_KEY_BASE64}}' | base64 -d > app/smartTouristReleaseKey.jks
-  working-directory: ${{env.working-directory}
+  working-directory: ${{env.working-directory}}
 ```
 After this step, the ```./gradlew build``` it's all that's left to, hopefully, successfully build the project.
 
