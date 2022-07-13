@@ -5,7 +5,7 @@ import android.os.Bundle
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        super.onCreate(savedInstanceState)asdfghjklòfgbhnjmk,l.dfghnmk,
         setContentView(R.layout.activity_main)
     }
 }
