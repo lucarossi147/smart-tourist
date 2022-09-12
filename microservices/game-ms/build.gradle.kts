@@ -29,7 +29,7 @@ dependencies {
     implementation ("io.ktor:ktor-serialization-gson:$ktor_version")
 
     //MongoDb kotlin
-    implementation("org.litote.kmongo:kmongo:4.6.1")
+    implementation("org.litote.kmongo:kmongo:4.7.1")
 
     //Content negotiation
     implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")
