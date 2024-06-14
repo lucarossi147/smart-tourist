@@ -24,7 +24,7 @@ repositories {
 
 dependencies {
 
-    implementation("org.litote.kmongo:kmongo-id:4.6.1")
+    implementation("org.litote.kmongo:kmongo-id:4.8.0")
 
     //Cors
     implementation("io.ktor:ktor-server-cors:$ktor_version")
