@@ -120,5 +120,5 @@ dependencies {
     implementation "io.ktor:ktor-serialization-gson:$ktor_version"
 
     //jsonObject
-    testImplementation 'org.json:json:20230227'
+    testImplementation 'org.json:json:20240303'
 }
