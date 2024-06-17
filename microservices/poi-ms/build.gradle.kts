@@ -24,7 +24,7 @@ repositories {
 
 dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.0")
 
     //Content Negotiation
     implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")
