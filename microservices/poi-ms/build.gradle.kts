@@ -30,9 +30,9 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")
 
     // For kotling mongo impl
-    implementation("org.litote.kmongo:kmongo-id:4.8.0")
-    implementation("org.litote.kmongo:kmongo-id-serialization:4.8.0")
-    implementation("org.litote.kmongo:kmongo:4.8.0")
+    implementation("org.litote.kmongo:kmongo-id:5.1.0")
+    implementation("org.litote.kmongo:kmongo-id-serialization:5.1.0")
+    implementation("org.litote.kmongo:kmongo:5.1.0")
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
     implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
