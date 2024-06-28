@@ -112,7 +112,7 @@ dependencies {
     //picasso, for images
     implementation "com.squareup.picasso:picasso:2.71828"
 
-    def ktor_version = "2.0.1"
+    def ktor_version = "2.2.4"
     //ktor client
     implementation "io.ktor:ktor-client-android:$ktor_version"
 
@@ -120,5 +120,5 @@ dependencies {
     implementation "io.ktor:ktor-serialization-gson:$ktor_version"
 
     //jsonObject
-    testImplementation 'org.json:json:20180813'
+    testImplementation 'org.json:json:20230227'
 }
