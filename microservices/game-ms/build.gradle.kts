@@ -4,13 +4,13 @@ val logback_version: String by project
 
 plugins {
     application
-    kotlin("jvm") version "1.6.21"
+    kotlin("jvm") version "1.8.10"
     kotlin("plugin.serialization") version "1.6.20"
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 application {
-    mainClass.set("com.example.ApplicationKt")
+    mainClass.set("io.ktor.server.netty.EngineMain")
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
@@ -23,13 +23,13 @@ repositories {
 
 dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
 
     //GSON
     implementation ("io.ktor:ktor-serialization-gson:$ktor_version")
 
     //MongoDb kotlin
-    implementation("org.litote.kmongo:kmongo:4.6.1")
+    implementation("org.litote.kmongo:kmongo:4.8.0")
 
     //Content negotiation
     implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")
@@ -48,5 +48,5 @@ dependencies {
 
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
     testImplementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
-    testImplementation("io.ktor:ktor-server-test-host-jvm:2.0.2")
+    testImplementation("io.ktor:ktor-server-test-host-jvm:2.2.4")
 }
