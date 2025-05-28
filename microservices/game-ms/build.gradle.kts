@@ -48,5 +48,5 @@ dependencies {
 
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
     testImplementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
-    testImplementation("io.ktor:ktor-server-test-host-jvm:2.2.4")
+    testImplementation("io.ktor:ktor-server-test-host-jvm:2.3.12")
 }
