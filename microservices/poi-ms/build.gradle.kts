@@ -4,7 +4,7 @@ val logback_version: String by project
 
 plugins {
     application
-    kotlin("jvm") version "1.8.10"
+    kotlin("jvm") version "2.0.20"
     kotlin("plugin.serialization").version("1.6.20")
     id("com.github.johnrengelman.shadow") version "7.1.2"
 
@@ -24,7 +24,7 @@ repositories {
 
 dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.2")
 
     //Content Negotiation
     implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")
