@@ -31,7 +31,7 @@ dependencies {
 
     // For kotling mongo impl
     implementation("org.litote.kmongo:kmongo-id:5.1.0")
-    implementation("org.litote.kmongo:kmongo-id-serialization:5.1.0")
+    implementation("org.litote.kmongo:kmongo-id-serialization:5.2.1")
     implementation("org.litote.kmongo:kmongo:5.1.0")
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
