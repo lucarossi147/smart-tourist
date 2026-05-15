@@ -112,7 +112,7 @@ dependencies {
     //picasso, for images
     implementation "com.squareup.picasso:picasso:2.71828"
 
-    def ktor_version = "3.3.3"
+    def ktor_version = "3.5.0"
     //ktor client
     implementation "io.ktor:ktor-client-android:$ktor_version"
 
